@@ -47,13 +47,13 @@ func main() {
 
 ## Development Roadmap
 
-### Phase 1: Foundation
-**Scope:** Establish project structure and core types
-- Set up Go module with appropriate package structure
-- Define all request/response structs based on API documentation
-- Create base client struct with configuration options
-- Implement error types and custom error handling
-- Design functional options pattern for optional parameters
+### Phase 1: Foundation ✅
+**Status:** Complete
+- ✅ Set up Go module with appropriate package structure
+- ✅ Define all request/response structs based on API documentation
+- ✅ Create base client struct with configuration options
+- ✅ Implement error types and custom error handling
+- ✅ Design functional options pattern for optional parameters
 
 ### Phase 2: HTTP Communication Layer
 **Scope:** Build robust HTTP client functionality
@@ -99,7 +99,10 @@ client := openrouter.NewClient("api-key")
 client := openrouter.NewClient("api-key",
     openrouter.WithBaseURL("https://custom.openrouter.ai"),
     openrouter.WithHTTPClient(customHTTPClient),
-    openrouter.WithRetryCount(3),
+    openrouter.WithTimeout(60 * time.Second),
+    openrouter.WithRetry(3, time.Second),
+    openrouter.WithAppName("MyApp"),
+    openrouter.WithReferer("https://myapp.com"),
 )
 ```
 
@@ -185,4 +188,4 @@ For more information, please refer to <https://unlicense.org>
 
 ## Status
 
-🚧 **In Development** - This package is currently being built following the roadmap above.
+🚧 **In Development** - Phase 1 (Foundation) Complete! Currently implementing Phase 2 (HTTP Communication Layer).
