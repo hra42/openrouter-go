@@ -7,7 +7,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Complete API coverage (chat completions and legacy completions)
 - ✅ Full streaming support with Server-Sent Events (SSE)
 - ✅ Zero external dependencies
-- ✅ Go 1.23+ support
+- ✅ Go 1.25.1 support
 - ✅ Comprehensive error handling and retry logic
 - ✅ Context-aware cancellation
 - ✅ Thread-safe client operations
@@ -16,7 +16,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 ## Installation
 
 ```bash
-go get github.com/yourusername/openrouter-go
+go get github.com/hra42/openrouter-go
 ```
 
 ## Quick Start
@@ -27,7 +27,7 @@ package main
 import (
     "context"
     "fmt"
-    "github.com/yourusername/openrouter-go"
+    "github.com/hra42/openrouter-go"
 )
 
 func main() {
@@ -47,7 +47,7 @@ func main() {
 
 ## Development Roadmap
 
-### Phase 1: Foundation ✅
+### Phase 1: Foundation
 **Scope:** Establish project structure and core types
 - Set up Go module with appropriate package structure
 - Define all request/response structs based on API documentation
@@ -55,7 +55,7 @@ func main() {
 - Implement error types and custom error handling
 - Design functional options pattern for optional parameters
 
-### Phase 2: HTTP Communication Layer ✅
+### Phase 2: HTTP Communication Layer
 **Scope:** Build robust HTTP client functionality
 - Implement HTTP request construction and execution
 - Add authentication header management
@@ -63,7 +63,7 @@ func main() {
 - Handle rate limiting and API errors gracefully
 - Support custom HTTP client injection for testing
 
-### Phase 3: Core API Implementation ✅
+### Phase 3: Core API Implementation
 **Scope:** Implement both API endpoints
 - Implement ChatComplete method for chat completions endpoint
 - Implement Complete method for legacy completions endpoint
@@ -71,7 +71,7 @@ func main() {
 - Ensure proper request validation
 - Handle both streaming and non-streaming responses
 
-### Phase 4: Streaming Support ✅
+### Phase 4: Streaming Support
 **Scope:** Full SSE streaming implementation
 - Build SSE parser from scratch (no external dependencies)
 - Create streaming response types with channel-based API
@@ -79,7 +79,7 @@ func main() {
 - Add context cancellation support for streams
 - Handle streaming errors and reconnection logic
 
-### Phase 5: Production Readiness ✅
+### Phase 5: Production Readiness
 **Scope:** Testing, documentation, and polish
 - Write comprehensive unit tests with mocked responses
 - Add integration tests (with build tags)
