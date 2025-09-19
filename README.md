@@ -79,13 +79,13 @@ func main() {
 - ✅ Add context cancellation support for streams
 - ✅ Handle streaming errors and reconnection logic
 
-### Phase 5: Production Readiness
-**Scope:** Testing, documentation, and polish
-- Write comprehensive unit tests with mocked responses
-- Add integration tests (with build tags)
-- Create detailed usage examples for common scenarios
-- Benchmark performance-critical paths
-- Complete API documentation with godoc comments
+### Phase 5: Production Readiness ✅
+**Status:** Complete
+- ✅ Write comprehensive unit tests with mocked responses
+- ✅ Add integration tests (with build tags)
+- ✅ Create detailed usage examples for common scenarios
+- ✅ Benchmark performance-critical paths
+- ✅ Complete API documentation with godoc comments
 
 ## API Design
 
@@ -170,6 +170,10 @@ openrouter-go/
 - Go 1.25.1
 - No external dependencies
 
+## Documentation
+
+For detailed API documentation and usage examples, see [DOCUMENTATION.md](DOCUMENTATION.md).
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -188,10 +192,52 @@ For more information, please refer to <https://unlicense.org>
 
 ## Status
 
-🚧 **In Development** - Phases 1-4 Complete! The library now has:
+✅ **Production Ready** - All 5 phases complete! The library is now ready for production use with:
 - ✅ Full foundation with all types and error handling
 - ✅ Robust HTTP communication with retry logic
 - ✅ Complete API implementation for chat and completions
 - ✅ Zero-dependency SSE streaming with reconnection support
+- ✅ Comprehensive test coverage and documentation
+- ✅ Production-ready examples for all use cases
 
-Ready for Phase 5 (Production Readiness) - testing, examples, and documentation!
+## Testing
+
+Run the test suite:
+
+```bash
+# Run all tests
+go test ./...
+
+# Run tests with coverage
+go test -cover ./...
+
+# Run tests with race detection
+go test -race ./...
+
+# Run specific test
+go test -run TestChatComplete
+```
+
+## Examples
+
+The `examples/` directory contains comprehensive examples:
+
+- **basic/** - Simple usage examples for common tasks
+- **streaming/** - Real-time streaming response handling
+- **advanced/** - Advanced features like function calling, rate limiting, and custom configuration
+
+To run an example:
+
+```bash
+# Set your API key
+export OPENROUTER_API_KEY="your-api-key"
+
+# Run basic examples
+go run examples/basic/main.go
+
+# Run streaming examples
+go run examples/streaming/main.go
+
+# Run advanced examples
+go run examples/advanced/main.go
+```
