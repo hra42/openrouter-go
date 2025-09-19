@@ -1,7 +1,7 @@
 package openrouter
 
 import (
-	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -9,19 +9,26 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
+
+	"github.com/hra42/openrouter-go/internal/sse"
 )
 
 // eventStream handles Server-Sent Events (SSE) streaming.
 type eventStream struct {
-	ctx      context.Context
-	cancel   context.CancelFunc
-	response *http.Response
-	reader   *bufio.Reader
-	events   chan StreamEvent
-	err      error
-	errMu    sync.RWMutex
-	closed   bool
-	closeMu  sync.Mutex
+	ctx       context.Context
+	cancel    context.CancelFunc
+	response  *http.Response
+	scanner   *sse.Scanner
+	events    chan StreamEvent
+	err       error
+	errMu     sync.RWMutex
+	closed    bool
+	closeMu   sync.Mutex
+	reconnect bool
+	client    *Client
+	endpoint  string
+	body      interface{}
 }
 
 // createStream creates a new SSE stream for the given endpoint and request.
@@ -89,11 +96,15 @@ func (c *Client) createStream(ctx context.Context, endpoint string, body interfa
 	streamCtx, cancel := context.WithCancel(ctx)
 
 	stream := &eventStream{
-		ctx:      streamCtx,
-		cancel:   cancel,
-		response: resp,
-		reader:   bufio.NewReader(resp.Body),
-		events:   make(chan StreamEvent, 10),
+		ctx:       streamCtx,
+		cancel:    cancel,
+		response:  resp,
+		scanner:   sse.NewScanner(resp.Body),
+		events:    make(chan StreamEvent, 10),
+		reconnect: true,
+		client:    c,
+		endpoint:  endpoint,
+		body:      body,
 	}
 
 	// Start reading events
