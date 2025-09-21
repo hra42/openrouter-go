@@ -16,7 +16,7 @@ func main() {
 		log.Fatal("Please set OPENROUTER_API_KEY environment variable")
 	}
 
-	client := openrouter.NewClient(apiKey)
+	client := openrouter.NewClient(openrouter.WithAPIKey(apiKey))
 
 	// Example 1: Simple structured output for weather information
 	weatherExample(client)

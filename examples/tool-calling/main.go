@@ -86,19 +86,19 @@ func main() {
 	ctx := context.Background()
 
 	// Example 1: Simple tool calling for book search
-	fmt.Println("=== Example 1: Book Search with Tool Calling ===\n")
+	fmt.Println("=== Example 1: Book Search with Tool Calling ===")
 	runBookSearchExample(ctx, client)
 
 	// Example 2: Weather tool with different parameter types
-	fmt.Println("\n=== Example 2: Weather Tool with Parameters ===\n")
+	fmt.Println("\n=== Example 2: Weather Tool with Parameters ===")
 	runWeatherExample(ctx, client)
 
 	// Example 3: Multiple tools available
-	fmt.Println("\n=== Example 3: Multiple Tools Available ===\n")
+	fmt.Println("\n=== Example 3: Multiple Tools Available ===")
 	runMultipleToolsExample(ctx, client)
 
 	// Example 4: Forced tool choice
-	fmt.Println("\n=== Example 4: Forced Tool Choice ===\n")
+	fmt.Println("\n=== Example 4: Forced Tool Choice ===")
 	runForcedToolChoiceExample(ctx, client)
 }
 

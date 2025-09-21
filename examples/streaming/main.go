@@ -19,7 +19,7 @@ func main() {
 	}
 
 	// Create a new client
-	client := openrouter.NewClient(apiKey)
+	client := openrouter.NewClient(openrouter.WithAPIKey(apiKey))
 
 	// Example 1: Basic streaming
 	fmt.Println("=== Example 1: Basic Chat Streaming ===")
