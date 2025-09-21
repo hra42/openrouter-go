@@ -520,3 +520,58 @@ func WithFloorPrice() ChatCompletionOption {
 func WithCompletionFloorPrice() CompletionOption {
 	return WithCompletionProviderSort("price")
 }
+
+// WithJSONSchema sets the response format to use a specific JSON schema for structured outputs.
+// This ensures the model response follows the provided schema exactly.
+func WithJSONSchema(name string, strict bool, schema map[string]interface{}) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.ResponseFormat = &ResponseFormat{
+			Type: "json_schema",
+			JSONSchema: &JSONSchema{
+				Name:   name,
+				Strict: strict,
+				Schema: schema,
+			},
+		}
+	}
+}
+
+// WithCompletionJSONSchema sets the response format to use a specific JSON schema for completion requests.
+func WithCompletionJSONSchema(name string, strict bool, schema map[string]interface{}) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.ResponseFormat = &ResponseFormat{
+			Type: "json_schema",
+			JSONSchema: &JSONSchema{
+				Name:   name,
+				Strict: strict,
+				Schema: schema,
+			},
+		}
+	}
+}
+
+// WithCompletionResponseFormat sets the response format for completion requests.
+func WithCompletionResponseFormat(format ResponseFormat) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.ResponseFormat = &format
+	}
+}
+
+// WithJSONMode sets the response format to return JSON without a specific schema.
+// Note: This is less strict than WithJSONSchema and doesn't enforce a specific structure.
+func WithJSONMode() ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.ResponseFormat = &ResponseFormat{
+			Type: "json_object",
+		}
+	}
+}
+
+// WithCompletionJSONMode sets the response format to return JSON for completion requests.
+func WithCompletionJSONMode() CompletionOption {
+	return func(r *CompletionRequest) {
+		r.ResponseFormat = &ResponseFormat{
+			Type: "json_object",
+		}
+	}
+}
