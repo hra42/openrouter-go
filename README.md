@@ -15,6 +15,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Per-request Zero Data Retention (ZDR) enforcement
 - ✅ Structured outputs with JSON schema validation
 - ✅ Tool/Function calling support with streaming
+- ✅ Message transforms for automatic context window management
 
 ## Installation
 
@@ -241,6 +242,62 @@ go test -race ./...
 # Run specific test
 go test -run TestChatComplete
 ```
+
+### Message Transforms
+
+The library supports message transforms to automatically handle prompts that exceed a model's context window. This feature uses "middle-out" compression to remove content from the middle of long prompts where models typically pay less attention.
+
+#### Basic Transform Usage
+
+```go
+// Enable middle-out compression for chat completions
+response, err := client.ChatComplete(ctx,
+    openrouter.WithModel("meta-llama/llama-3.1-8b-instruct"),
+    openrouter.WithMessages(messages),
+    openrouter.WithTransforms("middle-out"), // Auto-compress if exceeds context
+)
+
+// Enable for legacy completions
+response, err := client.Complete(ctx, prompt,
+    openrouter.WithModel("openai/gpt-3.5-turbo-instruct"),
+    openrouter.WithCompletionTransforms("middle-out"),
+)
+```
+
+#### How It Works
+
+When `middle-out` transform is enabled:
+1. OpenRouter finds models with at least half of your required tokens (input + completion)
+2. If your prompt exceeds the model's context, content is removed from the middle
+3. For models with message count limits (e.g. Anthropic's Claude), messages are compressed to stay within limits
+
+#### Default Behavior
+
+All OpenRouter endpoints with 8K (8,192 tokens) or less context length automatically use `middle-out` by default. To disable:
+
+```go
+// Explicitly disable transforms for smaller models
+response, err := client.ChatComplete(ctx,
+    openrouter.WithModel("some-8k-model"),
+    openrouter.WithMessages(messages),
+    openrouter.WithTransforms(), // Empty array disables transforms
+)
+```
+
+#### When to Use
+
+Message transforms are useful when:
+- Perfect recall is not required
+- You want automatic fallback for long conversations
+- Working with models that have smaller context windows
+- Handling variable-length user inputs that might exceed limits
+
+#### Important Notes
+
+- Middle content is compressed because LLMs pay less attention to the middle of sequences
+- The transform handles both token limits and message count limits
+- Without transforms, requests exceeding limits will fail with an error
+- Consider using models with larger context windows if perfect recall is critical
 
 ### Provider Routing
 
@@ -675,6 +732,7 @@ The `examples/` directory contains comprehensive examples:
 - **streaming/** - Real-time streaming response handling
 - **structured-output/** - JSON schema validation and structured responses
 - **tool-calling/** - Complete tool/function calling examples with streaming
+- **transforms/** - Message transforms for context window management
 - **advanced/** - Advanced features like rate limiting and custom configuration
 
 To run an example:
@@ -700,4 +758,7 @@ go run examples/tool-calling/main.go
 
 # Run streaming tool calling example
 go run examples/tool-calling/streaming.go
+
+# Run transforms examples
+go run examples/transforms/main.go
 ```
