@@ -56,7 +56,7 @@ func weatherExample(client *openrouter.Client) {
 				"description": "Wind speed in km/h",
 			},
 		},
-		"required":             []string{"location", "temperature", "conditions"},
+		"required":             []string{"location", "temperature", "conditions", "humidity", "windSpeed"},
 		"additionalProperties": false,
 	}
 
@@ -126,9 +126,12 @@ func functionCallingExample(client *openrouter.Client) {
 								"description": "Output format preference",
 							},
 						},
+						"required":             []string{"language", "limit", "format"}, // All must be listed even if optional
+						"additionalProperties": false,
 					},
 				},
-				"required": []string{"query"},
+				"required":             []string{"query", "options"}, // All properties must be in required
+				"additionalProperties": false,
 			},
 			"confidence": map[string]interface{}{
 				"type":        "number",
@@ -137,7 +140,7 @@ func functionCallingExample(client *openrouter.Client) {
 				"maximum":     1,
 			},
 		},
-		"required":             []string{"action", "parameters"},
+		"required":             []string{"action", "parameters", "confidence"}, // All properties must be listed
 		"additionalProperties": false,
 	}
 
@@ -200,7 +203,8 @@ func streamingExample(client *openrouter.Client) {
 							"description": "Whether the task is completed",
 						},
 					},
-					"required": []string{"id", "title", "priority"},
+					"required":             []string{"id", "title", "priority", "completed"},
+					"additionalProperties": false,
 				},
 				"description": "List of tasks",
 			},
