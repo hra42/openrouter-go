@@ -291,3 +291,232 @@ func WithCompletionMetadata(metadata map[string]interface{}) CompletionOption {
 		r.Metadata = metadata
 	}
 }
+
+// WithZDR enables Zero Data Retention for the request.
+// This ensures the request is only routed to endpoints with Zero Data Retention policy.
+func WithZDR(enabled bool) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.ZDR = &enabled
+	}
+}
+
+// WithCompletionZDR enables Zero Data Retention for the completion request.
+// This ensures the request is only routed to endpoints with Zero Data Retention policy.
+func WithCompletionZDR(enabled bool) CompletionOption {
+	return func(r *CompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.ZDR = &enabled
+	}
+}
+
+// WithProviderOrder sets the order of providers to try.
+// The router will prioritize providers in this list, and in this order.
+func WithProviderOrder(providers ...string) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.Order = providers
+	}
+}
+
+// WithCompletionProviderOrder sets the order of providers to try for completion requests.
+func WithCompletionProviderOrder(providers ...string) CompletionOption {
+	return func(r *CompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.Order = providers
+	}
+}
+
+// WithAllowFallbacks controls whether to allow backup providers.
+// When set to false, the request will fail if primary providers are unavailable.
+func WithAllowFallbacks(allow bool) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.AllowFallbacks = &allow
+	}
+}
+
+// WithCompletionAllowFallbacks controls whether to allow backup providers for completion requests.
+func WithCompletionAllowFallbacks(allow bool) CompletionOption {
+	return func(r *CompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.AllowFallbacks = &allow
+	}
+}
+
+// WithRequireParameters only routes to providers that support all request parameters.
+func WithRequireParameters(require bool) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.RequireParameters = &require
+	}
+}
+
+// WithCompletionRequireParameters only routes to providers that support all request parameters.
+func WithCompletionRequireParameters(require bool) CompletionOption {
+	return func(r *CompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.RequireParameters = &require
+	}
+}
+
+// WithDataCollection controls whether to use providers that may store data.
+// Use "allow" to allow data collection, "deny" to prevent it.
+func WithDataCollection(policy string) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.DataCollection = policy
+	}
+}
+
+// WithCompletionDataCollection controls whether to use providers that may store data.
+func WithCompletionDataCollection(policy string) CompletionOption {
+	return func(r *CompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.DataCollection = policy
+	}
+}
+
+// WithOnlyProviders restricts the request to only use specified providers.
+func WithOnlyProviders(providers ...string) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.Only = providers
+	}
+}
+
+// WithCompletionOnlyProviders restricts the request to only use specified providers.
+func WithCompletionOnlyProviders(providers ...string) CompletionOption {
+	return func(r *CompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.Only = providers
+	}
+}
+
+// WithIgnoreProviders specifies providers to skip for this request.
+func WithIgnoreProviders(providers ...string) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.Ignore = providers
+	}
+}
+
+// WithCompletionIgnoreProviders specifies providers to skip for this request.
+func WithCompletionIgnoreProviders(providers ...string) CompletionOption {
+	return func(r *CompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.Ignore = providers
+	}
+}
+
+// WithQuantizations filters providers by quantization levels.
+// Valid values: "int4", "int8", "fp4", "fp6", "fp8", "fp16", "bf16", "fp32", "unknown"
+func WithQuantizations(quantizations ...string) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.Quantizations = quantizations
+	}
+}
+
+// WithCompletionQuantizations filters providers by quantization levels.
+func WithCompletionQuantizations(quantizations ...string) CompletionOption {
+	return func(r *CompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.Quantizations = quantizations
+	}
+}
+
+// WithProviderSort sorts providers by the specified attribute.
+// Valid values: "price" (lowest cost), "throughput" (highest), "latency" (lowest)
+func WithProviderSort(sort string) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.Sort = sort
+	}
+}
+
+// WithCompletionProviderSort sorts providers by the specified attribute.
+func WithCompletionProviderSort(sort string) CompletionOption {
+	return func(r *CompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.Sort = sort
+	}
+}
+
+// WithMaxPrice sets maximum pricing constraints for the request.
+func WithMaxPrice(maxPrice MaxPrice) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.MaxPrice = &maxPrice
+	}
+}
+
+// WithCompletionMaxPrice sets maximum pricing constraints for the completion request.
+func WithCompletionMaxPrice(maxPrice MaxPrice) CompletionOption {
+	return func(r *CompletionRequest) {
+		if r.Provider == nil {
+			r.Provider = &Provider{}
+		}
+		r.Provider.MaxPrice = &maxPrice
+	}
+}
+
+// WithNitro is a shortcut for sorting by throughput.
+// Equivalent to WithProviderSort("throughput").
+func WithNitro() ChatCompletionOption {
+	return WithProviderSort("throughput")
+}
+
+// WithCompletionNitro is a shortcut for sorting by throughput for completion requests.
+func WithCompletionNitro() CompletionOption {
+	return WithCompletionProviderSort("throughput")
+}
+
+// WithFloorPrice is a shortcut for sorting by price.
+// Equivalent to WithProviderSort("price").
+func WithFloorPrice() ChatCompletionOption {
+	return WithProviderSort("price")
+}
+
+// WithCompletionFloorPrice is a shortcut for sorting by price for completion requests.
+func WithCompletionFloorPrice() CompletionOption {
+	return WithCompletionProviderSort("price")
+}
