@@ -33,6 +33,8 @@ type ChatCompletionRequest struct {
 	Transforms       []string               `json:"transforms,omitempty"`
 	Models           []string               `json:"models,omitempty"`
 	Route            string                 `json:"route,omitempty"`
+	Plugins          []Plugin               `json:"plugins,omitempty"`
+	WebSearchOptions *WebSearchOptions      `json:"web_search_options,omitempty"`
 	Metadata         map[string]interface{} `json:"-"` // Used for headers
 }
 
@@ -64,16 +66,19 @@ type CompletionRequest struct {
 	Transforms        []string               `json:"transforms,omitempty"`
 	Models            []string               `json:"models,omitempty"`
 	Route             string                 `json:"route,omitempty"`
+	Plugins           []Plugin               `json:"plugins,omitempty"`
+	WebSearchOptions  *WebSearchOptions      `json:"web_search_options,omitempty"`
 	Metadata          map[string]interface{} `json:"-"` // Used for headers
 }
 
 // Message represents a message in the chat completion request.
 type Message struct {
-	Role       string       `json:"role"`
-	Content    MessageContent `json:"content"`
-	Name       string       `json:"name,omitempty"`
-	ToolCalls  []ToolCall   `json:"tool_calls,omitempty"`
-	ToolCallID string       `json:"tool_call_id,omitempty"`
+	Role        string         `json:"role"`
+	Content     MessageContent `json:"content"`
+	Name        string         `json:"name,omitempty"`
+	ToolCalls   []ToolCall     `json:"tool_calls,omitempty"`
+	ToolCallID  string         `json:"tool_call_id,omitempty"`
+	Annotations []Annotation   `json:"annotations,omitempty"`
 }
 
 // MessageContent can be either a string or an array of content parts.
@@ -258,4 +263,44 @@ type APIError struct {
 	Type    string                 `json:"type"`
 	Code    string                 `json:"code,omitempty"`
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
+}
+
+// Plugin represents a plugin configuration for enhancing model responses.
+type Plugin struct {
+	// ID is the plugin identifier (e.g., "web" for web search)
+	ID string `json:"id"`
+	// Engine specifies which search engine to use ("native", "exa", or undefined for auto)
+	Engine string `json:"engine,omitempty"`
+	// MaxResults specifies the maximum number of search results (defaults to 5)
+	MaxResults int `json:"max_results,omitempty"`
+	// SearchPrompt customizes the prompt used to attach search results
+	SearchPrompt string `json:"search_prompt,omitempty"`
+}
+
+// WebSearchOptions configures native web search behavior for supported models.
+type WebSearchOptions struct {
+	// SearchContextSize determines the amount of search context ("low", "medium", or "high")
+	SearchContextSize string `json:"search_context_size,omitempty"`
+}
+
+// Annotation represents an annotation in a message response.
+type Annotation struct {
+	// Type of annotation (e.g., "url_citation")
+	Type string `json:"type"`
+	// URLCitation contains details for URL citation annotations
+	URLCitation *URLCitation `json:"url_citation,omitempty"`
+}
+
+// URLCitation represents a URL citation in a message annotation.
+type URLCitation struct {
+	// URL of the cited source
+	URL string `json:"url"`
+	// Title of the web search result
+	Title string `json:"title"`
+	// Content of the web search result
+	Content string `json:"content,omitempty"`
+	// StartIndex is the index of the first character of the citation in the message
+	StartIndex int `json:"start_index"`
+	// EndIndex is the index of the last character of the citation in the message
+	EndIndex int `json:"end_index"`
 }

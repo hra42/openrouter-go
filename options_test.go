@@ -155,7 +155,7 @@ func TestProviderRoutingOptions(t *testing.T) {
 			}))
 			defer testServer.Close()
 
-			testClient := NewClient("test-key", WithBaseURL(testServer.URL))
+			testClient := NewClient(WithAPIKey("test-key"), WithBaseURL(testServer.URL))
 			_, err := testClient.ChatComplete(context.Background(), messages,
 				WithModel("test-model"),
 				tt.option,
@@ -307,7 +307,7 @@ func TestCompletionProviderOptions(t *testing.T) {
 			}))
 			defer testServer.Close()
 
-			testClient := NewClient("test-key", WithBaseURL(testServer.URL))
+			testClient := NewClient(WithAPIKey("test-key"), WithBaseURL(testServer.URL))
 			_, err := testClient.Complete(context.Background(), "test prompt",
 				WithCompletionModel("test-model"),
 				tt.option,
@@ -361,7 +361,7 @@ func TestMultipleProviderOptions(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient("test-key", WithBaseURL(server.URL))
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
 	messages := []Message{CreateUserMessage("Test")}
 
 	_, err := client.ChatComplete(context.Background(), messages,

@@ -63,7 +63,7 @@ func TestChatComplete(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient("test-key", WithBaseURL(server.URL))
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
 
 	messages := []Message{
 		CreateSystemMessage("You are a helpful assistant."),
@@ -98,7 +98,7 @@ func TestChatComplete(t *testing.T) {
 }
 
 func TestChatCompleteValidation(t *testing.T) {
-	client := NewClient("")
+	client := NewClient(WithAPIKey(""))
 
 	tests := []struct {
 		name          string
@@ -149,7 +149,7 @@ func TestChatCompleteValidation(t *testing.T) {
 }
 
 func TestValidateChatRequest(t *testing.T) {
-	client := NewClient("test-key")
+	client := NewClient(WithAPIKey("test-key"))
 
 	tests := []struct {
 		name        string
@@ -266,7 +266,7 @@ func TestChatCompletionOptions(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient("test-key", WithBaseURL(server.URL))
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
 
 	messages := []Message{CreateUserMessage("Test")}
 

@@ -51,6 +51,30 @@ openrouter-test -test completion
 
 # Test error handling
 openrouter-test -test error
+
+# Test provider routing
+openrouter-test -test provider
+
+# Test Zero Data Retention (ZDR)
+openrouter-test -test zdr
+
+# Test model suffixes (nitro/floor)
+openrouter-test -test suffix
+
+# Test price constraints
+openrouter-test -test price
+
+# Test structured output
+openrouter-test -test structured
+
+# Test tool/function calling
+openrouter-test -test tools
+
+# Test message transforms
+openrouter-test -test transforms
+
+# Test web search
+openrouter-test -test websearch
 ```
 
 ### Options
@@ -63,7 +87,8 @@ openrouter-test -test error
     Model to use (default: "openai/gpt-3.5-turbo")
 
 -test string
-    Test to run: all, chat, stream, completion, error (default: "all")
+    Test to run: all, chat, stream, completion, error, provider, zdr, suffix,
+    price, structured, tools, transforms, websearch (default: "all")
 
 -max-tokens int
     Maximum tokens for response (default: 100)
@@ -110,6 +135,30 @@ Tests the legacy completion endpoint (requires instruct model support).
 
 ### Error Handling Test
 Deliberately triggers an error to test error handling capabilities.
+
+### Provider Routing Test
+Tests provider order, fallbacks, and routing constraints.
+
+### ZDR Test
+Tests Zero Data Retention enforcement for privacy-sensitive requests.
+
+### Model Suffix Test
+Tests :nitro (throughput) and :floor (lowest price) model suffixes.
+
+### Price Constraint Test
+Tests maximum price constraints and data collection policies.
+
+### Structured Output Test
+Tests JSON schema validation and structured response formats.
+
+### Tool/Function Calling Test
+Tests function calling capabilities including parallel calls and streaming.
+
+### Message Transforms Test
+Tests middle-out compression for managing context window limits.
+
+### Web Search Test
+Tests web search integration using :online suffix, web plugins, and different search engines (Native/Exa).
 
 ## Exit Codes
 

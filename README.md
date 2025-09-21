@@ -16,6 +16,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Structured outputs with JSON schema validation
 - ✅ Tool/Function calling support with streaming
 - ✅ Message transforms for automatic context window management
+- ✅ Web Search plugin for real-time web data integration
 
 ## Installation
 
@@ -185,6 +186,7 @@ openrouter-go/
 │   ├── streaming/         # Streaming examples
 │   ├── structured-output/ # Structured outputs with JSON schema
 │   ├── tool-calling/      # Tool/function calling examples
+│   ├── web_search/        # Web search plugin examples
 │   └── advanced/          # Advanced configuration examples
 └── internal/
     └── sse/           # Internal SSE parser implementation
@@ -724,6 +726,121 @@ Popular models with tool support include:
 - **Streaming**: Handle tool calls appropriately when streaming responses
 - **Testing**: Test tool interactions with different models as behavior may vary
 
+### Web Search
+
+The library supports OpenRouter's web search feature for augmenting model responses with real-time web data. Web search can be enabled using the `:online` model suffix or by configuring the web plugin.
+
+#### Quick Start with :online Suffix
+
+```go
+// Simple web search using :online suffix
+response, err := client.ChatComplete(ctx,
+    openrouter.WithModel("openai/gpt-4o:online"),
+    openrouter.WithMessages([]openrouter.Message{
+        {Role: "user", Content: "What are the latest AI developments this week?"},
+    }),
+)
+```
+
+#### Using the Web Plugin
+
+```go
+// Configure web search with the plugin
+webPlugin := openrouter.NewWebPlugin() // Uses defaults: auto engine, 5 results
+
+response, err := client.ChatComplete(ctx,
+    openrouter.WithModel("openai/gpt-4o"),
+    openrouter.WithPlugins(webPlugin),
+    openrouter.WithMessages(messages),
+)
+
+// Custom web plugin configuration
+webPlugin := openrouter.NewWebPluginWithOptions(
+    openrouter.WebSearchEngineExa,    // Force Exa search
+    10,                                // Get 10 results
+    "Recent web results for context:", // Custom prompt
+)
+
+response, err := client.ChatComplete(ctx,
+    openrouter.WithModel("anthropic/claude-3.5-sonnet"),
+    openrouter.WithPlugins(webPlugin),
+    openrouter.WithMessages(messages),
+)
+```
+
+#### Search Engine Options
+
+- **Native**: Uses the provider's built-in web search (OpenAI, Anthropic)
+- **Exa**: Uses Exa's neural search API (works with all models)
+- **Auto** (default): Automatically selects the best available engine
+
+```go
+// Force native search for supported models
+webPlugin := openrouter.Plugin{
+    ID:     "web",
+    Engine: string(openrouter.WebSearchEngineNative),
+}
+
+// Force Exa search for all models
+webPlugin := openrouter.Plugin{
+    ID:         "web",
+    Engine:     string(openrouter.WebSearchEngineExa),
+    MaxResults: 3,
+}
+```
+
+#### Search Context Size (Native Only)
+
+For models with native search support, control the search context depth:
+
+```go
+response, err := client.ChatComplete(ctx,
+    openrouter.WithModel("openai/gpt-4o"),
+    openrouter.WithPlugins(openrouter.NewWebPlugin()),
+    openrouter.WithWebSearchOptions(&openrouter.WebSearchOptions{
+        SearchContextSize: string(openrouter.WebSearchContextHigh), // low, medium, high
+    }),
+    openrouter.WithMessages(messages),
+)
+```
+
+#### Parsing Search Annotations
+
+Web search results are included in the response annotations:
+
+```go
+response, err := client.ChatComplete(ctx,
+    openrouter.WithModel("openai/gpt-4o:online"),
+    openrouter.WithMessages(messages),
+)
+
+// Extract URL citations from the response
+citations := openrouter.ParseAnnotations(response.Choices[0].Message.Annotations)
+for _, citation := range citations {
+    fmt.Printf("Source: %s\n", citation.Title)
+    fmt.Printf("URL: %s\n", citation.URL)
+    fmt.Printf("Content: %s\n\n", citation.Content)
+}
+```
+
+#### Pricing
+
+- **Exa Search**: $4 per 1000 results (default 5 results = $0.02 per request)
+- **Native Search (OpenAI)**:
+  - GPT-4o models: $30-50 per 1000 requests depending on context size
+  - GPT-4o-mini models: $25-30 per 1000 requests
+- **Native Search (Perplexity)**:
+  - Sonar models: $5-12 per 1000 requests
+  - SonarPro models: $6-14 per 1000 requests
+
+#### Best Practices
+
+- Use `:online` suffix for simple cases with default settings
+- Configure the web plugin for fine-grained control over search behavior
+- Consider search costs when choosing between native and Exa engines
+- Parse annotations to display sources and improve transparency
+- Use higher search context for research tasks, lower for quick facts
+
 ## Examples
 
 The `examples/` directory contains comprehensive examples:
@@ -733,6 +850,7 @@ The `examples/` directory contains comprehensive examples:
 - **structured-output/** - JSON schema validation and structured responses
 - **tool-calling/** - Complete tool/function calling examples with streaming
 - **transforms/** - Message transforms for context window management
+- **web_search/** - Web search plugin examples with various configurations
 - **advanced/** - Advanced features like rate limiting and custom configuration
 
 To run an example:
@@ -761,4 +879,7 @@ go run examples/tool-calling/streaming.go
 
 # Run transforms examples
 go run examples/transforms/main.go
+
+# Run web search examples
+go run examples/web_search/main.go
 ```

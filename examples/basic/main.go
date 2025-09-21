@@ -17,7 +17,7 @@ func main() {
 	}
 
 	// Create a new client
-	client := openrouter.NewClient(apiKey)
+	client := openrouter.NewClient(openrouter.WithAPIKey(apiKey))
 
 	// Example 1: Simple chat completion
 	fmt.Println("=== Example 1: Simple Chat Completion ===")

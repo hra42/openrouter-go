@@ -61,7 +61,7 @@ func customHTTPClient() {
 	}
 
 	apiKey := os.Getenv("OPENROUTER_API_KEY")
-	client := openrouter.NewClient(apiKey,
+	client := openrouter.NewClient(openrouter.WithAPIKey(apiKey),
 		openrouter.WithHTTPClient(httpClient),
 		openrouter.WithTimeout(60*time.Second),
 	)
@@ -85,7 +85,7 @@ func customHTTPClient() {
 
 func advancedConfiguration(apiKey string) {
 	// Create a client with all configuration options
-	client := openrouter.NewClient(apiKey,
+	client := openrouter.NewClient(openrouter.WithAPIKey(apiKey),
 		openrouter.WithBaseURL("https://openrouter.ai/api/v1"),
 		openrouter.WithDefaultModel("openai/gpt-3.5-turbo"),
 		openrouter.WithTimeout(30*time.Second),
@@ -113,7 +113,7 @@ func advancedConfiguration(apiKey string) {
 }
 
 func functionCalling(apiKey string) {
-	client := openrouter.NewClient(apiKey)
+	client := openrouter.NewClient(openrouter.WithAPIKey(apiKey))
 
 	// Define available functions
 	tools := []openrouter.Tool{
@@ -171,7 +171,7 @@ func functionCalling(apiKey string) {
 }
 
 func jsonResponseFormat(apiKey string) {
-	client := openrouter.NewClient(apiKey)
+	client := openrouter.NewClient(openrouter.WithAPIKey(apiKey))
 
 	responseFormat := openrouter.ResponseFormat{
 		Type: "json_schema",
@@ -229,7 +229,7 @@ func jsonResponseFormat(apiKey string) {
 }
 
 func multiModalMessages(apiKey string) {
-	client := openrouter.NewClient(apiKey)
+	client := openrouter.NewClient(openrouter.WithAPIKey(apiKey))
 
 	// Create a message with both text and image
 	messages := []openrouter.Message{
@@ -258,7 +258,7 @@ func multiModalMessages(apiKey string) {
 }
 
 func providerPreferences(apiKey string) {
-	client := openrouter.NewClient(apiKey)
+	client := openrouter.NewClient(openrouter.WithAPIKey(apiKey))
 
 	// Configure provider preferences
 	trueVal := true
@@ -295,7 +295,7 @@ func providerPreferences(apiKey string) {
 
 func rateLimiting(apiKey string) {
 	// Create a client with aggressive retry settings for rate limit handling
-	client := openrouter.NewClient(apiKey,
+	client := openrouter.NewClient(openrouter.WithAPIKey(apiKey),
 		openrouter.WithRetry(10, 1*time.Second),
 	)
 
