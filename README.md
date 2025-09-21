@@ -192,6 +192,42 @@ openrouter-go/
     └── sse/           # Internal SSE parser implementation
 ```
 
+## App Attribution
+
+Get your app featured in OpenRouter rankings and analytics by including attribution headers:
+
+```go
+client := openrouter.NewClient(
+    openrouter.WithAPIKey("your-api-key"),
+    // Your app's URL (primary identifier)
+    openrouter.WithReferer("https://myapp.com"),
+    // Your app's display name
+    openrouter.WithAppName("My AI Assistant"),
+)
+```
+
+### Benefits
+
+When you use app attribution, your app will:
+- Appear in [OpenRouter's public rankings](https://openrouter.ai/rankings)
+- Be featured on individual model pages in the "Apps" tab
+- Get detailed analytics at `openrouter.ai/apps?url=<your-app-url>`
+- Gain visibility in the OpenRouter developer community
+
+### Localhost Development
+
+For localhost development, always include a title:
+
+```go
+client := openrouter.NewClient(
+    openrouter.WithAPIKey("your-api-key"),
+    openrouter.WithReferer("http://localhost:3000"),
+    openrouter.WithAppName("Development App"), // Required for localhost
+)
+```
+
+See the [app attribution example](examples/app-attribution/main.go) for more details.
+
 ## Requirements
 
 - Go 1.25.1
