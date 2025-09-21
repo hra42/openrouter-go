@@ -43,11 +43,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Create client
+	// Create client with app attribution
 	client := openrouter.NewClient(
 		openrouter.WithAPIKey(*apiKey),
 		openrouter.WithTimeout(*timeout),
-		openrouter.WithAppName("OpenRouter-Go-Test"),
+		openrouter.WithReferer("https://github.com/hra42/openrouter-go"),
+		openrouter.WithAppName("OpenRouter-Go Test Suite"),
 		openrouter.WithRetry(3, time.Second),
 	)
 

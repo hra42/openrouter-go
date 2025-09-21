@@ -319,6 +319,71 @@ func TestCompletionProviderOptions(t *testing.T) {
 	}
 }
 
+func TestAppAttributionOptions(t *testing.T) {
+	// Test that app attribution headers are properly set
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check HTTP-Referer header
+		if referer := r.Header.Get("HTTP-Referer"); referer != "https://myapp.com" {
+			t.Errorf("HTTP-Referer not set correctly, got: %s", referer)
+		}
+
+		// Check X-Title header
+		if title := r.Header.Get("X-Title"); title != "My AI Assistant" {
+			t.Errorf("X-Title not set correctly, got: %s", title)
+		}
+
+		w.WriteHeader(200)
+		json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+		WithReferer("https://myapp.com"),
+		WithAppName("My AI Assistant"),
+	)
+
+	messages := []Message{CreateUserMessage("Test")}
+	_, err := client.ChatComplete(context.Background(), messages, WithModel("test-model"))
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestAppAttributionOptionsCompletion(t *testing.T) {
+	// Test that app attribution headers work with completion endpoints
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check HTTP-Referer header
+		if referer := r.Header.Get("HTTP-Referer"); referer != "https://localhost:3000" {
+			t.Errorf("HTTP-Referer not set correctly, got: %s", referer)
+		}
+
+		// Check X-Title header (especially important for localhost)
+		if title := r.Header.Get("X-Title"); title != "Development App" {
+			t.Errorf("X-Title not set correctly, got: %s", title)
+		}
+
+		w.WriteHeader(200)
+		json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+		WithReferer("https://localhost:3000"),
+		WithAppName("Development App"),
+	)
+
+	_, err := client.Complete(context.Background(), "test prompt", WithCompletionModel("test-model"))
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func TestMultipleProviderOptions(t *testing.T) {
 	// Test that multiple provider options work together correctly
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
