@@ -618,3 +618,31 @@ func WithCompletionJSONMode() CompletionOption {
 		}
 	}
 }
+
+// WithPlugins adds plugin configurations to the request.
+func WithPlugins(plugins ...Plugin) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.Plugins = plugins
+	}
+}
+
+// WithCompletionPlugins adds plugin configurations to the completion request.
+func WithCompletionPlugins(plugins ...Plugin) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.Plugins = plugins
+	}
+}
+
+// WithWebSearchOptions sets web search options for the request.
+func WithWebSearchOptions(options *WebSearchOptions) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.WebSearchOptions = options
+	}
+}
+
+// WithCompletionWebSearchOptions sets web search options for the completion request.
+func WithCompletionWebSearchOptions(options *WebSearchOptions) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.WebSearchOptions = options
+	}
+}
