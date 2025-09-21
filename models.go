@@ -122,14 +122,34 @@ type FunctionCall struct {
 	Arguments string `json:"arguments"`
 }
 
-// Provider represents provider-specific parameters.
+// Provider represents provider-specific parameters for routing requests.
 type Provider struct {
+	// Order specifies provider slugs to try in order (e.g. ["anthropic", "openai"])
 	Order            []string               `json:"order,omitempty"`
-	RequireParameters bool                  `json:"require_parameters,omitempty"`
+	// RequireParameters only uses providers that support all parameters in the request
+	RequireParameters *bool                 `json:"require_parameters,omitempty"`
+	// DataCollection controls whether to use providers that may store data ("allow" or "deny")
 	DataCollection   string                 `json:"data_collection,omitempty"`
-	AllowFallbacks   bool                   `json:"allow_fallbacks,omitempty"`
-	IgnoreProviders  []string               `json:"ignore,omitempty"`
-	QuantizationFallback map[string]string  `json:"quantization,omitempty"`
+	// AllowFallbacks allows backup providers when the primary is unavailable
+	AllowFallbacks   *bool                  `json:"allow_fallbacks,omitempty"`
+	// Ignore specifies provider slugs to skip for this request
+	Ignore           []string               `json:"ignore,omitempty"`
+	// Quantizations filters providers by quantization levels (e.g. ["int4", "int8"])
+	Quantizations    []string               `json:"quantizations,omitempty"`
+	// ZDR restricts routing to only Zero Data Retention endpoints
+	ZDR              *bool                  `json:"zdr,omitempty"`
+	// Only specifies provider slugs to allow for this request
+	Only             []string               `json:"only,omitempty"`
+	// Sort providers by "price", "throughput", or "latency"
+	Sort             string                 `json:"sort,omitempty"`
+	// MaxPrice specifies maximum pricing constraints for the request
+	MaxPrice         *MaxPrice              `json:"max_price,omitempty"`
+
+	// Deprecated: Use Ignore instead
+	IgnoreProviders  []string               `json:"-"`
+	// Deprecated: Use Quantizations instead
+	QuantizationFallback map[string]string  `json:"-"`
+	// Internal provider parameters
 	ProviderParams   map[string]interface{} `json:"-"`
 }
 
