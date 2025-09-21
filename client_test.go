@@ -11,7 +11,7 @@ import (
 
 func TestNewClient(t *testing.T) {
 	apiKey := "test-api-key"
-	client := NewClient(apiKey)
+	client := NewClient(WithAPIKey(apiKey))
 
 	if client.apiKey != apiKey {
 		t.Errorf("expected apiKey %q, got %q", apiKey, client.apiKey)
@@ -38,7 +38,7 @@ func TestClientOptions(t *testing.T) {
 	referer := "https://example.com"
 	appName := "TestApp"
 
-	client := NewClient(apiKey,
+	client := NewClient(WithAPIKey(apiKey),
 		WithBaseURL(customBaseURL),
 		WithTimeout(customTimeout),
 		WithDefaultModel(customModel),
@@ -86,7 +86,7 @@ func TestClientWithCustomHTTPClient(t *testing.T) {
 		Timeout: 120 * time.Second,
 	}
 
-	client := NewClient("api-key", WithHTTPClient(customHTTPClient))
+	client := NewClient(WithAPIKey("api-key"), WithHTTPClient(customHTTPClient))
 
 	if client.httpClient != customHTTPClient {
 		t.Error("expected custom HTTP client to be used")
@@ -144,7 +144,7 @@ func TestDoRequest(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient("test-key",
+	client := NewClient(WithAPIKey("test-key"),
 		WithBaseURL(server.URL),
 		WithReferer("https://test.com"),
 		WithAppName("TestApp"),
@@ -233,7 +233,7 @@ func TestDoRequestErrorHandling(t *testing.T) {
 			}))
 			defer server.Close()
 
-			client := NewClient("test-key",
+			client := NewClient(WithAPIKey("test-key"),
 				WithBaseURL(server.URL),
 				WithRetry(0, 0), // Disable retries for testing
 			)
@@ -292,7 +292,7 @@ func TestDoRequestRetry(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient("test-key",
+	client := NewClient(WithAPIKey("test-key"),
 		WithBaseURL(server.URL),
 		WithRetry(3, 10*time.Millisecond), // Short delay for testing
 	)
@@ -328,7 +328,7 @@ func TestContextCancellation(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient("test-key", WithBaseURL(server.URL))
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
 	defer cancel()

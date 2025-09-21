@@ -60,7 +60,7 @@ func TestComplete(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient("test-key", WithBaseURL(server.URL))
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
 
 	resp, err := client.Complete(context.Background(), "Once upon a time",
 		WithCompletionModel("gpt-3.5-turbo-instruct"),
@@ -122,7 +122,7 @@ func TestCompleteValidation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client := NewClient(tt.apiKey)
+			client := NewClient(WithAPIKey(tt.apiKey))
 
 			var opts []CompletionOption
 			if tt.model != "" {
@@ -182,7 +182,7 @@ func TestCompletionOptions(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient("test-key", WithBaseURL(server.URL))
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
 
 	_, err := client.Complete(context.Background(), "Test prompt",
 		WithCompletionModel("test-model"),
@@ -225,7 +225,7 @@ func TestCompleteWithContext(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient("test-key",
+	client := NewClient(WithAPIKey("test-key"),
 		WithBaseURL(server.URL),
 		WithDefaultModel("test-model"),
 	)
@@ -277,7 +277,7 @@ Now: Good morning`
 	}))
 	defer server.Close()
 
-	client := NewClient("test-key",
+	client := NewClient(WithAPIKey("test-key"),
 		WithBaseURL(server.URL),
 		WithDefaultModel("test-model"),
 	)
