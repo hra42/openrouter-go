@@ -12,6 +12,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Context-aware cancellation
 - ✅ Thread-safe client operations
 - ✅ Extensive configuration options via functional options pattern
+- ✅ Per-request Zero Data Retention (ZDR) enforcement
 
 ## Installation
 
@@ -128,6 +129,12 @@ for event := range stream.Events() {
 if err := stream.Err(); err != nil {
     // Handle streaming error
 }
+
+// With Zero Data Retention (ZDR)
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("anthropic/claude-3-opus"),
+    openrouter.WithZDR(true), // Enforce ZDR for this request
+)
 ```
 
 ### Legacy Completions
@@ -142,6 +149,12 @@ response, err := client.Complete(ctx, "Once upon a time",
 // Streaming
 stream, err := client.CompleteStream(ctx, "Once upon a time",
     openrouter.WithModel("openai/gpt-3.5-turbo-instruct"),
+)
+
+// With Zero Data Retention (ZDR)
+response, err := client.Complete(ctx, "Once upon a time",
+    openrouter.WithModel("openai/gpt-3.5-turbo-instruct"),
+    openrouter.WithCompletionZDR(true), // Enforce ZDR for this request
 )
 ```
 
@@ -217,6 +230,130 @@ go test -race ./...
 # Run specific test
 go test -run TestChatComplete
 ```
+
+### Provider Routing
+
+The library supports comprehensive provider routing options to control how your requests are handled across different providers.
+
+#### Basic Provider Routing
+
+```go
+// Specify provider order
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("meta-llama/llama-3.1-70b-instruct"),
+    openrouter.WithProviderOrder("together", "openai", "anthropic"),
+)
+
+// Disable fallbacks (only use specified providers)
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("mistralai/mixtral-8x7b-instruct"),
+    openrouter.WithProviderOrder("together"),
+    openrouter.WithAllowFallbacks(false),
+)
+
+// Sort providers by throughput or price
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("meta-llama/llama-3.1-70b-instruct"),
+    openrouter.WithProviderSort("throughput"), // or "price", "latency"
+)
+```
+
+#### Model Suffixes
+
+```go
+// Use :nitro suffix for throughput optimization
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("meta-llama/llama-3.1-70b-instruct:nitro"),
+)
+
+// Use :floor suffix for lowest price
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("meta-llama/llama-3.1-70b-instruct:floor"),
+)
+```
+
+#### Provider Filtering
+
+```go
+// Only use specific providers
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("openai/gpt-4o"),
+    openrouter.WithOnlyProviders("azure", "openai"),
+)
+
+// Ignore specific providers
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("meta-llama/llama-3.3-70b-instruct"),
+    openrouter.WithIgnoreProviders("deepinfra"),
+)
+
+// Filter by quantization levels
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("meta-llama/llama-3.1-8b-instruct"),
+    openrouter.WithQuantizations("fp8", "fp16"),
+)
+```
+
+#### Price Constraints
+
+```go
+// Set maximum pricing constraints
+maxPrice := openrouter.MaxPrice{
+    Prompt: 1.0,     // Max $1 per million prompt tokens
+    Completion: 2.0, // Max $2 per million completion tokens
+}
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("meta-llama/llama-3.1-70b-instruct"),
+    openrouter.WithMaxPrice(maxPrice),
+    openrouter.WithProviderSort("throughput"), // Use fastest provider under price limit
+)
+```
+
+#### Data Policies
+
+```go
+// Require providers that don't collect data
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("anthropic/claude-3-opus"),
+    openrouter.WithDataCollection("deny"), // or "allow"
+)
+
+// Require providers that support all parameters
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("openai/gpt-4o"),
+    openrouter.WithRequireParameters(true),
+    openrouter.WithResponseFormat(openrouter.ResponseFormat{Type: "json_object"}),
+)
+```
+
+### Zero Data Retention (ZDR)
+
+The library supports per-request Zero Data Retention enforcement. When enabled, requests will only be routed to endpoints with Zero Data Retention policies.
+
+```go
+// For chat completions
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("anthropic/claude-3-opus"),
+    openrouter.WithZDR(true), // Enforce ZDR for this specific request
+)
+
+// For legacy completions
+response, err := client.Complete(ctx, prompt,
+    openrouter.WithModel("openai/gpt-3.5-turbo-instruct"),
+    openrouter.WithCompletionZDR(true), // Enforce ZDR for this specific request
+)
+
+// With custom provider configuration
+provider := openrouter.Provider{
+    ZDR: &[]bool{true}[0], // Enable ZDR
+}
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("anthropic/claude-3-opus"),
+    openrouter.WithProvider(provider),
+)
+```
+
+Note: The request-level `zdr` parameter operates as an "OR" with your account-wide ZDR setting. If either is enabled, ZDR enforcement will be applied.
 
 ## Examples
 
