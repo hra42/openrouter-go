@@ -314,6 +314,27 @@ func WithCompletionMetadata(metadata map[string]interface{}) CompletionOption {
 	}
 }
 
+// WithCompletionTransforms sets the transforms to apply to completion requests.
+func WithCompletionTransforms(transforms ...string) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.Transforms = transforms
+	}
+}
+
+// WithCompletionModels sets the models for fallback in completion requests.
+func WithCompletionModels(models ...string) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.Models = models
+	}
+}
+
+// WithCompletionRoute sets the routing preference for completion requests.
+func WithCompletionRoute(route string) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.Route = route
+	}
+}
+
 // WithZDR enables Zero Data Retention for the request.
 // This ensures the request is only routed to endpoints with Zero Data Retention policy.
 func WithZDR(enabled bool) ChatCompletionOption {
