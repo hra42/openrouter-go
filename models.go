@@ -58,6 +58,7 @@ type CompletionRequest struct {
 	N                 *int                   `json:"n,omitempty"`
 	BestOf            *int                   `json:"best_of,omitempty"`
 	Suffix            *string                `json:"suffix,omitempty"`
+	ResponseFormat    *ResponseFormat        `json:"response_format,omitempty"`
 	Provider          *Provider              `json:"provider,omitempty"`
 	Transforms        []string               `json:"transforms,omitempty"`
 	Models            []string               `json:"models,omitempty"`
