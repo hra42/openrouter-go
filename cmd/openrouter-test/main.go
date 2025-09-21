@@ -16,7 +16,7 @@ func main() {
 	var (
 		apiKey    = flag.String("key", os.Getenv("OPENROUTER_API_KEY"), "OpenRouter API key (or set OPENROUTER_API_KEY env var)")
 		model     = flag.String("model", "openai/gpt-3.5-turbo", "Model to use")
-		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error")
+		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price")
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -87,6 +87,30 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "provider":
+		if runProviderRoutingTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "zdr":
+		if runZDRTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "suffix":
+		if runModelSuffixTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "price":
+		if runPriceConstraintTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -115,6 +139,10 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, m
 		{"Streaming", func() bool { return runStreamTest(ctx, client, model, maxTokens, verbose) }},
 		{"Legacy Completion", func() bool { return runCompletionTest(ctx, client, verbose) }},
 		{"Error Handling", func() bool { return runErrorTest(ctx, client, verbose) }},
+		{"Provider Routing", func() bool { return runProviderRoutingTest(ctx, client, model, maxTokens, verbose) }},
+		{"ZDR", func() bool { return runZDRTest(ctx, client, model, maxTokens, verbose) }},
+		{"Model Suffixes", func() bool { return runModelSuffixTest(ctx, client, verbose) }},
+		{"Price Constraints", func() bool { return runPriceConstraintTest(ctx, client, model, maxTokens, verbose) }},
 	}
 
 	for _, test := range tests {
