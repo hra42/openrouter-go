@@ -30,10 +30,11 @@ type Client struct {
 	customHeaders     map[string]string
 }
 
-// NewClient creates a new OpenRouter API client with the provided API key.
-func NewClient(apiKey string, opts ...ClientOption) *Client {
+// NewClient creates a new OpenRouter API client.
+// The API key can be provided either as the first argument (for backwards compatibility)
+// or via WithAPIKey option. If both are provided, the option takes precedence.
+func NewClient(opts ...ClientOption) *Client {
 	c := &Client{
-		apiKey:  apiKey,
 		baseURL: defaultBaseURL,
 		httpClient: &http.Client{
 			Timeout: defaultTimeout,

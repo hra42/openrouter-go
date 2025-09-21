@@ -8,6 +8,13 @@ import (
 // ClientOption is a functional option for configuring the Client.
 type ClientOption func(*Client)
 
+// WithAPIKey sets the API key for the client.
+func WithAPIKey(apiKey string) ClientOption {
+	return func(c *Client) {
+		c.apiKey = apiKey
+	}
+}
+
 // WithBaseURL sets a custom base URL for the API.
 func WithBaseURL(baseURL string) ClientOption {
 	return func(c *Client) {
