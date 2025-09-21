@@ -198,6 +198,18 @@ type TopLogProb struct {
 	Bytes   []int   `json:"bytes,omitempty"`
 }
 
+// MaxPrice represents maximum pricing constraints for a request.
+type MaxPrice struct {
+	// Prompt specifies max price per million prompt tokens
+	Prompt float64 `json:"prompt,omitempty"`
+	// Completion specifies max price per million completion tokens
+	Completion float64 `json:"completion,omitempty"`
+	// Request specifies max price per request (for providers with per-request pricing)
+	Request float64 `json:"request,omitempty"`
+	// Image specifies max price per image
+	Image float64 `json:"image,omitempty"`
+}
+
 // StreamEvent represents a server-sent event for streaming responses.
 type StreamEvent struct {
 	ID      string
