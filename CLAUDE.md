@@ -2,65 +2,102 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Commands
 
-This is the openrouter-go library - a zero-dependency Go package providing complete bindings for the OpenRouter API. The project is currently in initial development phase with no implementation code yet written.
-
-## Development Phases
-
-The implementation follows a structured roadmap:
-1. **Foundation**: Core types and project structure
-2. **HTTP Communication**: HTTP client with retry logic and error handling
-3. **Core API**: ChatComplete and Complete endpoints
-4. **Streaming**: SSE streaming implementation from scratch
-5. **Production**: Testing, benchmarks, and documentation
-
-## Package Structure
-
-```
-openrouter-go/
-├── client.go           # Main client implementation
-├── completions.go      # Completion endpoint methods
-├── chat.go            # Chat completion endpoint methods
-├── models.go          # Request/response type definitions
-├── options.go         # Functional options for configuration
-├── stream.go          # SSE streaming implementation
-├── errors.go          # Custom error types
-├── retry.go           # Retry and backoff logic
-├── examples/
-│   ├── basic/         # Basic usage examples
-│   ├── streaming/     # Streaming examples
-│   └── advanced/      # Advanced configuration examples
-└── internal/
-    └── sse/           # Internal SSE parser implementation
-```
-
-## Key Design Decisions
-
-- **Zero dependencies**: All functionality including SSE streaming must be implemented without external packages
-- **Functional options pattern**: Use for all optional parameters (WithModel, WithTemperature, etc.)
-- **Channel-based streaming API**: Streaming responses use channels for Events() and Err()
-- **Context-aware**: All API methods accept context for cancellation
-- **Custom HTTP client injection**: Support for testing via WithHTTPClient option
-
-## API Endpoints to Implement
-
-1. **Chat Completions**: `/api/v1/chat/completions` (ChatComplete and ChatCompleteStream)
-2. **Legacy Completions**: `/api/v1/completions` (Complete and CompleteStream)
-
-## Testing Commands
-
-Since the project is in initial development, testing commands will be:
+### Build and Test
 ```bash
-go test ./...           # Run all tests
-go test -v ./...        # Run tests with verbose output
-go test -race ./...     # Run tests with race detection
-go test -cover ./...    # Run tests with coverage
+# Run all tests
+go test ./...
+
+# Run tests with coverage
+go test -cover ./...
+
+# Run tests with race detection
+go test -race ./...
+
+# Run specific test
+go test -run TestChatComplete
+
+# Run tests in verbose mode
+go test -v ./...
+
+# Build the package
+go build ./...
+
+# Format code
+go fmt ./...
+
+# Run go vet for static analysis
+go vet ./...
+
+# Install dependencies
+go mod download
+
+# Update dependencies
+go mod tidy
 ```
 
-## Development Requirements
+### Running Examples
+```bash
+# Set API key
+export OPENROUTER_API_KEY="your-api-key"
 
-- Go 1.25.1
-- No external dependencies allowed
-- Follow standard Go project layout
-- Use godoc-style comments for all exported types and methods
+# Run examples
+go run examples/basic/main.go
+go run examples/streaming/main.go
+go run examples/advanced/main.go
+go run examples/structured-output/main.go
+go run examples/tool-calling/main.go
+go run examples/web_search/main.go
+go run examples/transforms/main.go
+go run examples/app-attribution/main.go
+```
+
+## Architecture Overview
+
+This is a zero-dependency Go client library for the OpenRouter API that follows idiomatic Go patterns.
+
+### Core Components
+
+**Client (`client.go`)**: The main client struct that manages HTTP communication, authentication, and request routing. Uses functional options pattern for configuration.
+
+**Request/Response Types (`models.go`)**: Defines all data structures for API requests and responses, including messages, tools, and completion parameters.
+
+**Functional Options (`options.go`)**: Implements the options pattern for flexible configuration of both client and request parameters. This allows clean API usage like `WithModel()`, `WithMessages()`, etc.
+
+**Streaming (`stream.go`)**: Implements Server-Sent Events (SSE) parsing for streaming responses without external dependencies. Handles reconnection and error recovery.
+
+**Error Handling (`errors.go`)**: Custom error types that preserve OpenRouter API error details including rate limits, retry information, and moderation flags.
+
+**Retry Logic (`retry.go`)**: Implements exponential backoff with jitter for handling transient failures and rate limits.
+
+### API Endpoints
+
+**Chat Completions (`chat.go`)**: Modern chat API supporting messages, tools, structured outputs, and streaming.
+
+**Legacy Completions (`completions.go`)**: Support for older prompt-based completion API.
+
+**Web Search (`web_search.go`)**: Integration with OpenRouter's web search plugin for augmented responses.
+
+### Key Design Patterns
+
+1. **Functional Options**: Both client creation and API calls use functional options for clean, extensible configuration
+2. **Context Support**: All API methods accept context.Context for proper cancellation and timeout handling
+3. **Zero Dependencies**: Entire library uses only Go standard library
+4. **Thread Safety**: Client is safe for concurrent use across goroutines
+5. **Streaming**: Custom SSE parser handles streaming responses with proper cleanup
+
+### Testing Approach
+
+- Unit tests for all public APIs using httptest for mocking HTTP responses
+- Table-driven tests for comprehensive coverage of different scenarios
+- Race detection tests to ensure thread safety
+- Integration test utility in `cmd/openrouter-test/` for live API testing
+
+### Important Notes
+
+- Always check error returns from API calls
+- Streaming responses require proper cleanup by reading all events or canceling context
+- The library automatically handles rate limiting with configurable retry logic
+- Tool calls and structured outputs require compatible models (check OpenRouter docs)
+- Web search can use either native provider search or Exa, with different pricing models

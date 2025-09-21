@@ -57,48 +57,6 @@ func main() {
 }
 ```
 
-## Development Roadmap
-
-### Phase 1: Foundation ✅
-**Status:** Complete
-- ✅ Set up Go module with appropriate package structure
-- ✅ Define all request/response structs based on API documentation
-- ✅ Create base client struct with configuration options
-- ✅ Implement error types and custom error handling
-- ✅ Design functional options pattern for optional parameters
-
-### Phase 2: HTTP Communication Layer ✅
-**Status:** Complete
-- ✅ Implement HTTP request construction and execution
-- ✅ Add authentication header management
-- ✅ Create retry logic with exponential backoff
-- ✅ Handle rate limiting and API errors gracefully
-- ✅ Support custom HTTP client injection for testing
-
-### Phase 3: Core API Implementation ✅
-**Status:** Complete
-- ✅ Implement ChatComplete method for chat completions endpoint
-- ✅ Implement Complete method for legacy completions endpoint
-- ✅ Add all optional parameters support (temperature, top_p, etc.)
-- ✅ Ensure proper request validation
-- ✅ Handle both streaming and non-streaming responses
-
-### Phase 4: Streaming Support ✅
-**Status:** Complete
-- ✅ Build SSE parser from scratch (no external dependencies)
-- ✅ Create streaming response types with channel-based API
-- ✅ Implement proper connection management and cleanup
-- ✅ Add context cancellation support for streams
-- ✅ Handle streaming errors and reconnection logic
-
-### Phase 5: Production Readiness ✅
-**Status:** Complete
-- ✅ Write comprehensive unit tests with mocked responses
-- ✅ Add integration tests (with build tags)
-- ✅ Create detailed usage examples for common scenarios
-- ✅ Benchmark performance-critical paths
-- ✅ Complete API documentation with godoc comments
-
 ## API Design
 
 ### Client Initialization
@@ -232,26 +190,6 @@ See the [app attribution example](examples/app-attribution/main.go) for more det
 
 - Go 1.25.1
 - No external dependencies
-
-## Documentation
-
-For detailed API documentation and usage examples, see [DOCUMENTATION.md](DOCUMENTATION.md).
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This is free and unencumbered software released into the public domain.
-
-Anyone is free to copy, modify, publish, use, compile, sell, or distribute this software, either in source code form or as a compiled binary, for any purpose, commercial or non-commercial, and by any means.
-
-In jurisdictions that recognize copyright laws, the author or authors of this software dedicate any and all copyright interest in the software to the public domain. We make this dedication for the benefit of the public at large and to the detriment of our heirs and successors. We intend this dedication to be an overt act of relinquishment in perpetuity of all present and future rights to this software under copyright law.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-For more information, please refer to <https://unlicense.org>
 
 ## Status
 
@@ -919,3 +857,11 @@ go run examples/transforms/main.go
 # Run web search examples
 go run examples/web_search/main.go
 ```
+
+## Documentation
+
+For detailed API documentation and usage examples, see [DOCUMENTATION.md](DOCUMENTATION.md).
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
