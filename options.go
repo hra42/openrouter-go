@@ -159,6 +159,21 @@ func WithToolChoice(toolChoice interface{}) ChatCompletionOption {
 	}
 }
 
+// WithParallelToolCalls controls whether multiple tools can be called in parallel.
+// Default is true for most models that support tool calling.
+func WithParallelToolCalls(parallel *bool) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.ParallelToolCalls = parallel
+	}
+}
+
+// WithMessages sets the messages for the chat completion request.
+func WithMessages(messages []Message) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.Messages = messages
+	}
+}
+
 // WithResponseFormat sets the response format.
 func WithResponseFormat(format ResponseFormat) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
