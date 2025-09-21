@@ -3,6 +3,7 @@ package openrouter
 import (
 	"context"
 	"fmt"
+	"strings"
 )
 
 // ChatComplete sends a chat completion request to the OpenRouter API.
@@ -23,6 +24,9 @@ func (c *Client) ChatComplete(ctx context.Context, messages []Message, opts ...C
 	for _, opt := range opts {
 		opt(req)
 	}
+
+	// Handle model suffixes
+	req.Model = c.handleModelSuffix(req.Model, req)
 
 	// Ensure model is set
 	if req.Model == "" {
@@ -58,6 +62,9 @@ func (c *Client) ChatCompleteStream(ctx context.Context, messages []Message, opt
 	for _, opt := range opts {
 		opt(req)
 	}
+
+	// Handle model suffixes
+	req.Model = c.handleModelSuffix(req.Model, req)
 
 	// Ensure model is set
 	if req.Model == "" {
@@ -201,4 +208,24 @@ func CreateMultiModalMessage(role string, text string, imageURL string) Message 
 			{Type: "image_url", ImageURL: &ImageURL{URL: imageURL}},
 		},
 	}
+}
+
+// handleModelSuffix processes model suffixes like :nitro and :floor
+func (c *Client) handleModelSuffix(model string, req *ChatCompletionRequest) string {
+	if strings.HasSuffix(model, ":nitro") {
+		// Remove suffix and apply throughput sorting
+		model = strings.TrimSuffix(model, ":nitro")
+		if req.Provider == nil {
+			req.Provider = &Provider{}
+		}
+		req.Provider.Sort = "throughput"
+	} else if strings.HasSuffix(model, ":floor") {
+		// Remove suffix and apply price sorting
+		model = strings.TrimSuffix(model, ":floor")
+		if req.Provider == nil {
+			req.Provider = &Provider{}
+		}
+		req.Provider.Sort = "price"
+	}
+	return model
 }

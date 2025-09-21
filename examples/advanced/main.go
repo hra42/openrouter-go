@@ -257,12 +257,13 @@ func providerPreferences(apiKey string) {
 	client := openrouter.NewClient(apiKey)
 
 	// Configure provider preferences
+	trueVal := true
 	provider := openrouter.Provider{
 		Order:             []string{"OpenAI", "Anthropic"},
-		RequireParameters: true,
+		RequireParameters: &trueVal,
 		DataCollection:    "deny",
-		AllowFallbacks:    true,
-		IgnoreProviders:   []string{"Cohere"},
+		AllowFallbacks:    &trueVal,
+		Ignore:            []string{"Cohere"},
 	}
 
 	messages := []openrouter.Message{

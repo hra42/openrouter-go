@@ -3,6 +3,7 @@ package openrouter
 import (
 	"context"
 	"fmt"
+	"strings"
 )
 
 // Complete sends a legacy completion request to the OpenRouter API.
@@ -23,6 +24,9 @@ func (c *Client) Complete(ctx context.Context, prompt string, opts ...Completion
 	for _, opt := range opts {
 		opt(req)
 	}
+
+	// Handle model suffixes
+	req.Model = c.handleCompletionModelSuffix(req.Model, req)
 
 	// Ensure model is set
 	if req.Model == "" {
@@ -58,6 +62,9 @@ func (c *Client) CompleteStream(ctx context.Context, prompt string, opts ...Comp
 	for _, opt := range opts {
 		opt(req)
 	}
+
+	// Handle model suffixes
+	req.Model = c.handleCompletionModelSuffix(req.Model, req)
 
 	// Ensure model is set
 	if req.Model == "" {
@@ -149,4 +156,24 @@ func (c *Client) CompleteWithExamples(ctx context.Context, instruction string, e
 	fullPrompt += fmt.Sprintf("\n\nNow: %s", prompt)
 
 	return c.Complete(ctx, fullPrompt, opts...)
+}
+
+// handleCompletionModelSuffix processes model suffixes like :nitro and :floor for completion requests
+func (c *Client) handleCompletionModelSuffix(model string, req *CompletionRequest) string {
+	if strings.HasSuffix(model, ":nitro") {
+		// Remove suffix and apply throughput sorting
+		model = strings.TrimSuffix(model, ":nitro")
+		if req.Provider == nil {
+			req.Provider = &Provider{}
+		}
+		req.Provider.Sort = "throughput"
+	} else if strings.HasSuffix(model, ":floor") {
+		// Remove suffix and apply price sorting
+		model = strings.TrimSuffix(model, ":floor")
+		if req.Provider == nil {
+			req.Provider = &Provider{}
+		}
+		req.Provider.Sort = "price"
+	}
+	return model
 }
