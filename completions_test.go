@@ -306,3 +306,65 @@ Now: Good morning`
 		t.Errorf("unexpected response: %q", resp.Choices[0].Text)
 	}
 }
+
+func TestHandleCompletionModelSuffix(t *testing.T) {
+	client := &Client{}
+
+	tests := []struct {
+		name         string
+		model        string
+		expectedModel string
+		expectedSort  string
+	}{
+		{
+			name:         "nitro suffix",
+			model:        "openai/gpt-3.5-turbo-instruct:nitro",
+			expectedModel: "openai/gpt-3.5-turbo-instruct",
+			expectedSort:  "throughput",
+		},
+		{
+			name:         "floor suffix",
+			model:        "openai/gpt-3.5-turbo-instruct:floor",
+			expectedModel: "openai/gpt-3.5-turbo-instruct",
+			expectedSort:  "price",
+		},
+		{
+			name:         "no suffix",
+			model:        "openai/gpt-3.5-turbo-instruct",
+			expectedModel: "openai/gpt-3.5-turbo-instruct",
+			expectedSort:  "",
+		},
+		{
+			name:         "model with colon in name",
+			model:        "org:custom:model",
+			expectedModel: "org:custom:model",
+			expectedSort:  "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &CompletionRequest{
+				Model: tt.model,
+			}
+
+			actualModel := client.handleCompletionModelSuffix(tt.model, req)
+
+			if actualModel != tt.expectedModel {
+				t.Errorf("expected model %q, got %q", tt.expectedModel, actualModel)
+			}
+
+			if tt.expectedSort != "" {
+				if req.Provider == nil {
+					t.Error("expected Provider to be set")
+				} else if req.Provider.Sort != tt.expectedSort {
+					t.Errorf("expected Sort %q, got %q", tt.expectedSort, req.Provider.Sort)
+				}
+			} else {
+				if req.Provider != nil && req.Provider.Sort != "" {
+					t.Errorf("expected no Sort, got %q", req.Provider.Sort)
+				}
+			}
+		})
+	}
+}

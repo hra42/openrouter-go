@@ -334,3 +334,65 @@ func TestMessageHelpers(t *testing.T) {
 		t.Error("CreateMultiModalMessage failed: wrong image part")
 	}
 }
+
+func TestHandleModelSuffix(t *testing.T) {
+	client := &Client{}
+
+	tests := []struct {
+		name         string
+		model        string
+		expectedModel string
+		expectedSort  string
+	}{
+		{
+			name:         "nitro suffix",
+			model:        "meta-llama/llama-3.1-70b-instruct:nitro",
+			expectedModel: "meta-llama/llama-3.1-70b-instruct",
+			expectedSort:  "throughput",
+		},
+		{
+			name:         "floor suffix",
+			model:        "meta-llama/llama-3.1-70b-instruct:floor",
+			expectedModel: "meta-llama/llama-3.1-70b-instruct",
+			expectedSort:  "price",
+		},
+		{
+			name:         "no suffix",
+			model:        "meta-llama/llama-3.1-70b-instruct",
+			expectedModel: "meta-llama/llama-3.1-70b-instruct",
+			expectedSort:  "",
+		},
+		{
+			name:         "model with colon but not suffix",
+			model:        "custom:model:v1",
+			expectedModel: "custom:model:v1",
+			expectedSort:  "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &ChatCompletionRequest{
+				Model: tt.model,
+			}
+
+			actualModel := client.handleModelSuffix(tt.model, req)
+
+			if actualModel != tt.expectedModel {
+				t.Errorf("expected model %q, got %q", tt.expectedModel, actualModel)
+			}
+
+			if tt.expectedSort != "" {
+				if req.Provider == nil {
+					t.Error("expected Provider to be set")
+				} else if req.Provider.Sort != tt.expectedSort {
+					t.Errorf("expected Sort %q, got %q", tt.expectedSort, req.Provider.Sort)
+				}
+			} else {
+				if req.Provider != nil && req.Provider.Sort != "" {
+					t.Errorf("expected no Sort, got %q", req.Provider.Sort)
+				}
+			}
+		})
+	}
+}
