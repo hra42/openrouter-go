@@ -8,6 +8,13 @@ import (
 // ClientOption is a functional option for configuring the Client.
 type ClientOption func(*Client)
 
+// WithAPIKey sets the API key for the client.
+func WithAPIKey(apiKey string) ClientOption {
+	return func(c *Client) {
+		c.apiKey = apiKey
+	}
+}
+
 // WithBaseURL sets a custom base URL for the API.
 func WithBaseURL(baseURL string) ClientOption {
 	return func(c *Client) {
@@ -149,6 +156,21 @@ func WithTools(tools ...Tool) ChatCompletionOption {
 func WithToolChoice(toolChoice interface{}) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
 		r.ToolChoice = toolChoice
+	}
+}
+
+// WithParallelToolCalls controls whether multiple tools can be called in parallel.
+// Default is true for most models that support tool calling.
+func WithParallelToolCalls(parallel *bool) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.ParallelToolCalls = parallel
+	}
+}
+
+// WithMessages sets the messages for the chat completion request.
+func WithMessages(messages []Message) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.Messages = messages
 	}
 }
 

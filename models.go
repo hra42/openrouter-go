@@ -28,6 +28,7 @@ type ChatCompletionRequest struct {
 	ResponseFormat   *ResponseFormat        `json:"response_format,omitempty"`
 	Tools            []Tool                 `json:"tools,omitempty"`
 	ToolChoice       interface{}            `json:"tool_choice,omitempty"`
+	ParallelToolCalls *bool                 `json:"parallel_tool_calls,omitempty"`
 	Provider         *Provider              `json:"provider,omitempty"`
 	Transforms       []string               `json:"transforms,omitempty"`
 	Models           []string               `json:"models,omitempty"`

@@ -14,6 +14,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Extensive configuration options via functional options pattern
 - ✅ Per-request Zero Data Retention (ZDR) enforcement
 - ✅ Structured outputs with JSON schema validation
+- ✅ Tool/Function calling support with streaming
 
 ## Installation
 
@@ -33,11 +34,18 @@ import (
 )
 
 func main() {
-    client := openrouter.NewClient("your-api-key")
+    client := openrouter.NewClient(
+        openrouter.WithAPIKey("your-api-key"),
+    )
 
-    response, err := client.ChatComplete(context.Background(), []openrouter.Message{
+    messages := []openrouter.Message{
         {Role: "user", Content: "Hello, how are you?"},
-    }, openrouter.WithModel("openai/gpt-4"))
+    }
+
+    response, err := client.ChatComplete(context.Background(),
+        openrouter.WithModel("openai/gpt-4o"),
+        openrouter.WithMessages(messages),
+    )
 
     if err != nil {
         panic(err)
@@ -175,6 +183,7 @@ openrouter-go/
 │   ├── basic/             # Basic usage examples
 │   ├── streaming/         # Streaming examples
 │   ├── structured-output/ # Structured outputs with JSON schema
+│   ├── tool-calling/      # Tool/function calling examples
 │   └── advanced/          # Advanced configuration examples
 └── internal/
     └── sse/           # Internal SSE parser implementation
@@ -448,6 +457,216 @@ Not all models support structured outputs. To ensure compatibility:
 - Test your schemas with the specific models you plan to use
 - Handle parsing errors gracefully as a fallback
 
+### Tool/Function Calling
+
+The library provides full support for tool/function calling, allowing models to use external tools and functions during generation. This feature enables building powerful AI agents and assistants.
+
+#### Basic Tool Calling
+
+```go
+// Define a tool
+tools := []openrouter.Tool{
+    {
+        Type: "function",
+        Function: openrouter.Function{
+            Name:        "get_weather",
+            Description: "Get the current weather for a location",
+            Parameters: map[string]interface{}{
+                "type": "object",
+                "properties": map[string]interface{}{
+                    "location": map[string]interface{}{
+                        "type":        "string",
+                        "description": "City name or zip code",
+                    },
+                    "unit": map[string]interface{}{
+                        "type":        "string",
+                        "enum":        []string{"celsius", "fahrenheit"},
+                        "description": "Temperature unit",
+                    },
+                },
+                "required": []string{"location"},
+            },
+        },
+    },
+}
+
+// Make a request with tools
+messages := []openrouter.Message{
+    {Role: "user", Content: "What's the weather in San Francisco?"},
+}
+
+response, err := client.ChatComplete(ctx,
+    openrouter.WithModel("openai/gpt-4o"),
+    openrouter.WithMessages(messages),
+    openrouter.WithTools(tools),
+)
+
+// Check for tool calls in the response
+if len(response.Choices[0].Message.ToolCalls) > 0 {
+    // Process tool calls
+    for _, toolCall := range response.Choices[0].Message.ToolCalls {
+        // Parse arguments
+        var args map[string]interface{}
+        json.Unmarshal([]byte(toolCall.Function.Arguments), &args)
+
+        // Execute the tool (your implementation)
+        result := executeWeatherTool(args)
+
+        // Add tool result to messages
+        messages = append(messages, response.Choices[0].Message)
+        messages = append(messages, openrouter.Message{
+            Role:       "tool",
+            Content:    result,
+            ToolCallID: toolCall.ID,
+        })
+    }
+
+    // Get final response with tool results
+    finalResponse, _ := client.ChatComplete(ctx,
+        openrouter.WithModel("openai/gpt-4o"),
+        openrouter.WithMessages(messages),
+        openrouter.WithTools(tools),
+    )
+}
+```
+
+#### Tool Choice Control
+
+```go
+// Let the model decide (default)
+response, _ := client.ChatComplete(ctx,
+    openrouter.WithMessages(messages),
+    openrouter.WithTools(tools),
+    openrouter.WithToolChoice("auto"),
+)
+
+// Disable tool usage
+response, _ := client.ChatComplete(ctx,
+    openrouter.WithMessages(messages),
+    openrouter.WithTools(tools),
+    openrouter.WithToolChoice("none"),
+)
+
+// Force specific tool usage
+response, _ := client.ChatComplete(ctx,
+    openrouter.WithMessages(messages),
+    openrouter.WithTools(tools),
+    openrouter.WithToolChoice(map[string]interface{}{
+        "type": "function",
+        "function": map[string]interface{}{
+            "name": "get_weather",
+        },
+    }),
+)
+```
+
+#### Parallel Tool Calls
+
+Control whether multiple tools can be called simultaneously:
+
+```go
+// Disable parallel tool calls (sequential only)
+parallelCalls := false
+response, _ := client.ChatComplete(ctx,
+    openrouter.WithMessages(messages),
+    openrouter.WithTools(tools),
+    openrouter.WithParallelToolCalls(&parallelCalls),
+)
+```
+
+#### Streaming with Tool Calls
+
+Tool calls are fully supported in streaming mode:
+
+```go
+stream, err := client.ChatCompleteStream(ctx,
+    openrouter.WithModel("openai/gpt-4o"),
+    openrouter.WithMessages(messages),
+    openrouter.WithTools(tools),
+)
+
+var toolCalls []openrouter.ToolCall
+for event := range stream.Events() {
+    // Parse streaming data
+    var data map[string]interface{}
+    json.Unmarshal([]byte(event.Data), &data)
+
+    if choices, ok := data["choices"].([]interface{}); ok && len(choices) > 0 {
+        choice := choices[0].(map[string]interface{})
+
+        // Check for tool calls in delta
+        if delta, ok := choice["delta"].(map[string]interface{}); ok {
+            if toolCallsDelta, ok := delta["tool_calls"].([]interface{}); ok {
+                // Accumulate tool call information
+                // See examples/tool-calling/streaming.go for complete implementation
+            }
+        }
+
+        // Check finish reason
+        if finishReason, ok := choice["finish_reason"].(string); ok {
+            if finishReason == "tool_calls" {
+                // Process accumulated tool calls
+            }
+        }
+    }
+}
+```
+
+#### Multi-Tool Workflows
+
+Design tools that work well together:
+
+```go
+tools := []openrouter.Tool{
+    {
+        Type: "function",
+        Function: openrouter.Function{
+            Name:        "search_products",
+            Description: "Search for products in the catalog",
+            // Parameters...
+        },
+    },
+    {
+        Type: "function",
+        Function: openrouter.Function{
+            Name:        "check_inventory",
+            Description: "Check inventory for a product",
+            // Parameters...
+        },
+    },
+    {
+        Type: "function",
+        Function: openrouter.Function{
+            Name:        "place_order",
+            Description: "Place an order for a product",
+            // Parameters...
+        },
+    },
+}
+
+// The model can chain these tools naturally:
+// search → check inventory → place order
+```
+
+#### Model Support
+
+Tool calling is supported by many models. You can find compatible models by filtering on [openrouter.ai/models?supported_parameters=tools](https://openrouter.ai/models?supported_parameters=tools).
+
+Popular models with tool support include:
+- OpenAI GPT-4o and GPT-4o-mini
+- Anthropic Claude 3.5 Sonnet
+- Google Gemini models
+- Many open-source models via various providers
+
+#### Best Practices for Tool Calling
+
+- **Clear Descriptions**: Provide detailed descriptions for tools and parameters
+- **Error Handling**: Always validate tool arguments before execution
+- **Tool Results**: Return structured, informative results from tools
+- **Context Preservation**: Maintain full conversation history including tool calls
+- **Streaming**: Handle tool calls appropriately when streaming responses
+- **Testing**: Test tool interactions with different models as behavior may vary
+
 ## Examples
 
 The `examples/` directory contains comprehensive examples:
@@ -455,7 +674,8 @@ The `examples/` directory contains comprehensive examples:
 - **basic/** - Simple usage examples for common tasks
 - **streaming/** - Real-time streaming response handling
 - **structured-output/** - JSON schema validation and structured responses
-- **advanced/** - Advanced features like function calling, rate limiting, and custom configuration
+- **tool-calling/** - Complete tool/function calling examples with streaming
+- **advanced/** - Advanced features like rate limiting and custom configuration
 
 To run an example:
 
@@ -474,4 +694,10 @@ go run examples/advanced/main.go
 
 # Run structured output examples
 go run examples/structured-output/main.go
+
+# Run tool calling examples
+go run examples/tool-calling/main.go
+
+# Run streaming tool calling example
+go run examples/tool-calling/streaming.go
 ```
