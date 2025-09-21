@@ -174,24 +174,28 @@ func jsonResponseFormat(apiKey string) {
 	client := openrouter.NewClient(apiKey)
 
 	responseFormat := openrouter.ResponseFormat{
-		Type: "json_object",
-		JSONSchema: map[string]interface{}{
-			"type": "object",
-			"properties": map[string]interface{}{
-				"name": map[string]interface{}{
-					"type": "string",
-				},
-				"age": map[string]interface{}{
-					"type": "number",
-				},
-				"skills": map[string]interface{}{
-					"type": "array",
-					"items": map[string]interface{}{
+		Type: "json_schema",
+		JSONSchema: &openrouter.JSONSchema{
+			Name:   "person",
+			Strict: true,
+			Schema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"name": map[string]interface{}{
 						"type": "string",
 					},
+					"age": map[string]interface{}{
+						"type": "number",
+					},
+					"skills": map[string]interface{}{
+						"type": "array",
+						"items": map[string]interface{}{
+							"type": "string",
+						},
+					},
 				},
+				"required": []string{"name", "age", "skills"},
 			},
-			"required": []string{"name", "age", "skills"},
 		},
 	}
 

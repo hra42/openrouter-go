@@ -58,6 +58,7 @@ type CompletionRequest struct {
 	N                 *int                   `json:"n,omitempty"`
 	BestOf            *int                   `json:"best_of,omitempty"`
 	Suffix            *string                `json:"suffix,omitempty"`
+	ResponseFormat    *ResponseFormat        `json:"response_format,omitempty"`
 	Provider          *Provider              `json:"provider,omitempty"`
 	Transforms        []string               `json:"transforms,omitempty"`
 	Models            []string               `json:"models,omitempty"`
@@ -92,8 +93,15 @@ type ImageURL struct {
 
 // ResponseFormat specifies the format of the response.
 type ResponseFormat struct {
-	Type       string                 `json:"type"`
-	JSONSchema map[string]interface{} `json:"json_schema,omitempty"`
+	Type       string      `json:"type"`
+	JSONSchema *JSONSchema `json:"json_schema,omitempty"`
+}
+
+// JSONSchema defines the structure for structured output format.
+type JSONSchema struct {
+	Name   string                 `json:"name"`
+	Strict bool                   `json:"strict"`
+	Schema map[string]interface{} `json:"schema"`
 }
 
 // Tool represents a tool/function that can be called.

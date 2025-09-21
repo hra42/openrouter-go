@@ -13,6 +13,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Thread-safe client operations
 - ✅ Extensive configuration options via functional options pattern
 - ✅ Per-request Zero Data Retention (ZDR) enforcement
+- ✅ Structured outputs with JSON schema validation
 
 ## Installation
 
@@ -171,9 +172,10 @@ openrouter-go/
 ├── errors.go          # Custom error types
 ├── retry.go           # Retry and backoff logic
 ├── examples/
-│   ├── basic/         # Basic usage examples
-│   ├── streaming/     # Streaming examples
-│   └── advanced/      # Advanced configuration examples
+│   ├── basic/             # Basic usage examples
+│   ├── streaming/         # Streaming examples
+│   ├── structured-output/ # Structured outputs with JSON schema
+│   └── advanced/          # Advanced configuration examples
 └── internal/
     └── sse/           # Internal SSE parser implementation
 ```
@@ -355,12 +357,104 @@ response, err := client.ChatComplete(ctx, messages,
 
 Note: The request-level `zdr` parameter operates as an "OR" with your account-wide ZDR setting. If either is enabled, ZDR enforcement will be applied.
 
+### Structured Outputs
+
+The library supports structured outputs for compatible models, ensuring responses follow a specific JSON Schema format. This feature is useful when you need consistent, well-formatted responses that can be reliably parsed by your application.
+
+#### Basic Structured Output
+
+```go
+// Define a JSON schema for the expected response
+weatherSchema := map[string]interface{}{
+    "type": "object",
+    "properties": map[string]interface{}{
+        "location": map[string]interface{}{
+            "type": "string",
+            "description": "City or location name",
+        },
+        "temperature": map[string]interface{}{
+            "type": "number",
+            "description": "Temperature in Celsius",
+        },
+        "conditions": map[string]interface{}{
+            "type": "string",
+            "description": "Weather conditions",
+        },
+    },
+    "required": []string{"location", "temperature", "conditions"},
+    "additionalProperties": false,
+}
+
+// Use structured output with chat completion
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("openai/gpt-4o"),
+    openrouter.WithJSONSchema("weather", true, weatherSchema),
+    openrouter.WithRequireParameters(true), // Ensure model supports structured outputs
+)
+
+// The response will be valid JSON matching your schema
+var weatherData map[string]interface{}
+json.Unmarshal([]byte(response.Choices[0].Message.Content.(string)), &weatherData)
+```
+
+#### Simplified JSON Mode
+
+```go
+// For simpler cases, use JSON mode without a strict schema
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("openai/gpt-4o"),
+    openrouter.WithJSONMode(), // Returns JSON without enforcing a schema
+)
+```
+
+#### Streaming with Structured Output
+
+```go
+// Structured outputs work with streaming too
+stream, err := client.ChatCompleteStream(ctx, messages,
+    openrouter.WithModel("openai/gpt-4o"),
+    openrouter.WithJSONSchema("response", true, schema),
+)
+
+var fullContent string
+for event := range stream.Events() {
+    if len(event.Choices) > 0 && event.Choices[0].Delta != nil {
+        if content, ok := event.Choices[0].Delta.Content.(string); ok {
+            fullContent += content
+        }
+    }
+}
+
+// Parse the complete JSON response
+var result map[string]interface{}
+json.Unmarshal([]byte(fullContent), &result)
+```
+
+#### Model Support
+
+Not all models support structured outputs. To ensure compatibility:
+
+1. Check the [models page](https://openrouter.ai/models?supported_parameters=structured_outputs) for support
+2. Use `WithRequireParameters(true)` to route only to compatible providers
+3. Models known to support structured outputs include:
+   - OpenAI models (GPT-4o and later)
+   - Many Fireworks-provided models
+
+#### Best Practices
+
+- Always set `strict: true` in your JSON schema for exact compliance
+- Include clear descriptions in schema properties to guide the model
+- Use `WithRequireParameters(true)` to ensure routing to compatible providers
+- Test your schemas with the specific models you plan to use
+- Handle parsing errors gracefully as a fallback
+
 ## Examples
 
 The `examples/` directory contains comprehensive examples:
 
 - **basic/** - Simple usage examples for common tasks
 - **streaming/** - Real-time streaming response handling
+- **structured-output/** - JSON schema validation and structured responses
 - **advanced/** - Advanced features like function calling, rate limiting, and custom configuration
 
 To run an example:
@@ -377,4 +471,7 @@ go run examples/streaming/main.go
 
 # Run advanced examples
 go run examples/advanced/main.go
+
+# Run structured output examples
+go run examples/structured-output/main.go
 ```
