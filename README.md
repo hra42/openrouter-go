@@ -219,6 +219,16 @@ go test -race ./...
 go test -run TestChatComplete
 ```
 
+### CI/CD with Jenkins
+
+The project includes a Jenkinsfile for continuous integration. The pipeline:
+- Runs all unit tests
+- Performs coverage analysis
+- Executes race condition detection
+- Runs integration tests with the OpenRouter API
+
+To use the Jenkins pipeline, ensure you have configured the `openrouter-api-key` credential in your Jenkins instance.
+
 ### Message Transforms
 
 The library supports message transforms to automatically handle prompts that exceed a model's context window. This feature uses "middle-out" compression to remove content from the middle of long prompts where models typically pay less attention.
