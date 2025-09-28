@@ -13,30 +13,6 @@ pipeline {
             }
         }
 
-        stage('Setup Go') {
-            steps {
-                script {
-                    def goVersion = '1.23'
-                    sh """
-                        if ! command -v go &> /dev/null; then
-                            echo "Installing Go ${goVersion}..."
-                            wget -q https://go.dev/dl/go${goVersion}.linux-amd64.tar.gz
-                            sudo tar -C /usr/local -xzf go${goVersion}.linux-amd64.tar.gz
-                            export PATH=\$PATH:/usr/local/go/bin
-                        fi
-                        go version
-                    """
-                }
-            }
-        }
-
-        stage('Dependencies') {
-            steps {
-                sh 'go mod download'
-                sh 'go mod tidy'
-            }
-        }
-
         stage('Unit Tests') {
             steps {
                 sh 'go test ./...'
