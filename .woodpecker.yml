@@ -20,7 +20,7 @@ steps:
     environment:
       CGO_ENABLED: "1"
     commands:
-      - app add --no-cache gcc musl-dev
+      - apk add --no-cache gcc musl-dev
       - go test -race ./...
 
   specific-tests:
