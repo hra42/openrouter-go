@@ -40,8 +40,3 @@ steps:
     commands:
       - apk add --no-cache gcc musl-dev
       - go run cmd/openrouter-test/main.go -key $ORAPIKEY -test all -model "google/gemini-2.5-flash-lite"
-
-when:
-  event:
-    - push
-    - pull_request
