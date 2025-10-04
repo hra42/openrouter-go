@@ -417,6 +417,47 @@ This endpoint is useful for:
 - Implementing key rotation strategies
 - Building API key management dashboards
 
+### Getting API Key by Hash
+
+Retrieve details about a specific API key by its hash. Requires a Provisioning API key:
+
+```go
+// Get key details by hash (hash obtained from ListKeys or key creation)
+hash := "abc123hash"
+keyDetails, err := client.GetKeyByHash(ctx, hash)
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Label: %s\n", keyDetails.Data.Label)
+fmt.Printf("Name: %s\n", keyDetails.Data.Name)
+fmt.Printf("Limit: $%.2f\n", keyDetails.Data.Limit)
+fmt.Printf("Disabled: %v\n", keyDetails.Data.Disabled)
+fmt.Printf("Created: %s\n", keyDetails.Data.CreatedAt)
+fmt.Printf("Updated: %s\n", keyDetails.Data.UpdatedAt)
+
+// Example: Get hash from list and retrieve details
+keys, err := client.ListKeys(ctx, nil)
+if err != nil {
+    log.Fatal(err)
+}
+
+if len(keys.Data) > 0 {
+    firstHash := keys.Data[0].Hash
+    details, err := client.GetKeyByHash(ctx, firstHash)
+    // ...
+}
+```
+
+**Important**: This endpoint requires a provisioning key (not a regular inference API key). Create one at: https://openrouter.ai/settings/provisioning-keys
+
+This endpoint is useful for:
+- Inspecting individual API key details
+- Verifying key status and configuration
+- Monitoring specific key usage patterns
+- Building key detail views in dashboards
+- Auditing key configuration changes
+
 ### Creating API Keys
 
 Create new API keys programmatically with custom limits and settings. Requires a Provisioning API key:

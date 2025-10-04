@@ -115,6 +115,27 @@ func main() {
 	}
 	fmt.Printf("Disabled keys found: %d\n", disabledCount)
 
+	// Example 4: Get details about a specific key by hash
+	if len(resp.Data) > 0 {
+		fmt.Println("\n=== Example: Getting Specific Key Details by Hash ===")
+		firstKey := resp.Data[0]
+		fmt.Printf("Looking up key with hash: %s\n", firstKey.Hash)
+
+		keyDetails, err := client.GetKeyByHash(context.Background(), firstKey.Hash)
+		if err != nil {
+			log.Fatalf("Error getting key by hash: %v\n", err)
+		}
+
+		fmt.Println("\nKey Details:")
+		fmt.Printf("  Label: %s\n", keyDetails.Data.Label)
+		fmt.Printf("  Name: %s\n", keyDetails.Data.Name)
+		fmt.Printf("  Limit: $%.2f\n", keyDetails.Data.Limit)
+		fmt.Printf("  Disabled: %v\n", keyDetails.Data.Disabled)
+		fmt.Printf("  Created: %s\n", keyDetails.Data.CreatedAt)
+		fmt.Printf("  Updated: %s\n", keyDetails.Data.UpdatedAt)
+		fmt.Printf("  Hash: %s\n", keyDetails.Data.Hash)
+	}
+
 	// Warning if all keys are disabled
 	if activeKeys == 0 && len(resp.Data) > 0 {
 		fmt.Println("\n⚠️  WARNING: All API keys are disabled!")

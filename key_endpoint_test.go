@@ -645,3 +645,186 @@ func TestCreateKeyError(t *testing.T) {
 		t.Errorf("expected error message 'Provisioning key required', got %q", reqErr.Message)
 	}
 }
+
+func TestGetKeyByHash(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify request method and path
+		if r.Method != "GET" {
+			t.Errorf("expected GET request, got %s", r.Method)
+		}
+		expectedPath := "/keys/testhash123"
+		if r.URL.Path != expectedPath {
+			t.Errorf("expected path %s, got %s", expectedPath, r.URL.Path)
+		}
+
+		// Verify Authorization header
+		auth := r.Header.Get("Authorization")
+		if auth != "Bearer test-key" {
+			t.Errorf("expected Authorization header 'Bearer test-key', got %q", auth)
+		}
+
+		// Send response
+		response := GetKeyByHashResponse{
+			Data: APIKey{
+				Name:      "sk-or-v1-abc123",
+				Label:     "Test Key",
+				Limit:     100.0,
+				Disabled:  false,
+				CreatedAt: "2024-01-01T00:00:00Z",
+				UpdatedAt: "2024-01-02T00:00:00Z",
+				Hash:      "testhash123",
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	resp, err := client.GetKeyByHash(context.Background(), "testhash123")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Validate response
+	if resp.Data.Label != "Test Key" {
+		t.Errorf("expected Label 'Test Key', got %q", resp.Data.Label)
+	}
+	if resp.Data.Limit != 100.0 {
+		t.Errorf("expected Limit 100.0, got %f", resp.Data.Limit)
+	}
+	if resp.Data.Hash != "testhash123" {
+		t.Errorf("expected Hash 'testhash123', got %q", resp.Data.Hash)
+	}
+	if resp.Data.Disabled != false {
+		t.Errorf("expected Disabled false, got %t", resp.Data.Disabled)
+	}
+}
+
+func TestGetKeyByHashDisabled(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		response := GetKeyByHashResponse{
+			Data: APIKey{
+				Name:      "sk-or-v1-disabled",
+				Label:     "Disabled Key",
+				Limit:     50.0,
+				Disabled:  true,
+				CreatedAt: "2024-01-01T00:00:00Z",
+				UpdatedAt: "2024-01-03T00:00:00Z",
+				Hash:      "disabledhash",
+			},
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	resp, err := client.GetKeyByHash(context.Background(), "disabledhash")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if resp.Data.Disabled != true {
+		t.Errorf("expected Disabled true, got %t", resp.Data.Disabled)
+	}
+	if resp.Data.Label != "Disabled Key" {
+		t.Errorf("expected Label 'Disabled Key', got %q", resp.Data.Label)
+	}
+}
+
+func TestGetKeyByHashValidation(t *testing.T) {
+	client := NewClient(
+		WithAPIKey("test-key"),
+	)
+
+	// Test empty hash
+	_, err := client.GetKeyByHash(context.Background(), "")
+	if err == nil {
+		t.Fatal("expected error for empty hash, got nil")
+	}
+	if !IsValidationError(err) {
+		t.Errorf("expected ValidationError, got %T", err)
+	}
+}
+
+func TestGetKeyByHashNotFound(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(ErrorResponse{
+			Error: APIError{
+				Message: "API key not found",
+				Type:    "not_found_error",
+				Code:    "key_not_found",
+			},
+		})
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	_, err := client.GetKeyByHash(context.Background(), "nonexistenthash")
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	reqErr, ok := err.(*RequestError)
+	if !ok {
+		t.Fatalf("expected RequestError, got %T", err)
+	}
+	if reqErr.StatusCode != http.StatusNotFound {
+		t.Errorf("expected status code %d, got %d", http.StatusNotFound, reqErr.StatusCode)
+	}
+	if reqErr.Message != "API key not found" {
+		t.Errorf("expected error message 'API key not found', got %q", reqErr.Message)
+	}
+}
+
+func TestGetKeyByHashUnauthorized(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(ErrorResponse{
+			Error: APIError{
+				Message: "Provisioning key required",
+				Type:    "authentication_error",
+				Code:    "invalid_key_type",
+			},
+		})
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("invalid-key"),
+		WithBaseURL(server.URL),
+	)
+
+	_, err := client.GetKeyByHash(context.Background(), "somehash")
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	reqErr, ok := err.(*RequestError)
+	if !ok {
+		t.Fatalf("expected RequestError, got %T", err)
+	}
+	if reqErr.StatusCode != http.StatusUnauthorized {
+		t.Errorf("expected status code %d, got %d", http.StatusUnauthorized, reqErr.StatusCode)
+	}
+	if reqErr.Message != "Provisioning key required" {
+		t.Errorf("expected error message 'Provisioning key required', got %q", reqErr.Message)
+	}
+}

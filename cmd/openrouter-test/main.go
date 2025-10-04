@@ -2696,6 +2696,56 @@ func runListKeysTest(ctx context.Context, client *openrouter.Client, verbose boo
 		} else {
 			fmt.Printf("\n   ℹ️  %d active, %d disabled API keys\n", activeCount, len(resp.Data)-activeCount)
 		}
+
+		// Test GetKeyByHash with the first key
+		if len(resp.Data) > 0 {
+			firstHash := resp.Data[0].Hash
+			fmt.Printf("\n   Testing GetKeyByHash with hash: %s\n", firstHash)
+			start = time.Now()
+			keyDetails, err := client.GetKeyByHash(ctx, firstHash)
+			elapsed = time.Since(start)
+
+			if err != nil {
+				fmt.Printf("   ❌ Failed to get key by hash: %v\n", err)
+				return false
+			}
+
+			fmt.Printf("   ✅ Retrieved key details by hash (%.2fs)\n", elapsed.Seconds())
+
+			// Validate that the details match
+			if keyDetails.Data.Hash != firstHash {
+				fmt.Printf("   ❌ Hash mismatch: expected %s, got %s\n", firstHash, keyDetails.Data.Hash)
+				return false
+			}
+			if keyDetails.Data.Label != resp.Data[0].Label {
+				fmt.Printf("   ❌ Label mismatch: expected %s, got %s\n", resp.Data[0].Label, keyDetails.Data.Label)
+				return false
+			}
+
+			fmt.Printf("   ✅ GetKeyByHash validation passed\n")
+
+			if verbose {
+				fmt.Printf("\n   Key details retrieved:\n")
+				fmt.Printf("      Hash: %s\n", keyDetails.Data.Hash)
+				fmt.Printf("      Label: %s\n", keyDetails.Data.Label)
+				fmt.Printf("      Name: %s\n", keyDetails.Data.Name)
+				fmt.Printf("      Limit: $%.2f\n", keyDetails.Data.Limit)
+				fmt.Printf("      Disabled: %v\n", keyDetails.Data.Disabled)
+			}
+
+			// Test with empty hash (should fail)
+			fmt.Printf("\n   Testing GetKeyByHash validation...\n")
+			_, err = client.GetKeyByHash(ctx, "")
+			if err == nil {
+				fmt.Printf("   ❌ Should have failed with empty hash\n")
+				return false
+			}
+			if !openrouter.IsValidationError(err) {
+				fmt.Printf("   ❌ Expected ValidationError for empty hash, got %T\n", err)
+				return false
+			}
+			fmt.Printf("   ✅ Empty hash validation works\n")
+		}
 	}
 
 	fmt.Printf("\n✅ List API keys tests completed\n")

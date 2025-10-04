@@ -122,3 +122,33 @@ func (c *Client) CreateKey(ctx context.Context, request *CreateKeyRequest) (*Cre
 
 	return &response, nil
 }
+
+// GetKeyByHash retrieves details about a specific API key by its hash.
+// Requires a Provisioning API key (not a regular inference API key).
+//
+// Example:
+//
+//	ctx := context.Background()
+//	// Get the hash from ListKeys or from key creation
+//	hash := "abc123hash"
+//	keyDetails, err := client.GetKeyByHash(ctx, hash)
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	fmt.Printf("Label: %s\n", keyDetails.Data.Label)
+//	fmt.Printf("Limit: $%.2f\n", keyDetails.Data.Limit)
+//	fmt.Printf("Disabled: %v\n", keyDetails.Data.Disabled)
+func (c *Client) GetKeyByHash(ctx context.Context, hash string) (*GetKeyByHashResponse, error) {
+	if hash == "" {
+		return nil, &ValidationError{Message: "hash is required"}
+	}
+
+	endpoint := fmt.Sprintf("/keys/%s", hash)
+
+	var response GetKeyByHashResponse
+	if err := c.doRequest(ctx, "GET", endpoint, nil, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}

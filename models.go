@@ -518,3 +518,8 @@ type CreateKeyResponse struct {
 	// Key contains the actual API key value (only returned on creation)
 	Key string `json:"key,omitempty"`
 }
+
+// GetKeyByHashResponse represents the response from getting an API key by hash.
+type GetKeyByHashResponse struct {
+	Data APIKey `json:"data"`
+}
