@@ -46,7 +46,7 @@ func TestListModelEndpoints(t *testing.T) {
 						MaxCompletionTokens: &maxCompTokens,
 						MaxPromptTokens:     &maxPromptTokens,
 						SupportedParameters: []string{"temperature", "top_p", "max_tokens"},
-						Status:              "online",
+						Status:              1,
 						UptimeLast30m:       &uptime,
 						Pricing: ModelEndpointPricing{
 							Request:    "0",
@@ -105,8 +105,8 @@ func TestListModelEndpoints(t *testing.T) {
 	if endpoint.ProviderName != "OpenAI" {
 		t.Errorf("expected provider name 'OpenAI', got %q", endpoint.ProviderName)
 	}
-	if endpoint.Status != "online" {
-		t.Errorf("expected status 'online', got %q", endpoint.Status)
+	if endpoint.Status != 1 {
+		t.Errorf("expected status 1, got %f", endpoint.Status)
 	}
 	if endpoint.ContextLength != 8192.0 {
 		t.Errorf("expected context length 8192.0, got %f", endpoint.ContextLength)
@@ -218,7 +218,7 @@ func TestListModelEndpointsMultipleEndpoints(t *testing.T) {
 						ProviderName:        "Anthropic",
 						MaxCompletionTokens: &maxCompTokens,
 						SupportedParameters: []string{"temperature", "top_p", "max_tokens"},
-						Status:              "online",
+						Status:              1,
 						UptimeLast30m:       &uptime1,
 						Pricing: ModelEndpointPricing{
 							Request:    "0",
@@ -233,7 +233,7 @@ func TestListModelEndpointsMultipleEndpoints(t *testing.T) {
 						ProviderName:        "AWS Bedrock",
 						MaxCompletionTokens: &maxCompTokens,
 						SupportedParameters: []string{"temperature", "top_p"},
-						Status:              "online",
+						Status:              1,
 						UptimeLast30m:       &uptime2,
 						Pricing: ModelEndpointPricing{
 							Request:    "0",

@@ -103,7 +103,7 @@ func main() {
 			failed = 1
 		}
 	case "suffix":
-		if runModelSuffixTest(ctx, client, *verbose) {
+		if runModelSuffixTest(ctx, client, *model, *verbose) {
 			success = 1
 		} else {
 			failed = 1
@@ -115,13 +115,13 @@ func main() {
 			failed = 1
 		}
 	case "structured":
-		if runStructuredOutputTest(ctx, client, *verbose) {
+		if runStructuredOutputTest(ctx, client, *model, *verbose) {
 			success = 1
 		} else {
 			failed = 1
 		}
 	case "tools":
-		if runToolCallingTest(ctx, client, *verbose) {
+		if runToolCallingTest(ctx, client, *model, *verbose) {
 			success = 1
 		} else {
 			failed = 1
@@ -133,7 +133,7 @@ func main() {
 			failed = 1
 		}
 	case "websearch":
-		if runWebSearchTest(ctx, client, *verbose) {
+		if runWebSearchTest(ctx, client, *model, *verbose) {
 			success = 1
 		} else {
 			failed = 1
@@ -180,12 +180,12 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, m
 		{"Error Handling", func() bool { return runErrorTest(ctx, client, verbose) }},
 		{"Provider Routing", func() bool { return runProviderRoutingTest(ctx, client, model, maxTokens, verbose) }},
 		{"ZDR", func() bool { return runZDRTest(ctx, client, model, maxTokens, verbose) }},
-		{"Model Suffixes", func() bool { return runModelSuffixTest(ctx, client, verbose) }},
+		{"Model Suffixes", func() bool { return runModelSuffixTest(ctx, client, model, verbose) }},
 		{"Price Constraints", func() bool { return runPriceConstraintTest(ctx, client, model, maxTokens, verbose) }},
-		{"Structured Output", func() bool { return runStructuredOutputTest(ctx, client, verbose) }},
-		{"Tool Calling", func() bool { return runToolCallingTest(ctx, client, verbose) }},
+		{"Structured Output", func() bool { return runStructuredOutputTest(ctx, client, model, verbose) }},
+		{"Tool Calling", func() bool { return runToolCallingTest(ctx, client, model, verbose) }},
 		{"Message Transforms", func() bool { return runTransformsTest(ctx, client, model, verbose) }},
-		{"Web Search", func() bool { return runWebSearchTest(ctx, client, verbose) }},
+		{"Web Search", func() bool { return runWebSearchTest(ctx, client, model, verbose) }},
 		{"List Models", func() bool { return runModelsTest(ctx, client, verbose) }},
 		{"Model Endpoints", func() bool { return runModelEndpointsTest(ctx, client, verbose) }},
 	}
@@ -462,7 +462,7 @@ func runZDRTest(ctx context.Context, client *openrouter.Client, model string, ma
 	return true
 }
 
-func runModelSuffixTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
+func runModelSuffixTest(ctx context.Context, client *openrouter.Client, model string, verbose bool) bool {
 	fmt.Printf("🔄 Test: Model Suffixes (Nitro/Floor)\n")
 
 	messages := []openrouter.Message{
@@ -473,7 +473,7 @@ func runModelSuffixTest(ctx context.Context, client *openrouter.Client, verbose 
 	fmt.Printf("   Testing :nitro suffix...\n")
 	start := time.Now()
 	resp, err := client.ChatComplete(ctx, messages,
-		openrouter.WithModel("meta-llama/llama-3.1-8b-instruct:nitro"),
+		openrouter.WithModel(model+":nitro"),
 		openrouter.WithMaxTokens(10),
 	)
 	elapsed := time.Since(start)
@@ -492,7 +492,7 @@ func runModelSuffixTest(ctx context.Context, client *openrouter.Client, verbose 
 	fmt.Printf("   Testing :floor suffix...\n")
 	start = time.Now()
 	resp, err = client.ChatComplete(ctx, messages,
-		openrouter.WithModel("meta-llama/llama-3.1-8b-instruct:floor"),
+		openrouter.WithModel(model+":floor"),
 		openrouter.WithMaxTokens(10),
 	)
 	elapsed = time.Since(start)
@@ -566,7 +566,7 @@ func runPriceConstraintTest(ctx context.Context, client *openrouter.Client, mode
 	return true
 }
 
-func runStructuredOutputTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
+func runStructuredOutputTest(ctx context.Context, client *openrouter.Client, model string, verbose bool) bool {
 	fmt.Printf("🔄 Test: Structured Output\n")
 
 	// Test 1: Basic structured output with weather data
@@ -604,7 +604,7 @@ func runStructuredOutputTest(ctx context.Context, client *openrouter.Client, ver
 
 	start := time.Now()
 	resp, err := client.ChatComplete(ctx, messages,
-		openrouter.WithModel("openai/gpt-4o"), // Use a model that supports structured outputs
+		openrouter.WithModel(model),
 		openrouter.WithJSONSchema("weather", true, weatherSchema),
 		openrouter.WithMaxTokens(100),
 		openrouter.WithRequireParameters(true), // Only use providers that support structured outputs
@@ -620,7 +620,7 @@ func runStructuredOutputTest(ctx context.Context, client *openrouter.Client, ver
 
 				// Try with simple JSON mode
 				resp, err = client.ChatComplete(ctx, messages,
-					openrouter.WithModel("openai/gpt-4o"),
+					openrouter.WithModel(model),
 					openrouter.WithJSONMode(),
 					openrouter.WithMaxTokens(100),
 				)
@@ -692,7 +692,7 @@ func runStructuredOutputTest(ctx context.Context, client *openrouter.Client, ver
 
 	start = time.Now()
 	stream, err := client.ChatCompleteStream(ctx, streamMessages,
-		openrouter.WithModel("openai/gpt-4o"),
+		openrouter.WithModel(model),
 		openrouter.WithJSONSchema("tasks", true, taskSchema),
 		openrouter.WithMaxTokens(150),
 	)
@@ -746,7 +746,7 @@ func runStructuredOutputTest(ctx context.Context, client *openrouter.Client, ver
 
 	start = time.Now()
 	resp, err = client.ChatComplete(ctx, jsonMessages,
-		openrouter.WithModel("openai/gpt-4o"),
+		openrouter.WithModel(model),
 		openrouter.WithJSONMode(),
 		openrouter.WithMaxTokens(150),
 	)
@@ -775,7 +775,7 @@ func runStructuredOutputTest(ctx context.Context, client *openrouter.Client, ver
 	return true
 }
 
-func runToolCallingTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
+func runToolCallingTest(ctx context.Context, client *openrouter.Client, model string, verbose bool) bool {
 	fmt.Printf("🔄 Test: Tool/Function Calling\n")
 
 	// Test 1: Basic tool calling
@@ -817,7 +817,7 @@ func runToolCallingTest(ctx context.Context, client *openrouter.Client, verbose 
 
 	start := time.Now()
 	resp, err := client.ChatComplete(ctx, messages,
-		openrouter.WithModel("openai/gpt-4o-mini"), // Use a model that supports tools
+		openrouter.WithModel(model),
 		openrouter.WithTools(tools...),
 		openrouter.WithMaxTokens(100),
 	)
@@ -883,7 +883,7 @@ func runToolCallingTest(ctx context.Context, client *openrouter.Client, verbose 
 	// Get final response
 	start = time.Now()
 	finalResp, err := client.ChatComplete(ctx, messages,
-		openrouter.WithModel("openai/gpt-4o-mini"),
+		openrouter.WithModel(model),
 		openrouter.WithTools(tools...),
 		openrouter.WithMaxTokens(100),
 	)
@@ -943,7 +943,7 @@ func runToolCallingTest(ctx context.Context, client *openrouter.Client, verbose 
 	}
 
 	resp, err = client.ChatComplete(ctx, weatherMessages,
-		openrouter.WithModel("openai/gpt-4o-mini"),
+		openrouter.WithModel(model),
 		openrouter.WithTools(multiTools...),
 		openrouter.WithToolChoice("auto"),
 		openrouter.WithMaxTokens(100),
@@ -966,7 +966,7 @@ func runToolCallingTest(ctx context.Context, client *openrouter.Client, verbose 
 	// Test with parallel tool calls disabled
 	parallelCalls := false
 	resp, err = client.ChatComplete(ctx, parallelMessages,
-		openrouter.WithModel("openai/gpt-4o"),
+		openrouter.WithModel(model),
 		openrouter.WithTools(multiTools...),
 		openrouter.WithParallelToolCalls(&parallelCalls),
 		openrouter.WithMaxTokens(100),
@@ -993,7 +993,7 @@ func runToolCallingTest(ctx context.Context, client *openrouter.Client, verbose 
 	}
 
 	stream, err := client.ChatCompleteStream(ctx, streamMessages,
-		openrouter.WithModel("openai/gpt-4o-mini"),
+		openrouter.WithModel(model),
 		openrouter.WithTools(tools...),
 		openrouter.WithMaxTokens(100),
 	)
@@ -1217,7 +1217,7 @@ func runTransformsTest(ctx context.Context, client *openrouter.Client, model str
 	return true
 }
 
-func runWebSearchTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
+func runWebSearchTest(ctx context.Context, client *openrouter.Client, model string, verbose bool) bool {
 	fmt.Printf("🔄 Test: Web Search\n")
 
 	// Test 1: Using :online suffix
@@ -1229,7 +1229,7 @@ func runWebSearchTest(ctx context.Context, client *openrouter.Client, verbose bo
 
 	start := time.Now()
 	resp, err := client.ChatComplete(ctx, messages,
-		openrouter.WithModel("openai/gpt-4o-mini:online"),
+		openrouter.WithModel(model+":online"),
 		openrouter.WithMaxTokens(100),
 	)
 	elapsed := time.Since(start)
@@ -1267,7 +1267,7 @@ func runWebSearchTest(ctx context.Context, client *openrouter.Client, verbose bo
 
 	start = time.Now()
 	resp, err = client.ChatComplete(ctx, messages,
-		openrouter.WithModel("openai/gpt-4o"),
+		openrouter.WithModel(model),
 		openrouter.WithPlugins(webPlugin),
 		openrouter.WithMaxTokens(100),
 	)
@@ -1301,7 +1301,7 @@ func runWebSearchTest(ctx context.Context, client *openrouter.Client, verbose bo
 
 	start = time.Now()
 	resp, err = client.ChatComplete(ctx, weatherMessages,
-		openrouter.WithModel("anthropic/claude-3.5-sonnet"),
+		openrouter.WithModel(model),
 		openrouter.WithPlugins(customPlugin),
 		openrouter.WithMaxTokens(50),
 	)
@@ -1331,7 +1331,7 @@ func runWebSearchTest(ctx context.Context, client *openrouter.Client, verbose bo
 
 	start = time.Now()
 	resp, err = client.ChatComplete(ctx, techMessages,
-		openrouter.WithModel("openai/gpt-4o"),
+		openrouter.WithModel(model),
 		openrouter.WithPlugins(exaPlugin),
 		openrouter.WithMaxTokens(150),
 	)
@@ -1360,7 +1360,7 @@ func runWebSearchTest(ctx context.Context, client *openrouter.Client, verbose bo
 
 	start = time.Now()
 	resp, err = client.ChatComplete(ctx, messages,
-		openrouter.WithModel("openai/gpt-4o"),
+		openrouter.WithModel(model),
 		openrouter.WithPlugins(nativePlugin),
 		openrouter.WithWebSearchOptions(&openrouter.WebSearchOptions{
 			SearchContextSize: string(openrouter.WebSearchContextMedium),
@@ -1387,7 +1387,7 @@ func runWebSearchTest(ctx context.Context, client *openrouter.Client, verbose bo
 	}
 
 	stream, err := client.ChatCompleteStream(ctx, streamMessages,
-		openrouter.WithModel("openai/gpt-4o-mini:online"),
+		openrouter.WithModel(model+":online"),
 		openrouter.WithMaxTokens(150),
 	)
 
@@ -1698,7 +1698,7 @@ func runModelEndpointsTest(ctx context.Context, client *openrouter.Client, verbo
 			fmt.Printf("      Endpoint %d:\n", i+1)
 			fmt.Printf("         Provider: %s\n", endpoint.ProviderName)
 			fmt.Printf("         Name: %s\n", endpoint.Name)
-			fmt.Printf("         Status: %s\n", endpoint.Status)
+			fmt.Printf("         Status: %.0f\n", endpoint.Status)
 			fmt.Printf("         Context Length: %.0f tokens\n", endpoint.ContextLength)
 			if endpoint.MaxCompletionTokens != nil {
 				fmt.Printf("         Max Completion Tokens: %.0f\n", *endpoint.MaxCompletionTokens)
@@ -1741,10 +1741,7 @@ func runModelEndpointsTest(ctx context.Context, client *openrouter.Client, verbo
 		fmt.Printf("   ❌ Endpoint missing ContextLength\n")
 		return false
 	}
-	if firstEndpoint.Status == "" {
-		fmt.Printf("   ❌ Endpoint missing Status\n")
-		return false
-	}
+	// Status can be 0, 1, or other numeric values, so we don't validate it's non-zero
 
 	// Check pricing
 	if firstEndpoint.Pricing.Prompt == "" {
