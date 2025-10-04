@@ -398,3 +398,250 @@ func TestListKeysError(t *testing.T) {
 		t.Errorf("expected error message 'Provisioning key required', got %q", reqErr.Message)
 	}
 }
+
+func TestCreateKey(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify request method and path
+		if r.Method != "POST" {
+			t.Errorf("expected POST request, got %s", r.Method)
+		}
+		if r.URL.Path != "/keys" {
+			t.Errorf("expected path /keys, got %s", r.URL.Path)
+		}
+
+		// Verify Authorization header
+		auth := r.Header.Get("Authorization")
+		if auth != "Bearer test-key" {
+			t.Errorf("expected Authorization header 'Bearer test-key', got %q", auth)
+		}
+
+		// Read and verify request body
+		var reqBody CreateKeyRequest
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatalf("failed to decode request body: %v", err)
+		}
+
+		if reqBody.Name != "Test API Key" {
+			t.Errorf("expected Name 'Test API Key', got %q", reqBody.Name)
+		}
+		if reqBody.Limit == nil || *reqBody.Limit != 50.0 {
+			t.Errorf("expected Limit 50.0, got %v", reqBody.Limit)
+		}
+
+		// Send response
+		response := CreateKeyResponse{
+			Data: APIKey{
+				Name:      "sk-or-v1-newkey123",
+				Label:     "Test API Key",
+				Limit:     50.0,
+				Disabled:  false,
+				CreatedAt: "2024-01-10T00:00:00Z",
+				UpdatedAt: "2024-01-10T00:00:00Z",
+				Hash:      "newkeyhash",
+			},
+			Key: "sk-or-v1-newkey123-actual-secret-value",
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	limit := 50.0
+	resp, err := client.CreateKey(context.Background(), &CreateKeyRequest{
+		Name:  "Test API Key",
+		Limit: &limit,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Validate response
+	if resp.Data.Label != "Test API Key" {
+		t.Errorf("expected Label 'Test API Key', got %q", resp.Data.Label)
+	}
+	if resp.Data.Limit != 50.0 {
+		t.Errorf("expected Limit 50.0, got %f", resp.Data.Limit)
+	}
+	if resp.Key != "sk-or-v1-newkey123-actual-secret-value" {
+		t.Errorf("expected Key 'sk-or-v1-newkey123-actual-secret-value', got %q", resp.Key)
+	}
+	if resp.Data.Disabled != false {
+		t.Errorf("expected Disabled false, got %t", resp.Data.Disabled)
+	}
+}
+
+func TestCreateKeyMinimal(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Read and verify request body
+		var reqBody CreateKeyRequest
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatalf("failed to decode request body: %v", err)
+		}
+
+		if reqBody.Name != "Minimal Key" {
+			t.Errorf("expected Name 'Minimal Key', got %q", reqBody.Name)
+		}
+		if reqBody.Limit != nil {
+			t.Errorf("expected Limit to be nil, got %v", reqBody.Limit)
+		}
+		if reqBody.IncludeBYOKInLimit != nil {
+			t.Errorf("expected IncludeBYOKInLimit to be nil, got %v", reqBody.IncludeBYOKInLimit)
+		}
+
+		response := CreateKeyResponse{
+			Data: APIKey{
+				Name:      "sk-or-v1-minimal123",
+				Label:     "Minimal Key",
+				Limit:     0,
+				Disabled:  false,
+				CreatedAt: "2024-01-10T00:00:00Z",
+				UpdatedAt: "2024-01-10T00:00:00Z",
+				Hash:      "minimalhash",
+			},
+			Key: "sk-or-v1-minimal123-secret",
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	resp, err := client.CreateKey(context.Background(), &CreateKeyRequest{
+		Name: "Minimal Key",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if resp.Data.Label != "Minimal Key" {
+		t.Errorf("expected Label 'Minimal Key', got %q", resp.Data.Label)
+	}
+	if resp.Key == "" {
+		t.Error("expected Key to be set")
+	}
+}
+
+func TestCreateKeyWithBYOK(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var reqBody CreateKeyRequest
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatalf("failed to decode request body: %v", err)
+		}
+
+		if reqBody.IncludeBYOKInLimit == nil || *reqBody.IncludeBYOKInLimit != true {
+			t.Errorf("expected IncludeBYOKInLimit true, got %v", reqBody.IncludeBYOKInLimit)
+		}
+
+		response := CreateKeyResponse{
+			Data: APIKey{
+				Name:      "sk-or-v1-byok123",
+				Label:     "BYOK Key",
+				Limit:     100.0,
+				Disabled:  false,
+				CreatedAt: "2024-01-10T00:00:00Z",
+				UpdatedAt: "2024-01-10T00:00:00Z",
+				Hash:      "byokhash",
+			},
+			Key: "sk-or-v1-byok123-secret",
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	limit := 100.0
+	includeBYOK := true
+	resp, err := client.CreateKey(context.Background(), &CreateKeyRequest{
+		Name:               "BYOK Key",
+		Limit:              &limit,
+		IncludeBYOKInLimit: &includeBYOK,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if resp.Data.Label != "BYOK Key" {
+		t.Errorf("expected Label 'BYOK Key', got %q", resp.Data.Label)
+	}
+}
+
+func TestCreateKeyValidation(t *testing.T) {
+	client := NewClient(
+		WithAPIKey("test-key"),
+	)
+
+	// Test nil request
+	_, err := client.CreateKey(context.Background(), nil)
+	if err == nil {
+		t.Fatal("expected error for nil request, got nil")
+	}
+	if !IsValidationError(err) {
+		t.Errorf("expected ValidationError, got %T", err)
+	}
+
+	// Test empty name
+	_, err = client.CreateKey(context.Background(), &CreateKeyRequest{
+		Name: "",
+	})
+	if err == nil {
+		t.Fatal("expected error for empty name, got nil")
+	}
+	if !IsValidationError(err) {
+		t.Errorf("expected ValidationError, got %T", err)
+	}
+}
+
+func TestCreateKeyError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(ErrorResponse{
+			Error: APIError{
+				Message: "Provisioning key required",
+				Type:    "authentication_error",
+				Code:    "invalid_key_type",
+			},
+		})
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("invalid-key"),
+		WithBaseURL(server.URL),
+	)
+
+	_, err := client.CreateKey(context.Background(), &CreateKeyRequest{
+		Name: "Test Key",
+	})
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	reqErr, ok := err.(*RequestError)
+	if !ok {
+		t.Fatalf("expected RequestError, got %T", err)
+	}
+	if reqErr.StatusCode != http.StatusUnauthorized {
+		t.Errorf("expected status code %d, got %d", http.StatusUnauthorized, reqErr.StatusCode)
+	}
+	if reqErr.Message != "Provisioning key required" {
+		t.Errorf("expected error message 'Provisioning key required', got %q", reqErr.Message)
+	}
+}

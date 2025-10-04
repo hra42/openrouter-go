@@ -83,3 +83,42 @@ func (c *Client) ListKeys(ctx context.Context, options *ListKeysOptions) (*ListK
 
 	return &response, nil
 }
+
+// CreateKey creates a new API key with the specified name and optional limit.
+// Requires a Provisioning API key (not a regular inference API key).
+//
+// IMPORTANT: The response contains the actual API key value in the Key field.
+// This is the ONLY time the key value will be returned. Store it securely!
+//
+// Example:
+//
+//	ctx := context.Background()
+//	limit := 100.0
+//	includeBYOK := true
+//	keyResp, err := client.CreateKey(ctx, &openrouter.CreateKeyRequest{
+//	    Name:               "Production API Key",
+//	    Limit:              &limit,
+//	    IncludeBYOKInLimit: &includeBYOK,
+//	})
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	fmt.Printf("New API Key: %s\n", keyResp.Key) // SAVE THIS!
+//	fmt.Printf("Label: %s\n", keyResp.Data.Label)
+//	fmt.Printf("Limit: $%.2f\n", keyResp.Data.Limit)
+func (c *Client) CreateKey(ctx context.Context, request *CreateKeyRequest) (*CreateKeyResponse, error) {
+	if request == nil {
+		return nil, &ValidationError{Message: "request cannot be nil"}
+	}
+
+	if request.Name == "" {
+		return nil, &ValidationError{Message: "name is required"}
+	}
+
+	var response CreateKeyResponse
+	if err := c.doRequest(ctx, "POST", "/keys", request, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}

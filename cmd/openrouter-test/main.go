@@ -17,7 +17,7 @@ func main() {
 	var (
 		apiKey    = flag.String("key", os.Getenv("OPENROUTER_API_KEY"), "OpenRouter API key (or set OPENROUTER_API_KEY env var)")
 		model     = flag.String("model", "openai/gpt-3.5-turbo", "Model to use")
-		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models, endpoints, providers, credits, activity, key, listkeys")
+		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models, endpoints, providers, credits, activity, key, listkeys, createkey")
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -176,6 +176,12 @@ func main() {
 		}
 	case "listkeys":
 		if runListKeysTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "createkey":
+		if runCreateKeyTest(ctx, client, *verbose) {
 			success = 1
 		} else {
 			failed = 1
@@ -2693,5 +2699,153 @@ func runListKeysTest(ctx context.Context, client *openrouter.Client, verbose boo
 	}
 
 	fmt.Printf("\n✅ List API keys tests completed\n")
+	return true
+}
+
+func runCreateKeyTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
+	fmt.Printf("🔄 Test: Create API Key\n")
+	fmt.Printf("\n⚠️  WARNING: This test will create a REAL API key in your account!\n")
+	fmt.Printf("   The key will be created with a test label and can be deleted afterwards.\n")
+	fmt.Printf("   Press Ctrl+C to cancel, or press Enter to continue...\n")
+
+	// Wait for user confirmation
+	fmt.Scanln()
+
+	// Test: Create API key
+	fmt.Printf("\n   Testing create API key...\n")
+	start := time.Now()
+
+	// Create a key with a timestamp to make it unique and identifiable
+	keyName := fmt.Sprintf("Test Key (Created by openrouter-go test suite at %s)", time.Now().Format("2006-01-02 15:04:05"))
+	limit := 1.0 // $1 limit for testing
+
+	resp, err := client.CreateKey(ctx, &openrouter.CreateKeyRequest{
+		Name:  keyName,
+		Limit: &limit,
+	})
+	elapsed := time.Since(start)
+
+	if err != nil {
+		// Check if it's a provisioning key error
+		if reqErr, ok := err.(*openrouter.RequestError); ok {
+			if reqErr.StatusCode == 401 || reqErr.StatusCode == 403 {
+				fmt.Printf("   ⚠️  Create key endpoint requires a provisioning key: %v\n", reqErr.Message)
+				fmt.Printf("   Skipping test (provisioning keys are separate from inference API keys)\n")
+				fmt.Printf("   Create a provisioning key at: https://openrouter.ai/settings/provisioning-keys\n")
+				return true // Don't fail the test - this is expected with regular API keys
+			}
+		}
+		fmt.Printf("❌ Failed to create API key: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("   ✅ Created API key (%.2fs)\n", elapsed.Seconds())
+	fmt.Printf("      Label: %s\n", resp.Data.Label)
+	fmt.Printf("      Limit: $%.2f\n", resp.Data.Limit)
+
+	// Validate response structure
+	fmt.Printf("\n   Validating response structure...\n")
+
+	// Check that the key was returned
+	if resp.Key == "" {
+		fmt.Printf("   ❌ No API key value returned\n")
+		return false
+	}
+
+	fmt.Printf("   ✅ API key value returned (length: %d characters)\n", len(resp.Key))
+
+	// Verify it starts with the expected prefix
+	if !strings.HasPrefix(resp.Key, "sk-or-v1-") {
+		fmt.Printf("   ⚠️  API key doesn't start with expected prefix 'sk-or-v1-'\n")
+	}
+
+	// Check required fields
+	if resp.Data.Name == "" {
+		fmt.Printf("   ❌ API key missing Name\n")
+		return false
+	}
+	if resp.Data.Label != keyName {
+		fmt.Printf("   ❌ API key label mismatch: expected %q, got %q\n", keyName, resp.Data.Label)
+		return false
+	}
+	if resp.Data.Hash == "" {
+		fmt.Printf("   ❌ API key missing Hash\n")
+		return false
+	}
+	if resp.Data.CreatedAt == "" {
+		fmt.Printf("   ❌ API key missing CreatedAt\n")
+		return false
+	}
+	if resp.Data.UpdatedAt == "" {
+		fmt.Printf("   ❌ API key missing UpdatedAt\n")
+		return false
+	}
+
+	// Validate limit
+	if resp.Data.Limit != limit {
+		fmt.Printf("   ❌ Limit mismatch: expected %.2f, got %.2f\n", limit, resp.Data.Limit)
+		return false
+	}
+
+	// Should not be disabled on creation
+	if resp.Data.Disabled {
+		fmt.Printf("   ⚠️  Newly created key is disabled\n")
+	}
+
+	fmt.Printf("   ✅ Response structure validation passed\n")
+
+	if verbose {
+		fmt.Printf("\n   Created key details:\n")
+		fmt.Printf("      Name: %s\n", resp.Data.Name)
+		fmt.Printf("      Label: %s\n", resp.Data.Label)
+		fmt.Printf("      Limit: $%.4f\n", resp.Data.Limit)
+		fmt.Printf("      Disabled: %v\n", resp.Data.Disabled)
+		fmt.Printf("      Created At: %s\n", resp.Data.CreatedAt)
+		fmt.Printf("      Updated At: %s\n", resp.Data.UpdatedAt)
+		fmt.Printf("      Hash: %s\n", resp.Data.Hash)
+		fmt.Printf("      Key (first 20 chars): %s...\n", resp.Key[:min(20, len(resp.Key))])
+	}
+
+	// Important security reminder
+	fmt.Printf("\n   ⚠️  IMPORTANT SECURITY REMINDERS:\n")
+	fmt.Printf("      1. The full API key value is: %s\n", resp.Key)
+	fmt.Printf("      2. This is the ONLY time this value will be shown!\n")
+	fmt.Printf("      3. Store it securely or delete it if you don't need it\n")
+	fmt.Printf("      4. You can delete this test key at: https://openrouter.ai/settings/keys\n")
+
+	// Test validation
+	fmt.Printf("\n   Testing input validation...\n")
+
+	// Test with empty name (should fail)
+	_, err = client.CreateKey(ctx, &openrouter.CreateKeyRequest{
+		Name: "",
+	})
+	if err == nil {
+		fmt.Printf("   ❌ Should have failed with empty name\n")
+		return false
+	}
+	if !openrouter.IsValidationError(err) {
+		fmt.Printf("   ❌ Expected ValidationError for empty name, got %T\n", err)
+		return false
+	}
+	fmt.Printf("   ✅ Empty name validation works\n")
+
+	// Test with nil request (should fail)
+	_, err = client.CreateKey(ctx, nil)
+	if err == nil {
+		fmt.Printf("   ❌ Should have failed with nil request\n")
+		return false
+	}
+	if !openrouter.IsValidationError(err) {
+		fmt.Printf("   ❌ Expected ValidationError for nil request, got %T\n", err)
+		return false
+	}
+	fmt.Printf("   ✅ Nil request validation works\n")
+
+	fmt.Printf("\n✅ Create API key tests completed\n")
+	fmt.Printf("\n💡 Remember to delete the test key if you don't need it:\n")
+	fmt.Printf("   https://openrouter.ai/settings/keys\n")
+	fmt.Printf("   Look for: %s\n", keyName)
+
 	return true
 }

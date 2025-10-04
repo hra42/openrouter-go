@@ -501,3 +501,20 @@ type ListKeysOptions struct {
 	// IncludeDisabled controls whether to include disabled API keys
 	IncludeDisabled *bool `json:"include_disabled,omitempty"`
 }
+
+// CreateKeyRequest represents a request to create a new API key.
+type CreateKeyRequest struct {
+	// Name is the required name/label for the API key
+	Name string `json:"name"`
+	// Limit is the optional credit limit for the API key
+	Limit *float64 `json:"limit,omitempty"`
+	// IncludeBYOKInLimit controls whether BYOK usage counts toward the limit
+	IncludeBYOKInLimit *bool `json:"include_byok_in_limit,omitempty"`
+}
+
+// CreateKeyResponse represents the response from creating a new API key.
+type CreateKeyResponse struct {
+	Data APIKey `json:"data"`
+	// Key contains the actual API key value (only returned on creation)
+	Key string `json:"key,omitempty"`
+}

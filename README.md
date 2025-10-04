@@ -23,7 +23,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Credit balance and usage tracking
 - ✅ Activity analytics for usage monitoring and cost tracking
 - ✅ API key information retrieval with usage and rate limit details
-- ✅ API key management with listing and filtering capabilities
+- ✅ API key management with listing, filtering, and creation capabilities
 
 ## Installation
 
@@ -416,6 +416,52 @@ This endpoint is useful for:
 - Identifying and managing disabled keys
 - Implementing key rotation strategies
 - Building API key management dashboards
+
+### Creating API Keys
+
+Create new API keys programmatically with custom limits and settings. Requires a Provisioning API key:
+
+```go
+// Create an API key with a credit limit
+limit := 100.0
+keyResp, err := client.CreateKey(ctx, &openrouter.CreateKeyRequest{
+    Name:  "Production API Key",
+    Limit: &limit,
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+// ⚠️ IMPORTANT: Save this value immediately!
+// This is the ONLY time the full API key will be returned
+fmt.Printf("New API Key: %s\n", keyResp.Key)
+fmt.Printf("Label: %s\n", keyResp.Data.Label)
+fmt.Printf("Limit: $%.2f\n", keyResp.Data.Limit)
+
+// Create a key with BYOK limit inclusion
+includeBYOK := true
+keyResp2, err := client.CreateKey(ctx, &openrouter.CreateKeyRequest{
+    Name:               "BYOK Key",
+    Limit:              &limit,
+    IncludeBYOKInLimit: &includeBYOK,
+})
+
+// Create a key without a specific limit (uses account limit)
+keyResp3, err := client.CreateKey(ctx, &openrouter.CreateKeyRequest{
+    Name: "Unlimited Key",
+})
+```
+
+**Critical Security Note**: The `Key` field in the response contains the actual API key value. This is the **ONLY** time this value will ever be returned. Store it securely immediately!
+
+**Important**: This endpoint requires a provisioning key (not a regular inference API key). Create one at: https://openrouter.ai/settings/provisioning-keys
+
+This endpoint is useful for:
+- Automated API key provisioning
+- Implementing key rotation workflows
+- Creating keys with custom credit limits
+- Setting up BYOK (Bring Your Own Key) configurations
+- Building self-service key management systems
 ```
 
 ## Package Structure
@@ -449,6 +495,7 @@ openrouter-go/
 │   ├── activity/          # Activity analytics examples
 │   ├── key/               # API key information examples
 │   ├── list-keys/         # API key listing examples
+│   ├── create-key/        # API key creation examples
 │   └── advanced/          # Advanced configuration examples
 └── internal/
     └── sse/               # Internal SSE parser implementation
