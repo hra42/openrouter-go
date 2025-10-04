@@ -8,23 +8,21 @@ steps:
   unit-tests:
     image: golang:1.25.1-alpine
     environment:
-      CGO_ENABLED: "1"
+      CGO_ENABLED: "0"
     commands:
-      - apk add --no-cache gcc musl-dev
       - go test ./...
 
   coverage-tests:
     image: golang:1.25.1-alpine
     environment:
-      CGO_ENABLED: "1"
+      CGO_ENABLED: "0"
     commands:
-      - apk add --no-cache gcc musl-dev
       - go test -cover ./...
 
   race-detection:
     image: golang:1.25.1-alpine
     environment:
-      CGO_ENABLED: "1"
+      CGO_ENABLED: "1"  # Required for race detector
     commands:
       - apk add --no-cache gcc musl-dev
       - go test -race ./...
@@ -32,17 +30,15 @@ steps:
   specific-tests:
     image: golang:1.25.1-alpine
     environment:
-      CGO_ENABLED: "1"
+      CGO_ENABLED: "0"
     commands:
-      - apk add --no-cache gcc musl-dev
       - go test -run TestChatComplete
 
   integration-test:
     image: golang:1.25.1-alpine
     environment:
-      CGO_ENABLED: "1"
+      CGO_ENABLED: "0"
       ORAPIKEY:
         from_secret: openrouter_api_key
     commands:
-      - apk add --no-cache gcc musl-dev
       - go run cmd/openrouter-test/main.go -key $ORAPIKEY -test all -model "google/gemini-2.5-flash-lite"
