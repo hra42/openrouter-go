@@ -304,3 +304,64 @@ type URLCitation struct {
 	// EndIndex is the index of the last character of the citation in the message
 	EndIndex int `json:"end_index"`
 }
+
+// ModelsResponse represents the response from the list models endpoint.
+type ModelsResponse struct {
+	Data []Model `json:"data"`
+}
+
+// Model represents a model available on OpenRouter.
+type Model struct {
+	ID                  string                 `json:"id"`
+	Name                string                 `json:"name"`
+	CanonicalSlug       *string                `json:"canonical_slug"`
+	Created             float64                `json:"created"`
+	Description         string                 `json:"description"`
+	ContextLength       *float64               `json:"context_length"`
+	HuggingFaceID       *string                `json:"hugging_face_id"`
+	Architecture        ModelArchitecture      `json:"architecture"`
+	TopProvider         ModelTopProvider       `json:"top_provider"`
+	PerRequestLimits    *ModelPerRequestLimits `json:"per_request_limits"`
+	SupportedParameters []string               `json:"supported_parameters,omitempty"`
+	DefaultParameters   *ModelDefaultParameters `json:"default_parameters"`
+	Pricing             ModelPricing           `json:"pricing"`
+}
+
+// ModelArchitecture contains information about a model's architecture.
+type ModelArchitecture struct {
+	InputModalities  []string `json:"input_modalities"`
+	OutputModalities []string `json:"output_modalities"`
+	Tokenizer        string   `json:"tokenizer"`
+	InstructType     *string  `json:"instruct_type"`
+}
+
+// ModelTopProvider contains information about the top provider for a model.
+type ModelTopProvider struct {
+	ContextLength       *float64 `json:"context_length"`
+	MaxCompletionTokens *float64 `json:"max_completion_tokens"`
+	IsModerated         bool     `json:"is_moderated"`
+}
+
+// ModelPerRequestLimits contains per-request limits for a model.
+type ModelPerRequestLimits struct {
+	// Currently empty but may be extended in the future
+}
+
+// ModelDefaultParameters contains default generation parameters for a model.
+type ModelDefaultParameters struct {
+	Temperature      *float64 `json:"temperature"`
+	TopP             *float64 `json:"top_p"`
+	FrequencyPenalty *float64 `json:"frequency_penalty"`
+}
+
+// ModelPricing contains pricing information for a model.
+type ModelPricing struct {
+	Prompt             string  `json:"prompt"`
+	Completion         string  `json:"completion"`
+	Image              string  `json:"image"`
+	Request            string  `json:"request"`
+	InputCacheRead     *string `json:"input_cache_read"`
+	InputCacheWrite    *string `json:"input_cache_write"`
+	WebSearch          string  `json:"web_search"`
+	InternalReasoning  string  `json:"internal_reasoning"`
+}

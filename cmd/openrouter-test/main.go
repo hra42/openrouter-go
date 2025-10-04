@@ -17,7 +17,7 @@ func main() {
 	var (
 		apiKey    = flag.String("key", os.Getenv("OPENROUTER_API_KEY"), "OpenRouter API key (or set OPENROUTER_API_KEY env var)")
 		model     = flag.String("model", "openai/gpt-3.5-turbo", "Model to use")
-		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch")
+		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models")
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -138,6 +138,12 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "models":
+		if runModelsTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -174,6 +180,7 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, m
 		{"Tool Calling", func() bool { return runToolCallingTest(ctx, client, verbose) }},
 		{"Message Transforms", func() bool { return runTransformsTest(ctx, client, model, verbose) }},
 		{"Web Search", func() bool { return runWebSearchTest(ctx, client, verbose) }},
+		{"List Models", func() bool { return runModelsTest(ctx, client, verbose) }},
 	}
 
 	for _, test := range tests {
@@ -1433,10 +1440,209 @@ func runWebSearchTest(ctx context.Context, client *openrouter.Client, verbose bo
 	return true
 }
 
+func runModelsTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
+	fmt.Printf("🔄 Test: List Models\n")
+
+	// Test 1: List all models
+	fmt.Printf("   Testing list all models...\n")
+	start := time.Now()
+	resp, err := client.ListModels(ctx, nil)
+	elapsed := time.Since(start)
+
+	if err != nil {
+		fmt.Printf("❌ Failed to list models: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("   ✅ Listed all models (%.2fs)\n", elapsed.Seconds())
+	fmt.Printf("      Total models: %d\n", len(resp.Data))
+
+	if len(resp.Data) == 0 {
+		fmt.Printf("   ❌ No models returned\n")
+		return false
+	}
+
+	// Display first few models
+	if verbose {
+		fmt.Printf("\n   First 5 models:\n")
+		for i, model := range resp.Data {
+			if i >= 5 {
+				break
+			}
+			fmt.Printf("      %d. %s (%s)\n", i+1, model.Name, model.ID)
+			if model.ContextLength != nil {
+				fmt.Printf("         Context: %.0f tokens\n", *model.ContextLength)
+			}
+			fmt.Printf("         Pricing: $%s/M prompt, $%s/M completion\n",
+				model.Pricing.Prompt, model.Pricing.Completion)
+		}
+	} else {
+		// Show just a couple in non-verbose mode
+		for i, model := range resp.Data {
+			if i >= 2 {
+				break
+			}
+			fmt.Printf("      Example: %s (%s)\n", model.Name, model.ID)
+		}
+	}
+
+	// Test 2: Validate model structure
+	fmt.Printf("\n   Validating model data structure...\n")
+	firstModel := resp.Data[0]
+
+	// Check required fields
+	if firstModel.ID == "" {
+		fmt.Printf("   ❌ Model missing ID\n")
+		return false
+	}
+	if firstModel.Name == "" {
+		fmt.Printf("   ❌ Model missing Name\n")
+		return false
+	}
+	if firstModel.Description == "" {
+		fmt.Printf("   ❌ Model missing Description\n")
+		return false
+	}
+
+	// Check architecture
+	if len(firstModel.Architecture.InputModalities) == 0 {
+		fmt.Printf("   ❌ Model missing InputModalities\n")
+		return false
+	}
+	if len(firstModel.Architecture.OutputModalities) == 0 {
+		fmt.Printf("   ❌ Model missing OutputModalities\n")
+		return false
+	}
+	if firstModel.Architecture.Tokenizer == "" {
+		fmt.Printf("   ❌ Model missing Tokenizer\n")
+		return false
+	}
+
+	// Check pricing
+	if firstModel.Pricing.Prompt == "" {
+		fmt.Printf("   ❌ Model missing Prompt pricing\n")
+		return false
+	}
+	if firstModel.Pricing.Completion == "" {
+		fmt.Printf("   ❌ Model missing Completion pricing\n")
+		return false
+	}
+
+	fmt.Printf("   ✅ Model structure validation passed\n")
+
+	if verbose {
+		fmt.Printf("\n   First model details:\n")
+		fmt.Printf("      ID: %s\n", firstModel.ID)
+		fmt.Printf("      Name: %s\n", firstModel.Name)
+		fmt.Printf("      Description: %s\n", truncateString(firstModel.Description, 80))
+		if firstModel.ContextLength != nil {
+			fmt.Printf("      Context Length: %.0f tokens\n", *firstModel.ContextLength)
+		}
+		fmt.Printf("      Input Modalities: %v\n", firstModel.Architecture.InputModalities)
+		fmt.Printf("      Output Modalities: %v\n", firstModel.Architecture.OutputModalities)
+		fmt.Printf("      Tokenizer: %s\n", firstModel.Architecture.Tokenizer)
+		if firstModel.Architecture.InstructType != nil {
+			fmt.Printf("      Instruct Type: %s\n", *firstModel.Architecture.InstructType)
+		}
+		fmt.Printf("      Is Moderated: %v\n", firstModel.TopProvider.IsModerated)
+		if len(firstModel.SupportedParameters) > 0 {
+			fmt.Printf("      Supported Parameters: %v\n", firstModel.SupportedParameters)
+		}
+	}
+
+	// Test 3: Filter by category
+	fmt.Printf("\n   Testing category filter (programming)...\n")
+	start = time.Now()
+	categoryResp, err := client.ListModels(ctx, &openrouter.ListModelsOptions{
+		Category: "programming",
+	})
+	elapsed = time.Since(start)
+
+	if err != nil {
+		fmt.Printf("   ❌ Failed to list models by category: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("   ✅ Listed programming models (%.2fs)\n", elapsed.Seconds())
+	fmt.Printf("      Programming models: %d\n", len(categoryResp.Data))
+
+	if len(categoryResp.Data) == 0 {
+		fmt.Printf("   ⚠️  No programming models found (this might be expected)\n")
+	} else if verbose {
+		fmt.Printf("\n   Top 3 programming models:\n")
+		for i, model := range categoryResp.Data {
+			if i >= 3 {
+				break
+			}
+			fmt.Printf("      %d. %s (%s)\n", i+1, model.Name, model.ID)
+		}
+	}
+
+	// Test 4: Check for specific well-known models
+	fmt.Printf("\n   Checking for well-known models...\n")
+	wellKnownModels := []string{
+		"openai/gpt-4o",
+		"anthropic/claude-3.5-sonnet",
+		"google/gemini-pro",
+		"meta-llama/llama-3.1-8b-instruct",
+	}
+
+	foundModels := make(map[string]bool)
+	for _, model := range resp.Data {
+		for _, knownModel := range wellKnownModels {
+			if model.ID == knownModel {
+				foundModels[knownModel] = true
+			}
+		}
+	}
+
+	foundCount := len(foundModels)
+	fmt.Printf("   Found %d/%d well-known models\n", foundCount, len(wellKnownModels))
+
+	if verbose {
+		for _, knownModel := range wellKnownModels {
+			status := "❌"
+			if foundModels[knownModel] {
+				status = "✅"
+			}
+			fmt.Printf("      %s %s\n", status, knownModel)
+		}
+	}
+
+	// Test 5: Verify pricing information
+	fmt.Printf("\n   Validating pricing information...\n")
+	hasPricingInfo := 0
+	for _, model := range resp.Data {
+		if model.Pricing.Prompt != "" && model.Pricing.Completion != "" {
+			hasPricingInfo++
+		}
+	}
+
+	pricingPercent := (float64(hasPricingInfo) / float64(len(resp.Data))) * 100
+	fmt.Printf("   %.1f%% of models have pricing info (%d/%d)\n",
+		pricingPercent, hasPricingInfo, len(resp.Data))
+
+	if pricingPercent < 90 {
+		fmt.Printf("   ⚠️  Warning: Less than 90%% of models have pricing info\n")
+	} else {
+		fmt.Printf("   ✅ Pricing validation passed\n")
+	}
+
+	fmt.Printf("\n✅ List models tests completed\n")
+	return true
+}
+
 // Helper function
 func min(a, b int) int {
 	if a < b {
 		return a
 	}
 	return b
+}
+
+func truncateString(s string, maxLen int) string {
+	if len(s) <= maxLen {
+		return s
+	}
+	return s[:maxLen-3] + "..."
 }
