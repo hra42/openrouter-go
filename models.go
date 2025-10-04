@@ -455,3 +455,25 @@ type ActivityData struct {
 	CompletionTokens   float64 `json:"completion_tokens"`
 	ReasoningTokens    float64 `json:"reasoning_tokens"`
 }
+
+// KeyResponse represents the response from the get current API key endpoint.
+type KeyResponse struct {
+	Data KeyData `json:"data"`
+}
+
+// KeyData contains information about an API key.
+type KeyData struct {
+	Label             string       `json:"label"`
+	Limit             *float64     `json:"limit"`
+	Usage             float64      `json:"usage"`
+	IsFreeTier        bool         `json:"is_free_tier"`
+	LimitRemaining    *float64     `json:"limit_remaining"`
+	IsProvisioningKey bool         `json:"is_provisioning_key"`
+	RateLimit         *KeyRateLimit `json:"rate_limit,omitempty"`
+}
+
+// KeyRateLimit contains rate limit information for an API key.
+type KeyRateLimit struct {
+	Interval string  `json:"interval"`
+	Requests float64 `json:"requests"`
+}

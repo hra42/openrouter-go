@@ -22,6 +22,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Provider listing with policy information
 - ✅ Credit balance and usage tracking
 - ✅ Activity analytics for usage monitoring and cost tracking
+- ✅ API key information retrieval with usage and rate limit details
 
 ## Installation
 
@@ -317,6 +318,58 @@ This endpoint is useful for:
 - Provider usage distribution analysis
 - Historical cost analysis and forecasting
 - BYOK (Bring Your Own Key) usage tracking
+
+### Getting API Key Information
+
+Retrieve information about your current API key including usage, limits, and rate limits:
+
+```go
+// Get API key information
+response, err := client.GetKey(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("API Key Label: %s\n", response.Data.Label)
+
+// Display limit information
+if response.Data.Limit != nil {
+    fmt.Printf("Credit Limit: $%.2f\n", *response.Data.Limit)
+} else {
+    fmt.Printf("Credit Limit: Unlimited\n")
+}
+
+fmt.Printf("Usage: $%.4f\n", response.Data.Usage)
+
+// Display remaining balance
+if response.Data.LimitRemaining != nil {
+    fmt.Printf("Remaining: $%.4f\n", *response.Data.LimitRemaining)
+
+    // Calculate usage percentage
+    if response.Data.Limit != nil && *response.Data.Limit > 0 {
+        usagePercent := (response.Data.Usage / *response.Data.Limit) * 100
+        fmt.Printf("Usage: %.2f%%\n", usagePercent)
+    }
+}
+
+// Display key type
+fmt.Printf("Free Tier: %v\n", response.Data.IsFreeTier)
+fmt.Printf("Provisioning Key: %v\n", response.Data.IsProvisioningKey)
+
+// Display rate limit if available
+if response.Data.RateLimit != nil {
+    fmt.Printf("Rate Limit: %.0f requests per %s\n",
+        response.Data.RateLimit.Requests,
+        response.Data.RateLimit.Interval)
+}
+```
+
+This endpoint is useful for:
+- Monitoring API key usage and limits
+- Checking remaining credits
+- Understanding rate limit constraints
+- Identifying key type (free tier vs paid, inference vs provisioning)
+- Building usage alerts and notifications
 ```
 
 ## Package Structure
@@ -331,6 +384,7 @@ openrouter-go/
 ├── providers_endpoint.go # Providers listing endpoint methods
 ├── credits_endpoint.go  # Credits balance endpoint methods
 ├── activity_endpoint.go # Activity analytics endpoint methods
+├── key_endpoint.go      # API key information endpoint methods
 ├── models.go            # Request/response type definitions
 ├── options.go           # Functional options for configuration
 ├── stream.go            # SSE streaming implementation
@@ -347,6 +401,7 @@ openrouter-go/
 │   ├── list-providers/    # Provider listing examples
 │   ├── get-credits/       # Credit balance tracking examples
 │   ├── activity/          # Activity analytics examples
+│   ├── key/               # API key information examples
 │   └── advanced/          # Advanced configuration examples
 └── internal/
     └── sse/               # Internal SSE parser implementation

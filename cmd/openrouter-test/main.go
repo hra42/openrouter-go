@@ -17,7 +17,7 @@ func main() {
 	var (
 		apiKey    = flag.String("key", os.Getenv("OPENROUTER_API_KEY"), "OpenRouter API key (or set OPENROUTER_API_KEY env var)")
 		model     = flag.String("model", "openai/gpt-3.5-turbo", "Model to use")
-		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models, endpoints, providers, credits, activity")
+		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models, endpoints, providers, credits, activity, key")
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -168,6 +168,12 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "key":
+		if runKeyTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -209,6 +215,7 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, m
 		{"List Providers", func() bool { return runProvidersTest(ctx, client, verbose) }},
 		{"Get Credits", func() bool { return runCreditsTest(ctx, client, verbose) }},
 		{"Get Activity", func() bool { return runActivityTest(ctx, client, verbose) }},
+		{"Get API Key Info", func() bool { return runKeyTest(ctx, client, verbose) }},
 	}
 
 	for _, test := range tests {
@@ -2328,5 +2335,144 @@ func runActivityTest(ctx context.Context, client *openrouter.Client, verbose boo
 	}
 
 	fmt.Printf("\n✅ Get activity tests completed\n")
+	return true
+}
+
+func runKeyTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
+	fmt.Printf("🔄 Test: Get API Key Info\n")
+
+	// Test: Get current API key information
+	fmt.Printf("   Testing get API key info...\n")
+	start := time.Now()
+	resp, err := client.GetKey(ctx)
+	elapsed := time.Since(start)
+
+	if err != nil {
+		fmt.Printf("❌ Failed to get API key info: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("   ✅ Retrieved API key info (%.2fs)\n", elapsed.Seconds())
+
+	// Display key information
+	fmt.Printf("      Label: %s\n", resp.Data.Label)
+	if resp.Data.Limit != nil {
+		fmt.Printf("      Limit: $%.2f\n", *resp.Data.Limit)
+	} else {
+		fmt.Printf("      Limit: Unlimited\n")
+	}
+	fmt.Printf("      Usage: $%.2f\n", resp.Data.Usage)
+	if resp.Data.LimitRemaining != nil {
+		fmt.Printf("      Remaining: $%.2f\n", *resp.Data.LimitRemaining)
+	} else {
+		fmt.Printf("      Remaining: N/A\n")
+	}
+	fmt.Printf("      Free Tier: %v\n", resp.Data.IsFreeTier)
+	fmt.Printf("      Provisioning Key: %v\n", resp.Data.IsProvisioningKey)
+
+	if resp.Data.RateLimit != nil {
+		fmt.Printf("      Rate Limit: %.0f requests per %s\n", resp.Data.RateLimit.Requests, resp.Data.RateLimit.Interval)
+	}
+
+	// Validate response structure
+	fmt.Printf("\n   Validating response structure...\n")
+
+	// Check required fields
+	if resp.Data.Label == "" {
+		fmt.Printf("   ❌ API key missing Label\n")
+		return false
+	}
+
+	// Usage should be non-negative
+	if resp.Data.Usage < 0 {
+		fmt.Printf("   ❌ Invalid Usage value: %.2f (should be >= 0)\n", resp.Data.Usage)
+		return false
+	}
+
+	// If limit is set, it should be non-negative
+	if resp.Data.Limit != nil && *resp.Data.Limit < 0 {
+		fmt.Printf("   ❌ Invalid Limit value: %.2f (should be >= 0)\n", *resp.Data.Limit)
+		return false
+	}
+
+	// If limit remaining is set, validate it matches calculation
+	if resp.Data.Limit != nil && resp.Data.LimitRemaining != nil {
+		expectedRemaining := *resp.Data.Limit - resp.Data.Usage
+		if *resp.Data.LimitRemaining != expectedRemaining {
+			fmt.Printf("   ⚠️  LimitRemaining (%.2f) doesn't match calculation (%.2f - %.2f = %.2f)\n",
+				*resp.Data.LimitRemaining, *resp.Data.Limit, resp.Data.Usage, expectedRemaining)
+		}
+	}
+
+	fmt.Printf("   ✅ Response structure validation passed\n")
+
+	if verbose {
+		fmt.Printf("\n   API Key details:\n")
+		fmt.Printf("      Label: %s\n", resp.Data.Label)
+		if resp.Data.Limit != nil {
+			fmt.Printf("      Limit: $%.4f\n", *resp.Data.Limit)
+		} else {
+			fmt.Printf("      Limit: nil (unlimited)\n")
+		}
+		fmt.Printf("      Usage: $%.4f\n", resp.Data.Usage)
+		if resp.Data.LimitRemaining != nil {
+			fmt.Printf("      Remaining: $%.4f\n", *resp.Data.LimitRemaining)
+		} else {
+			fmt.Printf("      Remaining: nil\n")
+		}
+		fmt.Printf("      Is Free Tier: %v\n", resp.Data.IsFreeTier)
+		fmt.Printf("      Is Provisioning Key: %v\n", resp.Data.IsProvisioningKey)
+
+		if resp.Data.RateLimit != nil {
+			fmt.Printf("      Rate Limit:\n")
+			fmt.Printf("         Interval: %s\n", resp.Data.RateLimit.Interval)
+			fmt.Printf("         Requests: %.0f\n", resp.Data.RateLimit.Requests)
+		} else {
+			fmt.Printf("      Rate Limit: nil\n")
+		}
+
+		// Calculate usage percentage if limit exists
+		if resp.Data.Limit != nil && *resp.Data.Limit > 0 {
+			usagePercent := (resp.Data.Usage / *resp.Data.Limit) * 100
+			fmt.Printf("      Usage: %.2f%%\n", usagePercent)
+
+			if usagePercent > 80 {
+				fmt.Printf("      ⚠️  Warning: Usage is above 80%%\n")
+			}
+		}
+	}
+
+	// Test with custom timeout
+	fmt.Printf("\n   Testing with custom timeout...\n")
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	_, err = client.GetKey(ctxWithTimeout)
+	if err != nil {
+		fmt.Printf("   ❌ Failed with custom timeout: %v\n", err)
+		return false
+	}
+	fmt.Printf("   ✅ Custom timeout context works\n")
+
+	// Informational checks
+	if resp.Data.IsFreeTier {
+		fmt.Printf("\n   ℹ️  This is a free tier API key\n")
+	}
+
+	if resp.Data.IsProvisioningKey {
+		fmt.Printf("\n   ℹ️  This is a provisioning key (for account management)\n")
+	} else {
+		fmt.Printf("\n   ℹ️  This is an inference key (for API calls)\n")
+	}
+
+	if resp.Data.Limit != nil && resp.Data.LimitRemaining != nil {
+		if *resp.Data.LimitRemaining <= 0 {
+			fmt.Printf("\n   ⚠️  Warning: No credits remaining!\n")
+		} else if *resp.Data.LimitRemaining < 1.0 {
+			fmt.Printf("\n   ⚠️  Warning: Less than $1 remaining\n")
+		}
+	}
+
+	fmt.Printf("\n✅ Get API key info tests completed\n")
 	return true
 }
