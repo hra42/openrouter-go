@@ -4,7 +4,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 
 ## Features
 
-- ✅ Complete API coverage (chat completions and legacy completions)
+- ✅ Complete API coverage (chat completions, legacy completions, and models endpoint)
 - ✅ Full streaming support with Server-Sent Events (SSE)
 - ✅ Zero external dependencies
 - ✅ Go 1.25.1 support
@@ -17,6 +17,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Tool/Function calling support with streaming
 - ✅ Message transforms for automatic context window management
 - ✅ Web Search plugin for real-time web data integration
+- ✅ Model listing and discovery with category filtering
 
 ## Installation
 
@@ -127,27 +128,51 @@ response, err := client.Complete(ctx, "Once upon a time",
 )
 ```
 
+### Listing Available Models
+
+```go
+// List all available models
+response, err := client.ListModels(ctx, nil)
+if err != nil {
+    log.Fatal(err)
+}
+
+for _, model := range response.Data {
+    fmt.Printf("%s - %s\n", model.ID, model.Name)
+    fmt.Printf("  Context: %.0f tokens\n", *model.ContextLength)
+    fmt.Printf("  Pricing: $%s/M prompt, $%s/M completion\n",
+        model.Pricing.Prompt, model.Pricing.Completion)
+}
+
+// Filter models by category (e.g., "programming")
+response, err := client.ListModels(ctx, &openrouter.ListModelsOptions{
+    Category: "programming",
+})
+```
+
 ## Package Structure
 
 ```
 openrouter-go/
-├── client.go           # Main client implementation
-├── completions.go      # Completion endpoint methods
-├── chat.go            # Chat completion endpoint methods
-├── models.go          # Request/response type definitions
-├── options.go         # Functional options for configuration
-├── stream.go          # SSE streaming implementation
-├── errors.go          # Custom error types
-├── retry.go           # Retry and backoff logic
+├── client.go            # Main client implementation
+├── completions.go       # Completion endpoint methods
+├── chat.go              # Chat completion endpoint methods
+├── models_endpoint.go   # Models listing endpoint methods
+├── models.go            # Request/response type definitions
+├── options.go           # Functional options for configuration
+├── stream.go            # SSE streaming implementation
+├── errors.go            # Custom error types
+├── retry.go             # Retry and backoff logic
 ├── examples/
 │   ├── basic/             # Basic usage examples
 │   ├── streaming/         # Streaming examples
 │   ├── structured-output/ # Structured outputs with JSON schema
 │   ├── tool-calling/      # Tool/function calling examples
 │   ├── web_search/        # Web search plugin examples
+│   ├── list-models/       # Model listing examples
 │   └── advanced/          # Advanced configuration examples
 └── internal/
-    └── sse/           # Internal SSE parser implementation
+    └── sse/               # Internal SSE parser implementation
 ```
 
 ## App Attribution
@@ -831,6 +856,7 @@ The `examples/` directory contains comprehensive examples:
 
 - **basic/** - Simple usage examples for common tasks
 - **streaming/** - Real-time streaming response handling
+- **list-models/** - List and discover available models with filtering
 - **structured-output/** - JSON schema validation and structured responses
 - **tool-calling/** - Complete tool/function calling examples with streaming
 - **transforms/** - Message transforms for context window management
@@ -848,6 +874,9 @@ go run examples/basic/main.go
 
 # Run streaming examples
 go run examples/streaming/main.go
+
+# Run list models examples
+go run examples/list-models/main.go
 
 # Run advanced examples
 go run examples/advanced/main.go

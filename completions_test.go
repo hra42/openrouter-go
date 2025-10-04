@@ -368,3 +368,79 @@ func TestHandleCompletionModelSuffix(t *testing.T) {
 		})
 	}
 }
+
+func TestCompleteStream(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify request method and path
+		if r.Method != "POST" {
+			t.Errorf("expected POST request, got %s", r.Method)
+		}
+		if r.URL.Path != "/completions" {
+			t.Errorf("expected path /completions, got %s", r.URL.Path)
+		}
+
+		// Parse request body
+		var req CompletionRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			t.Fatalf("failed to decode request: %v", err)
+		}
+
+		// Verify stream is enabled
+		if !req.Stream {
+			t.Error("expected stream to be true")
+		}
+
+		// Set headers for SSE
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Connection", "keep-alive")
+
+		flusher, ok := w.(http.Flusher)
+		if !ok {
+			t.Fatal("expected http.ResponseWriter to be an http.Flusher")
+		}
+
+		// Send streaming events
+		events := []string{
+			`data: {"id":"cmpl-123","object":"text_completion","created":1234567890,"model":"gpt-3.5-turbo-instruct","choices":[{"text":"Once","index":0,"finish_reason":null}]}`,
+			`data: {"id":"cmpl-123","object":"text_completion","created":1234567890,"model":"gpt-3.5-turbo-instruct","choices":[{"text":" upon","index":0,"finish_reason":null}]}`,
+			`data: {"id":"cmpl-123","object":"text_completion","created":1234567890,"model":"gpt-3.5-turbo-instruct","choices":[{"text":" a time","index":0,"finish_reason":"stop"}]}`,
+			`data: [DONE]`,
+		}
+
+		for _, event := range events {
+			w.Write([]byte(event + "\n\n"))
+			flusher.Flush()
+		}
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	stream, err := client.CompleteStream(context.Background(), "Once",
+		WithCompletionModel("gpt-3.5-turbo-instruct"),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer stream.Close()
+
+	eventCount := 0
+	for event := range stream.Events() {
+		eventCount++
+		if len(event.Choices) > 0 {
+			// Valid event received
+		}
+	}
+
+	if err := stream.Err(); err != nil {
+		t.Fatalf("stream error: %v", err)
+	}
+
+	if eventCount == 0 {
+		t.Error("expected to receive at least one event")
+	}
+}

@@ -45,12 +45,30 @@ export OPENROUTER_API_KEY="your-api-key"
 # Run examples
 go run examples/basic/main.go
 go run examples/streaming/main.go
+go run examples/list-models/main.go
 go run examples/advanced/main.go
 go run examples/structured-output/main.go
 go run examples/tool-calling/main.go
 go run examples/web_search/main.go
 go run examples/transforms/main.go
 go run examples/app-attribution/main.go
+```
+
+### Running E2E Tests
+```bash
+# Set API key
+export OPENROUTER_API_KEY="your-api-key"
+
+# Run all tests
+go run cmd/openrouter-test/main.go -test all
+
+# Run specific test
+go run cmd/openrouter-test/main.go -test models
+go run cmd/openrouter-test/main.go -test chat
+go run cmd/openrouter-test/main.go -test streaming
+
+# Run with verbose output
+go run cmd/openrouter-test/main.go -test models -v
 ```
 
 ## Architecture Overview
@@ -77,6 +95,8 @@ This is a zero-dependency Go client library for the OpenRouter API that follows 
 
 **Legacy Completions (`completions.go`)**: Support for older prompt-based completion API.
 
+**Models Listing (`models_endpoint.go`)**: Retrieve available models with filtering by category and detailed model information.
+
 **Web Search (`web_search.go`)**: Integration with OpenRouter's web search plugin for augmented responses.
 
 ### Key Design Patterns
@@ -93,6 +113,12 @@ This is a zero-dependency Go client library for the OpenRouter API that follows 
 - Table-driven tests for comprehensive coverage of different scenarios
 - Race detection tests to ensure thread safety
 - Integration test utility in `cmd/openrouter-test/` for live API testing
+
+**IMPORTANT**: When adding a new endpoint, always add a corresponding e2e test to `cmd/openrouter-test/main.go`:
+1. Add the test name to the `-test` flag description
+2. Add a case handler in the switch statement
+3. Implement a `runXxxTest()` function with comprehensive validation
+4. Add the test to the `runAllTests()` function array
 
 ### Important Notes
 
