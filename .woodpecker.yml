@@ -42,3 +42,13 @@ steps:
         from_secret: openrouter_api_key
     commands:
       - go run cmd/openrouter-test/main.go -key $ORAPIKEY -test all -model "google/gemini-2.5-flash-lite"
+
+  integration-test-analytics:
+    image: golang:1.25.1-alpine
+    environment:
+      CGO_ENABLED: "0"
+      ORPROVKEY:
+        from_secret: openrouter_provisioning_key
+    commands:
+      - go run cmd/openrouter-test/main.go -key $ORPROVKEY -test activity
+    failure: ignore  # Don't fail the pipeline if provisioning key is not set
