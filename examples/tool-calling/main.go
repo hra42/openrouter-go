@@ -52,12 +52,12 @@ func searchGutenbergBooks(searchTerms []string) (string, error) {
 func getCurrentWeather(location string, unit string) (string, error) {
 	// Simulated weather data for demonstration
 	weatherData := map[string]interface{}{
-		"location":    location,
-		"temperature": 72,
-		"unit":        unit,
-		"conditions":  "Partly cloudy",
-		"humidity":    65,
-		"wind_speed":  10,
+		"location":       location,
+		"temperature":    72,
+		"unit":           unit,
+		"conditions":     "Partly cloudy",
+		"humidity":       65,
+		"wind_speed":     10,
 		"wind_direction": "NW",
 	}
 

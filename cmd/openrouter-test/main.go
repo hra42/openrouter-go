@@ -17,7 +17,7 @@ func main() {
 	var (
 		apiKey    = flag.String("key", os.Getenv("OPENROUTER_API_KEY"), "OpenRouter API key (or set OPENROUTER_API_KEY env var)")
 		model     = flag.String("model", "openai/gpt-3.5-turbo", "Model to use")
-		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models")
+		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models, endpoints")
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -144,6 +144,12 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "endpoints":
+		if runModelEndpointsTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -181,6 +187,7 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, m
 		{"Message Transforms", func() bool { return runTransformsTest(ctx, client, model, verbose) }},
 		{"Web Search", func() bool { return runWebSearchTest(ctx, client, verbose) }},
 		{"List Models", func() bool { return runModelsTest(ctx, client, verbose) }},
+		{"Model Endpoints", func() bool { return runModelEndpointsTest(ctx, client, verbose) }},
 	}
 
 	for _, test := range tests {
@@ -668,7 +675,7 @@ func runStructuredOutputTest(ctx context.Context, client *openrouter.Client, ver
 							"enum": []string{"low", "medium", "high"},
 						},
 					},
-					"required":               []string{"name", "priority"},
+					"required":             []string{"name", "priority"},
 					"additionalProperties": false,
 				},
 				"minItems": 3,
@@ -1645,4 +1652,179 @@ func truncateString(s string, maxLen int) string {
 		return s
 	}
 	return s[:maxLen-3] + "..."
+}
+
+func runModelEndpointsTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
+	fmt.Printf("🔄 Test: List Model Endpoints\n")
+
+	// Test 1: List endpoints for GPT-4
+	fmt.Printf("   Testing endpoints for GPT-4...\n")
+	start := time.Now()
+	resp, err := client.ListModelEndpoints(ctx, "openai", "gpt-4")
+	elapsed := time.Since(start)
+
+	if err != nil {
+		fmt.Printf("❌ Failed to list model endpoints: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("   ✅ Listed GPT-4 endpoints (%.2fs)\n", elapsed.Seconds())
+	fmt.Printf("      Model: %s (%s)\n", resp.Data.Name, resp.Data.ID)
+	fmt.Printf("      Total endpoints: %d\n", len(resp.Data.Endpoints))
+
+	if len(resp.Data.Endpoints) == 0 {
+		fmt.Printf("   ❌ No endpoints returned\n")
+		return false
+	}
+
+	// Display endpoint details
+	if verbose {
+		fmt.Printf("\n   Model Details:\n")
+		fmt.Printf("      Description: %s\n", truncateString(resp.Data.Description, 100))
+		if resp.Data.Architecture.Tokenizer != nil {
+			fmt.Printf("      Tokenizer: %s\n", *resp.Data.Architecture.Tokenizer)
+		}
+		if resp.Data.Architecture.InstructType != nil {
+			fmt.Printf("      Instruct Type: %s\n", *resp.Data.Architecture.InstructType)
+		}
+		fmt.Printf("      Input Modalities: %v\n", resp.Data.Architecture.InputModalities)
+		fmt.Printf("      Output Modalities: %v\n", resp.Data.Architecture.OutputModalities)
+
+		fmt.Printf("\n   First 3 endpoints:\n")
+		for i, endpoint := range resp.Data.Endpoints {
+			if i >= 3 {
+				break
+			}
+			fmt.Printf("      Endpoint %d:\n", i+1)
+			fmt.Printf("         Provider: %s\n", endpoint.ProviderName)
+			fmt.Printf("         Name: %s\n", endpoint.Name)
+			fmt.Printf("         Status: %s\n", endpoint.Status)
+			fmt.Printf("         Context Length: %.0f tokens\n", endpoint.ContextLength)
+			if endpoint.MaxCompletionTokens != nil {
+				fmt.Printf("         Max Completion Tokens: %.0f\n", *endpoint.MaxCompletionTokens)
+			}
+			if endpoint.Quantization != nil && *endpoint.Quantization != "" {
+				fmt.Printf("         Quantization: %s\n", *endpoint.Quantization)
+			}
+			fmt.Printf("         Pricing - Prompt: $%s/M, Completion: $%s/M\n",
+				endpoint.Pricing.Prompt, endpoint.Pricing.Completion)
+			if endpoint.UptimeLast30m != nil {
+				fmt.Printf("         Uptime (30m): %.2f%%\n", *endpoint.UptimeLast30m*100)
+			}
+			if len(endpoint.SupportedParameters) > 0 {
+				fmt.Printf("         Supported Parameters: %d\n", len(endpoint.SupportedParameters))
+			}
+		}
+	} else {
+		// Non-verbose: just show a sample
+		endpoint := resp.Data.Endpoints[0]
+		fmt.Printf("      Example endpoint: %s (Provider: %s)\n",
+			endpoint.Name, endpoint.ProviderName)
+		fmt.Printf("      Pricing: $%s/M prompt, $%s/M completion\n",
+			endpoint.Pricing.Prompt, endpoint.Pricing.Completion)
+	}
+
+	// Test 2: Validate endpoint structure
+	fmt.Printf("\n   Validating endpoint data structure...\n")
+	firstEndpoint := resp.Data.Endpoints[0]
+
+	// Check required fields
+	if firstEndpoint.Name == "" {
+		fmt.Printf("   ❌ Endpoint missing Name\n")
+		return false
+	}
+	if firstEndpoint.ProviderName == "" {
+		fmt.Printf("   ❌ Endpoint missing ProviderName\n")
+		return false
+	}
+	if firstEndpoint.ContextLength == 0 {
+		fmt.Printf("   ❌ Endpoint missing ContextLength\n")
+		return false
+	}
+	if firstEndpoint.Status == "" {
+		fmt.Printf("   ❌ Endpoint missing Status\n")
+		return false
+	}
+
+	// Check pricing
+	if firstEndpoint.Pricing.Prompt == "" {
+		fmt.Printf("   ❌ Endpoint missing Prompt pricing\n")
+		return false
+	}
+	if firstEndpoint.Pricing.Completion == "" {
+		fmt.Printf("   ❌ Endpoint missing Completion pricing\n")
+		return false
+	}
+
+	fmt.Printf("   ✅ Endpoint structure validation passed\n")
+
+	// Test 3: List endpoints for Claude
+	fmt.Printf("\n   Testing endpoints for Claude-3.5 Sonnet...\n")
+	start = time.Now()
+	claudeResp, err := client.ListModelEndpoints(ctx, "anthropic", "claude-3.5-sonnet")
+	elapsed = time.Since(start)
+
+	if err != nil {
+		fmt.Printf("   ❌ Failed to list Claude endpoints: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("   ✅ Listed Claude endpoints (%.2fs)\n", elapsed.Seconds())
+	fmt.Printf("      Model: %s\n", claudeResp.Data.Name)
+	fmt.Printf("      Total endpoints: %d\n", len(claudeResp.Data.Endpoints))
+
+	if verbose && len(claudeResp.Data.Endpoints) > 0 {
+		fmt.Printf("      Example endpoint: %s\n", claudeResp.Data.Endpoints[0].ProviderName)
+	}
+
+	// Test 4: Test with invalid model (error handling)
+	fmt.Printf("\n   Testing error handling with invalid model...\n")
+	_, err = client.ListModelEndpoints(ctx, "invalid", "nonexistent-model")
+
+	if err == nil {
+		fmt.Printf("   ⚠️  Expected error but got success (model might exist)\n")
+	} else {
+		fmt.Printf("   ✅ Error handling works correctly\n")
+		if verbose {
+			fmt.Printf("      Error: %v\n", err)
+		}
+	}
+
+	// Test 5: Test with empty parameters
+	fmt.Printf("\n   Testing validation with empty parameters...\n")
+
+	_, err = client.ListModelEndpoints(ctx, "", "gpt-4")
+	if err == nil {
+		fmt.Printf("   ❌ Should have errored with empty author\n")
+		return false
+	}
+	fmt.Printf("   ✅ Empty author validation passed\n")
+
+	_, err = client.ListModelEndpoints(ctx, "openai", "")
+	if err == nil {
+		fmt.Printf("   ❌ Should have errored with empty slug\n")
+		return false
+	}
+	fmt.Printf("   ✅ Empty slug validation passed\n")
+
+	// Test 6: Compare pricing across endpoints
+	if verbose && len(resp.Data.Endpoints) > 1 {
+		fmt.Printf("\n   Pricing comparison for %s:\n", resp.Data.Name)
+		fmt.Printf("   %-30s %-15s %-15s\n", "Provider", "Prompt/M", "Completion/M")
+		fmt.Printf("   %s\n", strings.Repeat("-", 60))
+		for i, endpoint := range resp.Data.Endpoints {
+			if i >= 5 {
+				fmt.Printf("   ... and %d more endpoints\n", len(resp.Data.Endpoints)-5)
+				break
+			}
+			fmt.Printf("   %-30s $%-14s $%-14s\n",
+				endpoint.ProviderName,
+				endpoint.Pricing.Prompt,
+				endpoint.Pricing.Completion,
+			)
+		}
+	}
+
+	fmt.Printf("\n✅ Model endpoints tests completed\n")
+	return true
 }

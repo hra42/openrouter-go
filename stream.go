@@ -301,7 +301,6 @@ func parseSSEData(data string, v interface{}) error {
 	return nil
 }
 
-
 // Helper function to concatenate streaming chat responses.
 func ConcatenateChatStreamResponses(responses []ChatCompletionResponse) string {
 	var result strings.Builder

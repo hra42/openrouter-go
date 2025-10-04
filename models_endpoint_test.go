@@ -44,7 +44,7 @@ func TestListModels(t *testing.T) {
 						MaxCompletionTokens: &maxCompTokens,
 						IsModerated:         true,
 					},
-					PerRequestLimits: nil,
+					PerRequestLimits:    nil,
 					SupportedParameters: []string{"temperature", "top_p", "max_tokens"},
 					DefaultParameters: &ModelDefaultParameters{
 						Temperature:      &temperature,
@@ -138,7 +138,7 @@ func TestListModelsWithCategory(t *testing.T) {
 						MaxCompletionTokens: &maxCompTokens,
 						IsModerated:         false,
 					},
-					PerRequestLimits: nil,
+					PerRequestLimits:    nil,
 					SupportedParameters: []string{"temperature", "top_p", "max_tokens"},
 					DefaultParameters: &ModelDefaultParameters{
 						Temperature:      &temperature,

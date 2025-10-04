@@ -339,32 +339,32 @@ func TestHandleModelSuffix(t *testing.T) {
 	client := &Client{}
 
 	tests := []struct {
-		name         string
-		model        string
+		name          string
+		model         string
 		expectedModel string
 		expectedSort  string
 	}{
 		{
-			name:         "nitro suffix",
-			model:        "meta-llama/llama-3.1-70b-instruct:nitro",
+			name:          "nitro suffix",
+			model:         "meta-llama/llama-3.1-70b-instruct:nitro",
 			expectedModel: "meta-llama/llama-3.1-70b-instruct",
 			expectedSort:  "throughput",
 		},
 		{
-			name:         "floor suffix",
-			model:        "meta-llama/llama-3.1-70b-instruct:floor",
+			name:          "floor suffix",
+			model:         "meta-llama/llama-3.1-70b-instruct:floor",
 			expectedModel: "meta-llama/llama-3.1-70b-instruct",
 			expectedSort:  "price",
 		},
 		{
-			name:         "no suffix",
-			model:        "meta-llama/llama-3.1-70b-instruct",
+			name:          "no suffix",
+			model:         "meta-llama/llama-3.1-70b-instruct",
 			expectedModel: "meta-llama/llama-3.1-70b-instruct",
 			expectedSort:  "",
 		},
 		{
-			name:         "model with colon but not suffix",
-			model:        "custom:model:v1",
+			name:          "model with colon but not suffix",
+			model:         "custom:model:v1",
 			expectedModel: "custom:model:v1",
 			expectedSort:  "",
 		},

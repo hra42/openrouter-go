@@ -4,7 +4,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 
 ## Features
 
-- ✅ Complete API coverage (chat completions, legacy completions, and models endpoint)
+- ✅ Complete API coverage (chat completions, legacy completions, models, and model endpoints)
 - ✅ Full streaming support with Server-Sent Events (SSE)
 - ✅ Zero external dependencies
 - ✅ Go 1.25.1 support
@@ -18,6 +18,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Message transforms for automatic context window management
 - ✅ Web Search plugin for real-time web data integration
 - ✅ Model listing and discovery with category filtering
+- ✅ Model endpoint inspection with pricing and uptime details
 
 ## Installation
 
@@ -150,6 +151,47 @@ response, err := client.ListModels(ctx, &openrouter.ListModelsOptions{
 })
 ```
 
+### Listing Model Endpoints
+
+Get detailed information about the specific endpoints (providers) available for a model:
+
+```go
+// List all endpoints for a specific model
+response, err := client.ListModelEndpoints(ctx, "openai", "gpt-4")
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Model: %s\n", response.Data.Name)
+fmt.Printf("Total endpoints: %d\n\n", len(response.Data.Endpoints))
+
+// Examine each provider endpoint
+for _, endpoint := range response.Data.Endpoints {
+    fmt.Printf("Provider: %s\n", endpoint.ProviderName)
+    fmt.Printf("  Status: %s\n", endpoint.Status)
+    fmt.Printf("  Context Length: %.0f tokens\n", endpoint.ContextLength)
+    fmt.Printf("  Pricing - Prompt: $%s/M, Completion: $%s/M\n",
+        endpoint.Pricing.Prompt, endpoint.Pricing.Completion)
+
+    if endpoint.UptimeLast30m != nil {
+        fmt.Printf("  Uptime (30m): %.2f%%\n", *endpoint.UptimeLast30m*100)
+    }
+
+    if endpoint.Quantization != nil {
+        fmt.Printf("  Quantization: %s\n", *endpoint.Quantization)
+    }
+
+    fmt.Printf("  Supported Parameters: %v\n\n", endpoint.SupportedParameters)
+}
+```
+
+This endpoint is useful for:
+- Comparing pricing across different providers for the same model
+- Checking provider availability and uptime
+- Finding endpoints with specific quantization levels
+- Discovering which parameters are supported by each provider
+```
+
 ## Package Structure
 
 ```
@@ -158,6 +200,7 @@ openrouter-go/
 ├── completions.go       # Completion endpoint methods
 ├── chat.go              # Chat completion endpoint methods
 ├── models_endpoint.go   # Models listing endpoint methods
+├── model_endpoints.go   # Model endpoints inspection methods
 ├── models.go            # Request/response type definitions
 ├── options.go           # Functional options for configuration
 ├── stream.go            # SSE streaming implementation
@@ -170,6 +213,7 @@ openrouter-go/
 │   ├── tool-calling/      # Tool/function calling examples
 │   ├── web_search/        # Web search plugin examples
 │   ├── list-models/       # Model listing examples
+│   ├── model-endpoints/   # Model endpoints inspection examples
 │   └── advanced/          # Advanced configuration examples
 └── internal/
     └── sse/               # Internal SSE parser implementation
@@ -857,6 +901,7 @@ The `examples/` directory contains comprehensive examples:
 - **basic/** - Simple usage examples for common tasks
 - **streaming/** - Real-time streaming response handling
 - **list-models/** - List and discover available models with filtering
+- **model-endpoints/** - Inspect model endpoints with pricing and provider details
 - **structured-output/** - JSON schema validation and structured responses
 - **tool-calling/** - Complete tool/function calling examples with streaming
 - **transforms/** - Message transforms for context window management
@@ -877,6 +922,9 @@ go run examples/streaming/main.go
 
 # Run list models examples
 go run examples/list-models/main.go
+
+# Run model endpoints examples
+go run examples/model-endpoints/main.go
 
 # Run advanced examples
 go run examples/advanced/main.go

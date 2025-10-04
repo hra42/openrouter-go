@@ -29,10 +29,10 @@ func DefaultRetryConfig() *RetryConfig {
 			if reqErr, ok := err.(*RequestError); ok {
 				// Retry on rate limit, server errors, and gateway timeouts
 				return reqErr.IsRateLimitError() ||
-					   reqErr.IsServerError() ||
-					   reqErr.StatusCode == 502 ||
-					   reqErr.StatusCode == 503 ||
-					   reqErr.StatusCode == 504
+					reqErr.IsServerError() ||
+					reqErr.StatusCode == 502 ||
+					reqErr.StatusCode == 503 ||
+					reqErr.StatusCode == 504
 			}
 			return false
 		},
