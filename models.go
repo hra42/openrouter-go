@@ -399,7 +399,7 @@ type ModelEndpoint struct {
 	MaxCompletionTokens *float64             `json:"max_completion_tokens"`
 	MaxPromptTokens     *float64             `json:"max_prompt_tokens"`
 	SupportedParameters []string             `json:"supported_parameters"`
-	Status              string               `json:"status"`
+	Status              float64              `json:"status"`
 	UptimeLast30m       *float64             `json:"uptime_last_30m"`
 }
 

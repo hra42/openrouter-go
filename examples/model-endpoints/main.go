@@ -60,7 +60,7 @@ func listModelEndpoints(client *openrouter.Client, author, slug string) {
 		fmt.Printf("Endpoint %d:\n", i+1)
 		fmt.Printf("  Provider: %s\n", endpoint.ProviderName)
 		fmt.Printf("  Name: %s\n", endpoint.Name)
-		fmt.Printf("  Status: %s\n", endpoint.Status)
+		fmt.Printf("  Status: %.0f\n", endpoint.Status)
 		fmt.Printf("  Context Length: %.0f tokens\n", endpoint.ContextLength)
 
 		if endpoint.MaxCompletionTokens != nil {
