@@ -79,7 +79,7 @@ func main() {
 			failed = 1
 		}
 	case "completion":
-		if runCompletionTest(ctx, client, *verbose) {
+		if runCompletionTest(ctx, client, *model, *verbose) {
 			success = 1
 		} else {
 			failed = 1
@@ -176,7 +176,7 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, m
 	}{
 		{"Chat Completion", func() bool { return runChatTest(ctx, client, model, maxTokens, verbose) }},
 		{"Streaming", func() bool { return runStreamTest(ctx, client, model, maxTokens, verbose) }},
-		{"Legacy Completion", func() bool { return runCompletionTest(ctx, client, verbose) }},
+		{"Legacy Completion", func() bool { return runCompletionTest(ctx, client, model, verbose) }},
 		{"Error Handling", func() bool { return runErrorTest(ctx, client, verbose) }},
 		{"Provider Routing", func() bool { return runProviderRoutingTest(ctx, client, model, maxTokens, verbose) }},
 		{"ZDR", func() bool { return runZDRTest(ctx, client, model, maxTokens, verbose) }},
@@ -291,26 +291,24 @@ func runStreamTest(ctx context.Context, client *openrouter.Client, model string,
 	return true
 }
 
-func runCompletionTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
+func runCompletionTest(ctx context.Context, client *openrouter.Client, model string, verbose bool) bool {
 	fmt.Printf("🔄 Test: Legacy Completion\n")
 
-	// Only certain models support legacy completion
-	completionModel := "openai/gpt-3.5-turbo-instruct"
 	prompt := "The capital of France is"
 
 	start := time.Now()
 	resp, err := client.Complete(ctx, prompt,
-		openrouter.WithCompletionModel(completionModel),
+		openrouter.WithCompletionModel(model),
 		openrouter.WithCompletionMaxTokens(10),
 		openrouter.WithCompletionTemperature(0.5),
 	)
 	elapsed := time.Since(start)
 
 	if err != nil {
-		// Some accounts might not have access to instruct models
+		// Some models might not support legacy completion format
 		if reqErr, ok := err.(*openrouter.RequestError); ok {
 			if reqErr.IsNotFoundError() || reqErr.StatusCode == 403 {
-				fmt.Printf("⚠️  Skipped: Model %s not available\n", completionModel)
+				fmt.Printf("⚠️  Skipped: Model %s not available or doesn't support legacy completion\n", model)
 				return true // Don't fail the test
 			}
 		}
@@ -1104,23 +1102,22 @@ func runTransformsTest(ctx context.Context, client *openrouter.Client, model str
 	// Test 3: Test transforms with legacy completion endpoint
 	fmt.Printf("   Testing transforms with completion endpoint...\n")
 
-	// Only test if the model supports completion endpoint
-	completionModel := "openai/gpt-3.5-turbo-instruct"
+	// Test with legacy completion endpoint
 	longPrompt := strings.Repeat("This is a test sentence. ", 50) + "\n\nNow just say 'Done' and nothing else:"
 
 	start = time.Now()
 	compResp, err := client.Complete(ctx, longPrompt,
-		openrouter.WithCompletionModel(completionModel),
+		openrouter.WithCompletionModel(model),
 		openrouter.WithCompletionMaxTokens(10),
 		openrouter.WithCompletionTransforms("middle-out"),
 	)
 	elapsed = time.Since(start)
 
 	if err != nil {
-		// Some accounts might not have access to instruct models
+		// Some models might not support legacy completion format
 		if reqErr, ok := err.(*openrouter.RequestError); ok {
 			if reqErr.IsNotFoundError() || reqErr.StatusCode == 403 {
-				fmt.Printf("   ⚠️  Skipped: Model %s not available\n", completionModel)
+				fmt.Printf("   ⚠️  Skipped: Model %s not available or doesn't support legacy completion\n", model)
 			} else {
 				fmt.Printf("   ⚠️  Completion with transforms failed: %v\n", err)
 			}
@@ -1182,33 +1179,30 @@ func runTransformsTest(ctx context.Context, client *openrouter.Client, model str
 		fmt.Printf("      Response: %s\n", response)
 	}
 
-	// Test 5: Test behavior with small context model (8K or less should default to middle-out)
-	fmt.Printf("   Testing default behavior with small context model...\n")
-
-	// Try to find a model with 8K context or less
-	smallContextModel := "meta-llama/llama-3.1-8b-instruct"
+	// Test 5: Test behavior with the provided model
+	fmt.Printf("   Testing default behavior with provided model...\n")
 
 	resp, err = client.ChatComplete(ctx, shortMessages,
-		openrouter.WithModel(smallContextModel),
+		openrouter.WithModel(model),
 		openrouter.WithMaxTokens(10),
-		// Not specifying transforms - should default to middle-out for 8K models
+		// Not specifying transforms
 	)
 
 	if err != nil {
 		// Model might not be available
 		if reqErr, ok := err.(*openrouter.RequestError); ok {
 			if reqErr.IsNotFoundError() || reqErr.StatusCode == 403 {
-				fmt.Printf("   ⚠️  Small context model test skipped: %s not available\n", smallContextModel)
+				fmt.Printf("   ⚠️  Model test skipped: %s not available\n", model)
 			} else {
-				fmt.Printf("   ⚠️  Small context model test failed: %v\n", err)
+				fmt.Printf("   ⚠️  Model test failed: %v\n", err)
 			}
 		} else {
-			fmt.Printf("   ⚠️  Small context model test failed: %v\n", err)
+			fmt.Printf("   ⚠️  Model test failed: %v\n", err)
 		}
 	} else {
 		fmt.Printf("   ✅ Default transform behavior tested\n")
 		if verbose {
-			fmt.Printf("      Model: %s (defaults to middle-out if ≤8K context)\n", smallContextModel)
+			fmt.Printf("      Model: %s\n", model)
 			fmt.Printf("      Response: %s\n", strings.TrimSpace(resp.Choices[0].Message.Content.(string)))
 		}
 	}
@@ -1435,8 +1429,9 @@ func runWebSearchTest(ctx context.Context, client *openrouter.Client, model stri
 	// Test 7: Test helper function for online model
 	fmt.Printf("   Testing WithOnlineModel helper...\n")
 
-	onlineModel := openrouter.WithOnlineModel("meta-llama/llama-3.1-8b-instruct")
-	if onlineModel == "meta-llama/llama-3.1-8b-instruct:online" {
+	onlineModel := openrouter.WithOnlineModel(model)
+	expectedOnline := model + ":online"
+	if onlineModel == expectedOnline {
 		fmt.Printf("   ✅ WithOnlineModel helper works correctly\n")
 	} else {
 		fmt.Printf("   ❌ WithOnlineModel helper failed\n")
