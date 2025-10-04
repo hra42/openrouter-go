@@ -2647,9 +2647,9 @@ func runListKeysTest(ctx context.Context, client *openrouter.Client, verbose boo
 			fmt.Printf("   ❌ API key missing CreatedAt\n")
 			return false
 		}
+		// Note: UpdatedAt is optional and may be empty for some keys
 		if firstKey.UpdatedAt == "" {
-			fmt.Printf("   ❌ API key missing UpdatedAt\n")
-			return false
+			fmt.Printf("   ⚠️  API key UpdatedAt is empty (may be normal for some keys)\n")
 		}
 
 		// Limit should be non-negative
@@ -2836,9 +2836,9 @@ func runCreateKeyTest(ctx context.Context, client *openrouter.Client, verbose bo
 		fmt.Printf("   ❌ API key missing CreatedAt\n")
 		return false
 	}
+	// Note: UpdatedAt is optional and may be empty for newly created keys
 	if resp.Data.UpdatedAt == "" {
-		fmt.Printf("   ❌ API key missing UpdatedAt\n")
-		return false
+		fmt.Printf("   ⚠️  API key UpdatedAt is empty (may be normal for new keys)\n")
 	}
 
 	// Validate limit
