@@ -184,3 +184,49 @@ func (c *Client) DeleteKey(ctx context.Context, hash string) (*DeleteKeyResponse
 
 	return &response, nil
 }
+
+// UpdateKey updates an existing API key by its hash.
+// Requires a Provisioning API key (not a regular inference API key).
+//
+// All fields in the request are optional - only include the fields you want to update.
+//
+// Example:
+//
+//	ctx := context.Background()
+//	hash := "abc123hash"
+//
+//	// Update just the name
+//	newName := "Updated Key Name"
+//	result, err := client.UpdateKey(ctx, hash, &openrouter.UpdateKeyRequest{
+//	    Name: &newName,
+//	})
+//
+//	// Disable a key
+//	disabled := true
+//	result, err := client.UpdateKey(ctx, hash, &openrouter.UpdateKeyRequest{
+//	    Disabled: &disabled,
+//	})
+//
+//	// Update limit
+//	newLimit := 200.0
+//	result, err := client.UpdateKey(ctx, hash, &openrouter.UpdateKeyRequest{
+//	    Limit: &newLimit,
+//	})
+func (c *Client) UpdateKey(ctx context.Context, hash string, request *UpdateKeyRequest) (*UpdateKeyResponse, error) {
+	if hash == "" {
+		return nil, &ValidationError{Message: "hash is required"}
+	}
+
+	if request == nil {
+		return nil, &ValidationError{Message: "request cannot be nil"}
+	}
+
+	endpoint := fmt.Sprintf("/keys/%s", hash)
+
+	var response UpdateKeyResponse
+	if err := c.doRequest(ctx, "PATCH", endpoint, request, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}

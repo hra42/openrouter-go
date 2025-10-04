@@ -51,4 +51,9 @@ steps:
         from_secret: openrouter_provisioning_key
     commands:
       - go run cmd/openrouter-test/main.go -key $ORPROVKEY -test activity
+      - go run cmd/openrouter-test/main.go -key $ORPROVKEY -test key
+      - go run cmd/openrouter-test/main.go -key $ORPROVKEY -test listkeys
+      - go run cmd/openrouter-test/main.go -key $ORPROVKEY -test createkey
+      - go run cmd/openrouter-test/main.go -key $ORPROVKEY -test updatekey
+      - go run cmd/openrouter-test/main.go -key $ORPROVKEY -test deletekey
     failure: ignore  # Don't fail the pipeline if provisioning key is not set

@@ -117,7 +117,7 @@ func main() {
 
 	// Example 4: Get details about a specific key by hash
 	if len(resp.Data) > 0 {
-		fmt.Println("\n=== Example: Getting Specific Key Details by Hash ===")
+		fmt.Println("\n=== Example 4: Getting Specific Key Details by Hash ===")
 		firstKey := resp.Data[0]
 		fmt.Printf("Looking up key with hash: %s\n", firstKey.Hash)
 
@@ -135,6 +135,28 @@ func main() {
 		fmt.Printf("  Updated: %s\n", keyDetails.Data.UpdatedAt)
 		fmt.Printf("  Hash: %s\n", keyDetails.Data.Hash)
 	}
+
+	// Example 5: Update an API key (commented for safety)
+	fmt.Println("\n=== Example 5: Updating API Keys ===")
+	fmt.Println("Update operations (commented out for safety):")
+	fmt.Println()
+	fmt.Println("// Update key name:")
+	fmt.Println("// newName := \"Updated Key Name\"")
+	fmt.Println("// updated, err := client.UpdateKey(ctx, hash, &openrouter.UpdateKeyRequest{")
+	fmt.Println("//     Name: &newName,")
+	fmt.Println("// })")
+	fmt.Println()
+	fmt.Println("// Disable a key:")
+	fmt.Println("// disabled := true")
+	fmt.Println("// updated, err := client.UpdateKey(ctx, hash, &openrouter.UpdateKeyRequest{")
+	fmt.Println("//     Disabled: &disabled,")
+	fmt.Println("// })")
+	fmt.Println()
+	fmt.Println("// Update limit:")
+	fmt.Println("// newLimit := 200.0")
+	fmt.Println("// updated, err := client.UpdateKey(ctx, hash, &openrouter.UpdateKeyRequest{")
+	fmt.Println("//     Limit: &newLimit,")
+	fmt.Println("// })")
 
 	// Warning if all keys are disabled
 	if activeKeys == 0 && len(resp.Data) > 0 {

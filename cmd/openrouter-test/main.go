@@ -17,7 +17,7 @@ func main() {
 	var (
 		apiKey    = flag.String("key", os.Getenv("OPENROUTER_API_KEY"), "OpenRouter API key (or set OPENROUTER_API_KEY env var)")
 		model     = flag.String("model", "openai/gpt-3.5-turbo", "Model to use")
-		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models, endpoints, providers, credits, activity, key, listkeys, createkey")
+		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models, endpoints, providers, credits, activity, key, listkeys, createkey, updatekey, deletekey")
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -186,6 +186,18 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "updatekey":
+		if runUpdateKeyTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "deletekey":
+		if runDeleteKeyTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -229,6 +241,9 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, m
 		{"Get Activity", func() bool { return runActivityTest(ctx, client, verbose) }},
 		{"Get API Key Info", func() bool { return runKeyTest(ctx, client, verbose) }},
 		{"List API Keys", func() bool { return runListKeysTest(ctx, client, verbose) }},
+		{"Create API Key", func() bool { return runCreateKeyTest(ctx, client, verbose) }},
+		{"Update API Key", func() bool { return runUpdateKeyTest(ctx, client, verbose) }},
+		{"Delete API Key", func() bool { return runDeleteKeyTest(ctx, client, verbose) }},
 	}
 
 	for _, test := range tests {
@@ -2754,12 +2769,6 @@ func runListKeysTest(ctx context.Context, client *openrouter.Client, verbose boo
 
 func runCreateKeyTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
 	fmt.Printf("🔄 Test: Create API Key\n")
-	fmt.Printf("\n⚠️  WARNING: This test will create a REAL API key in your account!\n")
-	fmt.Printf("   The key will be created with a test label and can be deleted afterwards.\n")
-	fmt.Printf("   Press Ctrl+C to cancel, or press Enter to continue...\n")
-
-	// Wait for user confirmation
-	fmt.Scanln()
 
 	// Test: Create API key
 	fmt.Printf("\n   Testing create API key...\n")
@@ -2893,9 +2902,320 @@ func runCreateKeyTest(ctx context.Context, client *openrouter.Client, verbose bo
 	fmt.Printf("   ✅ Nil request validation works\n")
 
 	fmt.Printf("\n✅ Create API key tests completed\n")
-	fmt.Printf("\n💡 Remember to delete the test key if you don't need it:\n")
-	fmt.Printf("   https://openrouter.ai/settings/keys\n")
-	fmt.Printf("   Look for: %s\n", keyName)
 
+	// Clean up: Delete the test key
+	fmt.Printf("\n   Cleaning up: Deleting test key...\n")
+	deleteResp, err := client.DeleteKey(ctx, resp.Data.Hash)
+	if err != nil {
+		fmt.Printf("   ⚠️  Warning: Failed to delete test key: %v\n", err)
+		fmt.Printf("   You may need to manually delete the test key at: https://openrouter.ai/settings/keys\n")
+		fmt.Printf("   Look for: %s\n", keyName)
+	} else if deleteResp.Data.Success {
+		fmt.Printf("   ✅ Test key deleted successfully\n")
+	}
+
+	return true
+}
+
+func runUpdateKeyTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
+	fmt.Printf("🔄 Test: Update API Key\n")
+
+	// Create a test key specifically for update testing
+	fmt.Printf("\n   Creating a temporary key for update testing...\n")
+	keyName := fmt.Sprintf("UPDATE TEST - Created at %s", time.Now().Format("2006-01-02 15:04:05"))
+	initialLimit := 1.0
+
+	createResp, err := client.CreateKey(ctx, &openrouter.CreateKeyRequest{
+		Name:  keyName,
+		Limit: &initialLimit,
+	})
+
+	if err != nil {
+		// Check if it's a provisioning key error
+		if reqErr, ok := err.(*openrouter.RequestError); ok {
+			if reqErr.StatusCode == 401 || reqErr.StatusCode == 403 {
+				fmt.Printf("   ⚠️  Update key endpoint requires a provisioning key: %v\n", reqErr.Message)
+				fmt.Printf("   Skipping test (provisioning keys are separate from inference API keys)\n")
+				fmt.Printf("   Create a provisioning key at: https://openrouter.ai/settings/provisioning-keys\n")
+				return true // Don't fail the test - this is expected with regular API keys
+			}
+		}
+		fmt.Printf("❌ Failed to create temporary key for update testing: %v\n", err)
+		return false
+	}
+
+	testKeyHash := createResp.Data.Hash
+	fmt.Printf("   ✅ Created temporary key: %s (hash: %s)\n", createResp.Data.Label, testKeyHash)
+
+	// Test 1: Update just the name
+	fmt.Printf("\n   Testing update key name...\n")
+	newName := fmt.Sprintf("Updated at %s", time.Now().Format("15:04:05"))
+	start := time.Now()
+	updateResp, err := client.UpdateKey(ctx, testKeyHash, &openrouter.UpdateKeyRequest{
+		Name: &newName,
+	})
+	elapsed := time.Since(start)
+
+	if err != nil {
+		fmt.Printf("❌ Failed to update key name: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("   ✅ Updated key name (%.2fs)\n", elapsed.Seconds())
+
+	if updateResp.Data.Name != newName {
+		fmt.Printf("   ❌ Name not updated: expected %q, got %q\n", newName, updateResp.Data.Name)
+		return false
+	}
+	fmt.Printf("   ✅ Name update verified: %s\n", updateResp.Data.Name)
+
+	// Test 2: Update the limit
+	fmt.Printf("\n   Testing update key limit...\n")
+	newLimit := 2.0
+	start = time.Now()
+	updateResp, err = client.UpdateKey(ctx, testKeyHash, &openrouter.UpdateKeyRequest{
+		Limit: &newLimit,
+	})
+	elapsed = time.Since(start)
+
+	if err != nil {
+		fmt.Printf("❌ Failed to update key limit: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("   ✅ Updated key limit (%.2fs)\n", elapsed.Seconds())
+
+	if updateResp.Data.Limit != newLimit {
+		fmt.Printf("   ❌ Limit not updated: expected %.2f, got %.2f\n", newLimit, updateResp.Data.Limit)
+		return false
+	}
+	fmt.Printf("   ✅ Limit update verified: $%.2f\n", updateResp.Data.Limit)
+
+	// Test 3: Update disabled status
+	fmt.Printf("\n   Testing update key disabled status...\n")
+	newDisabled := true
+	start = time.Now()
+	updateResp, err = client.UpdateKey(ctx, testKeyHash, &openrouter.UpdateKeyRequest{
+		Disabled: &newDisabled,
+	})
+	elapsed = time.Since(start)
+
+	if err != nil {
+		fmt.Printf("❌ Failed to update key disabled status: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("   ✅ Updated key disabled status (%.2fs)\n", elapsed.Seconds())
+
+	if updateResp.Data.Disabled != newDisabled {
+		fmt.Printf("   ❌ Disabled status not updated: expected %v, got %v\n", newDisabled, updateResp.Data.Disabled)
+		return false
+	}
+	fmt.Printf("   ✅ Disabled status update verified: %v\n", updateResp.Data.Disabled)
+
+	// Test 4: Update multiple fields at once
+	fmt.Printf("\n   Testing update multiple fields...\n")
+	multiName := "Multi-field update test"
+	multiLimit := 3.0
+	reenableKey := false
+	start = time.Now()
+	updateResp, err = client.UpdateKey(ctx, testKeyHash, &openrouter.UpdateKeyRequest{
+		Name:     &multiName,
+		Limit:    &multiLimit,
+		Disabled: &reenableKey,
+	})
+	elapsed = time.Since(start)
+
+	if err != nil {
+		fmt.Printf("❌ Failed to update multiple fields: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("   ✅ Updated multiple fields (%.2fs)\n", elapsed.Seconds())
+
+	if updateResp.Data.Name != multiName {
+		fmt.Printf("   ❌ Name not updated in multi-field update\n")
+		return false
+	}
+	if updateResp.Data.Limit != multiLimit {
+		fmt.Printf("   ❌ Limit not updated in multi-field update\n")
+		return false
+	}
+	fmt.Printf("   ✅ Multiple fields update verified\n")
+
+	// Test validation
+	fmt.Printf("\n   Testing input validation...\n")
+
+	// Test with empty hash (should fail)
+	_, err = client.UpdateKey(ctx, "", &openrouter.UpdateKeyRequest{
+		Name: &newName,
+	})
+	if err == nil {
+		fmt.Printf("   ❌ Should have failed with empty hash\n")
+		return false
+	}
+	if !openrouter.IsValidationError(err) {
+		fmt.Printf("   ❌ Expected ValidationError for empty hash, got %T\n", err)
+		return false
+	}
+	fmt.Printf("   ✅ Empty hash validation works\n")
+
+	// Test with nil request (should fail)
+	_, err = client.UpdateKey(ctx, testKeyHash, nil)
+	if err == nil {
+		fmt.Printf("   ❌ Should have failed with nil request\n")
+		return false
+	}
+	if !openrouter.IsValidationError(err) {
+		fmt.Printf("   ❌ Expected ValidationError for nil request, got %T\n", err)
+		return false
+	}
+	fmt.Printf("   ✅ Nil request validation works\n")
+
+	// Test with non-existent hash (should fail)
+	_, err = client.UpdateKey(ctx, "nonexistent-hash-12345", &openrouter.UpdateKeyRequest{
+		Name: &newName,
+	})
+	if err == nil {
+		fmt.Printf("   ❌ Should have failed with non-existent hash\n")
+		return false
+	}
+	if reqErr, ok := err.(*openrouter.RequestError); ok {
+		if reqErr.StatusCode != 404 {
+			fmt.Printf("   ⚠️  Expected 404 for non-existent hash, got %d\n", reqErr.StatusCode)
+		} else {
+			fmt.Printf("   ✅ Non-existent hash validation works\n")
+		}
+	}
+
+	fmt.Printf("\n✅ Update API key tests completed\n")
+
+	// Clean up: Delete the test key
+	fmt.Printf("\n   Cleaning up: Deleting test key...\n")
+	deleteResp, err := client.DeleteKey(ctx, testKeyHash)
+	if err != nil {
+		fmt.Printf("   ⚠️  Warning: Failed to delete test key: %v\n", err)
+		fmt.Printf("   You may need to manually delete the test key at: https://openrouter.ai/settings/keys\n")
+		fmt.Printf("   Hash: %s\n", testKeyHash)
+	} else if deleteResp.Data.Success {
+		fmt.Printf("   ✅ Test key deleted successfully\n")
+	}
+
+	return true
+}
+
+func runDeleteKeyTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
+	fmt.Printf("🔄 Test: Delete API Key\n")
+
+	// First create a key specifically for deletion testing
+	fmt.Printf("\n   Creating a temporary key for deletion testing...\n")
+	keyName := fmt.Sprintf("DELETE TEST - Created at %s (safe to delete)", time.Now().Format("2006-01-02 15:04:05"))
+	limit := 0.01 // Minimal limit
+
+	createResp, err := client.CreateKey(ctx, &openrouter.CreateKeyRequest{
+		Name:  keyName,
+		Limit: &limit,
+	})
+
+	if err != nil {
+		// Check if it's a provisioning key error
+		if reqErr, ok := err.(*openrouter.RequestError); ok {
+			if reqErr.StatusCode == 401 || reqErr.StatusCode == 403 {
+				fmt.Printf("   ⚠️  Delete key endpoint requires a provisioning key: %v\n", reqErr.Message)
+				fmt.Printf("   Skipping test (provisioning keys are separate from inference API keys)\n")
+				fmt.Printf("   Create a provisioning key at: https://openrouter.ai/settings/provisioning-keys\n")
+				return true // Don't fail the test - this is expected with regular API keys
+			}
+		}
+		fmt.Printf("❌ Failed to create temporary key for deletion: %v\n", err)
+		return false
+	}
+
+	keyHash := createResp.Data.Hash
+	fmt.Printf("   ✅ Created temporary key: %s (hash: %s)\n", createResp.Data.Label, keyHash)
+
+	// Test: Delete the key
+	fmt.Printf("\n   Testing delete API key...\n")
+	start := time.Now()
+	deleteResp, err := client.DeleteKey(ctx, keyHash)
+	elapsed := time.Since(start)
+
+	if err != nil {
+		fmt.Printf("❌ Failed to delete API key: %v\n", err)
+		fmt.Printf("   You may need to manually delete the test key at: https://openrouter.ai/settings/keys\n")
+		fmt.Printf("   Look for: %s\n", keyName)
+		return false
+	}
+
+	fmt.Printf("   ✅ Deleted API key (%.2fs)\n", elapsed.Seconds())
+
+	// Validate response
+	if !deleteResp.Data.Success {
+		fmt.Printf("   ❌ Delete operation reported failure\n")
+		return false
+	}
+	fmt.Printf("   ✅ Delete operation confirmed successful\n")
+
+	// Verify the key is actually gone
+	fmt.Printf("\n   Verifying key was deleted...\n")
+	_, err = client.GetKeyByHash(ctx, keyHash)
+	if err == nil {
+		fmt.Printf("   ❌ Key still exists after deletion!\n")
+		return false
+	}
+
+	if reqErr, ok := err.(*openrouter.RequestError); ok {
+		if reqErr.StatusCode == 404 {
+			fmt.Printf("   ✅ Confirmed key no longer exists (404)\n")
+		} else {
+			fmt.Printf("   ⚠️  Unexpected status code when verifying deletion: %d\n", reqErr.StatusCode)
+		}
+	}
+
+	// Test validation
+	fmt.Printf("\n   Testing input validation...\n")
+
+	// Test with empty hash (should fail)
+	_, err = client.DeleteKey(ctx, "")
+	if err == nil {
+		fmt.Printf("   ❌ Should have failed with empty hash\n")
+		return false
+	}
+	if !openrouter.IsValidationError(err) {
+		fmt.Printf("   ❌ Expected ValidationError for empty hash, got %T\n", err)
+		return false
+	}
+	fmt.Printf("   ✅ Empty hash validation works\n")
+
+	// Test with non-existent hash (should fail with 404)
+	_, err = client.DeleteKey(ctx, "nonexistent-hash-12345")
+	if err == nil {
+		fmt.Printf("   ❌ Should have failed with non-existent hash\n")
+		return false
+	}
+	if reqErr, ok := err.(*openrouter.RequestError); ok {
+		if reqErr.StatusCode != 404 {
+			fmt.Printf("   ⚠️  Expected 404 for non-existent hash, got %d\n", reqErr.StatusCode)
+		} else {
+			fmt.Printf("   ✅ Non-existent hash validation works\n")
+		}
+	}
+
+	// Test double deletion (should fail with 404)
+	fmt.Printf("\n   Testing double deletion...\n")
+	_, err = client.DeleteKey(ctx, keyHash)
+	if err == nil {
+		fmt.Printf("   ❌ Should have failed deleting already-deleted key\n")
+		return false
+	}
+	if reqErr, ok := err.(*openrouter.RequestError); ok {
+		if reqErr.StatusCode == 404 {
+			fmt.Printf("   ✅ Double deletion properly fails with 404\n")
+		} else {
+			fmt.Printf("   ⚠️  Expected 404 for double deletion, got %d\n", reqErr.StatusCode)
+		}
+	}
+
+	fmt.Printf("\n✅ Delete API key tests completed\n")
 	return true
 }

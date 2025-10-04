@@ -960,3 +960,283 @@ func TestDeleteKeyUnauthorized(t *testing.T) {
 		t.Errorf("expected error message 'Provisioning key required', got %q", reqErr.Message)
 	}
 }
+
+func TestUpdateKey(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify request method and path
+		if r.Method != "PATCH" {
+			t.Errorf("expected PATCH request, got %s", r.Method)
+		}
+		expectedPath := "/keys/testhash123"
+		if r.URL.Path != expectedPath {
+			t.Errorf("expected path %s, got %s", expectedPath, r.URL.Path)
+		}
+
+		// Verify Authorization header
+		auth := r.Header.Get("Authorization")
+		if auth != "Bearer test-key" {
+			t.Errorf("expected Authorization header 'Bearer test-key', got %q", auth)
+		}
+
+		// Read and verify request body
+		var reqBody UpdateKeyRequest
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatalf("failed to decode request body: %v", err)
+		}
+
+		if reqBody.Name == nil || *reqBody.Name != "Updated Key" {
+			t.Errorf("expected Name 'Updated Key', got %v", reqBody.Name)
+		}
+
+		// Send response
+		response := UpdateKeyResponse{
+			Data: APIKey{
+				Name:      "sk-or-v1-abc123",
+				Label:     "Updated Key",
+				Limit:     100.0,
+				Disabled:  false,
+				CreatedAt: "2024-01-01T00:00:00Z",
+				UpdatedAt: "2024-01-10T00:00:00Z",
+				Hash:      "testhash123",
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	newName := "Updated Key"
+	resp, err := client.UpdateKey(context.Background(), "testhash123", &UpdateKeyRequest{
+		Name: &newName,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Validate response
+	if resp.Data.Label != "Updated Key" {
+		t.Errorf("expected Label 'Updated Key', got %q", resp.Data.Label)
+	}
+}
+
+func TestUpdateKeyDisable(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var reqBody UpdateKeyRequest
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatalf("failed to decode request body: %v", err)
+		}
+
+		if reqBody.Disabled == nil || *reqBody.Disabled != true {
+			t.Errorf("expected Disabled true, got %v", reqBody.Disabled)
+		}
+
+		response := UpdateKeyResponse{
+			Data: APIKey{
+				Name:      "sk-or-v1-abc123",
+				Label:     "Test Key",
+				Limit:     100.0,
+				Disabled:  true,
+				CreatedAt: "2024-01-01T00:00:00Z",
+				UpdatedAt: "2024-01-10T00:00:00Z",
+				Hash:      "testhash123",
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	disabled := true
+	resp, err := client.UpdateKey(context.Background(), "testhash123", &UpdateKeyRequest{
+		Disabled: &disabled,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !resp.Data.Disabled {
+		t.Errorf("expected Disabled true, got %t", resp.Data.Disabled)
+	}
+}
+
+func TestUpdateKeyLimit(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var reqBody UpdateKeyRequest
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatalf("failed to decode request body: %v", err)
+		}
+
+		if reqBody.Limit == nil || *reqBody.Limit != 200.0 {
+			t.Errorf("expected Limit 200.0, got %v", reqBody.Limit)
+		}
+
+		response := UpdateKeyResponse{
+			Data: APIKey{
+				Name:      "sk-or-v1-abc123",
+				Label:     "Test Key",
+				Limit:     200.0,
+				Disabled:  false,
+				CreatedAt: "2024-01-01T00:00:00Z",
+				UpdatedAt: "2024-01-10T00:00:00Z",
+				Hash:      "testhash123",
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	newLimit := 200.0
+	resp, err := client.UpdateKey(context.Background(), "testhash123", &UpdateKeyRequest{
+		Limit: &newLimit,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if resp.Data.Limit != 200.0 {
+		t.Errorf("expected Limit 200.0, got %f", resp.Data.Limit)
+	}
+}
+
+func TestUpdateKeyMultipleFields(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var reqBody UpdateKeyRequest
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatalf("failed to decode request body: %v", err)
+		}
+
+		// Verify all fields
+		if reqBody.Name == nil || *reqBody.Name != "New Name" {
+			t.Errorf("expected Name 'New Name', got %v", reqBody.Name)
+		}
+		if reqBody.Limit == nil || *reqBody.Limit != 150.0 {
+			t.Errorf("expected Limit 150.0, got %v", reqBody.Limit)
+		}
+		if reqBody.IncludeBYOKInLimit == nil || *reqBody.IncludeBYOKInLimit != true {
+			t.Errorf("expected IncludeBYOKInLimit true, got %v", reqBody.IncludeBYOKInLimit)
+		}
+
+		response := UpdateKeyResponse{
+			Data: APIKey{
+				Name:      "sk-or-v1-abc123",
+				Label:     "New Name",
+				Limit:     150.0,
+				Disabled:  false,
+				CreatedAt: "2024-01-01T00:00:00Z",
+				UpdatedAt: "2024-01-10T00:00:00Z",
+				Hash:      "testhash123",
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	newName := "New Name"
+	newLimit := 150.0
+	includeBYOK := true
+
+	resp, err := client.UpdateKey(context.Background(), "testhash123", &UpdateKeyRequest{
+		Name:               &newName,
+		Limit:              &newLimit,
+		IncludeBYOKInLimit: &includeBYOK,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if resp.Data.Label != "New Name" {
+		t.Errorf("expected Label 'New Name', got %q", resp.Data.Label)
+	}
+	if resp.Data.Limit != 150.0 {
+		t.Errorf("expected Limit 150.0, got %f", resp.Data.Limit)
+	}
+}
+
+func TestUpdateKeyValidation(t *testing.T) {
+	client := NewClient(
+		WithAPIKey("test-key"),
+	)
+
+	// Test empty hash
+	newName := "Test"
+	_, err := client.UpdateKey(context.Background(), "", &UpdateKeyRequest{
+		Name: &newName,
+	})
+	if err == nil {
+		t.Fatal("expected error for empty hash, got nil")
+	}
+	if !IsValidationError(err) {
+		t.Errorf("expected ValidationError, got %T", err)
+	}
+
+	// Test nil request
+	_, err = client.UpdateKey(context.Background(), "somehash", nil)
+	if err == nil {
+		t.Fatal("expected error for nil request, got nil")
+	}
+	if !IsValidationError(err) {
+		t.Errorf("expected ValidationError, got %T", err)
+	}
+}
+
+func TestUpdateKeyNotFound(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(ErrorResponse{
+			Error: APIError{
+				Message: "API key not found",
+				Type:    "not_found_error",
+				Code:    "key_not_found",
+			},
+		})
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	newName := "Test"
+	_, err := client.UpdateKey(context.Background(), "nonexistenthash", &UpdateKeyRequest{
+		Name: &newName,
+	})
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	reqErr, ok := err.(*RequestError)
+	if !ok {
+		t.Fatalf("expected RequestError, got %T", err)
+	}
+	if reqErr.StatusCode != http.StatusNotFound {
+		t.Errorf("expected status code %d, got %d", http.StatusNotFound, reqErr.StatusCode)
+	}
+}

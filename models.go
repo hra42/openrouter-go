@@ -533,3 +533,21 @@ type DeleteKeyResponse struct {
 type DeleteKeyData struct {
 	Success bool `json:"success"`
 }
+
+// UpdateKeyRequest represents a request to update an existing API key.
+// All fields are optional - only include fields you want to update.
+type UpdateKeyRequest struct {
+	// Name is the new name/label for the API key
+	Name *string `json:"name,omitempty"`
+	// Disabled controls whether the API key is disabled
+	Disabled *bool `json:"disabled,omitempty"`
+	// Limit is the new credit limit for the API key
+	Limit *float64 `json:"limit,omitempty"`
+	// IncludeBYOKInLimit controls whether BYOK usage counts toward the limit
+	IncludeBYOKInLimit *bool `json:"include_byok_in_limit,omitempty"`
+}
+
+// UpdateKeyResponse represents the response from updating an API key.
+type UpdateKeyResponse struct {
+	Data APIKey `json:"data"`
+}

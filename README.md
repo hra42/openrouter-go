@@ -545,6 +545,58 @@ This endpoint is useful for:
 - Implementing temporary key workflows
 - Building key lifecycle management systems
 - Programmatic key revocation
+
+### Updating API Keys
+
+Update an existing API key's properties (name, limit, disabled status) by its hash. Requires a Provisioning API key:
+
+```go
+// Update just the key name
+hash := "abc123hash"
+newName := "Updated Production Key"
+result, err := client.UpdateKey(ctx, hash, &openrouter.UpdateKeyRequest{
+    Name: &newName,
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Updated key: %s\n", result.Data.Label)
+
+// Disable a key
+disabled := true
+result, err := client.UpdateKey(ctx, hash, &openrouter.UpdateKeyRequest{
+    Disabled: &disabled,
+})
+
+// Update credit limit
+newLimit := 200.0
+result, err := client.UpdateKey(ctx, hash, &openrouter.UpdateKeyRequest{
+    Limit: &newLimit,
+})
+
+// Update multiple fields at once
+result, err := client.UpdateKey(ctx, hash, &openrouter.UpdateKeyRequest{
+    Name:               &newName,
+    Limit:              &newLimit,
+    IncludeBYOKInLimit: &[]bool{true}[0],
+})
+```
+
+**Important**: This endpoint requires a provisioning key (not a regular inference API key). Create one at: https://openrouter.ai/settings/provisioning-keys
+
+All fields in `UpdateKeyRequest` are optional - only include the fields you want to update:
+- **Name**: Display name for the API key
+- **Disabled**: Set to true to disable the key (prevents usage)
+- **Limit**: Credit limit in dollars
+- **IncludeBYOKInLimit**: Whether BYOK (Bring Your Own Key) usage counts toward the limit
+
+This endpoint is useful for:
+- Rotating key names for better organization
+- Adjusting credit limits based on usage patterns
+- Temporarily disabling keys without deletion
+- Managing BYOK limit policies
+- Implementing dynamic key management workflows
 ```
 
 ## Package Structure
