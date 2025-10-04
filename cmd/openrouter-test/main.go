@@ -2799,6 +2799,7 @@ func runCreateKeyTest(ctx context.Context, client *openrouter.Client, verbose bo
 	}
 
 	fmt.Printf("   ✅ Created API key (%.2fs)\n", elapsed.Seconds())
+	fmt.Printf("      Name: %s\n", resp.Data.Name)
 	fmt.Printf("      Label: %s\n", resp.Data.Label)
 	fmt.Printf("      Limit: $%.2f\n", resp.Data.Limit)
 
@@ -2819,12 +2820,12 @@ func runCreateKeyTest(ctx context.Context, client *openrouter.Client, verbose bo
 	}
 
 	// Check required fields
-	if resp.Data.Name == "" {
-		fmt.Printf("   ❌ API key missing Name\n")
+	if resp.Data.Name != keyName {
+		fmt.Printf("   ❌ API key name mismatch: expected %q, got %q\n", keyName, resp.Data.Name)
 		return false
 	}
-	if resp.Data.Label != keyName {
-		fmt.Printf("   ❌ API key label mismatch: expected %q, got %q\n", keyName, resp.Data.Label)
+	if resp.Data.Label == "" {
+		fmt.Printf("   ❌ API key missing Label\n")
 		return false
 	}
 	if resp.Data.Hash == "" {
