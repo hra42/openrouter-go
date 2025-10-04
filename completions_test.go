@@ -311,32 +311,32 @@ func TestHandleCompletionModelSuffix(t *testing.T) {
 	client := &Client{}
 
 	tests := []struct {
-		name         string
-		model        string
+		name          string
+		model         string
 		expectedModel string
 		expectedSort  string
 	}{
 		{
-			name:         "nitro suffix",
-			model:        "openai/gpt-3.5-turbo-instruct:nitro",
+			name:          "nitro suffix",
+			model:         "openai/gpt-3.5-turbo-instruct:nitro",
 			expectedModel: "openai/gpt-3.5-turbo-instruct",
 			expectedSort:  "throughput",
 		},
 		{
-			name:         "floor suffix",
-			model:        "openai/gpt-3.5-turbo-instruct:floor",
+			name:          "floor suffix",
+			model:         "openai/gpt-3.5-turbo-instruct:floor",
 			expectedModel: "openai/gpt-3.5-turbo-instruct",
 			expectedSort:  "price",
 		},
 		{
-			name:         "no suffix",
-			model:        "openai/gpt-3.5-turbo-instruct",
+			name:          "no suffix",
+			model:         "openai/gpt-3.5-turbo-instruct",
 			expectedModel: "openai/gpt-3.5-turbo-instruct",
 			expectedSort:  "",
 		},
 		{
-			name:         "model with colon in name",
-			model:        "org:custom:model",
+			name:          "model with colon in name",
+			model:         "org:custom:model",
 			expectedModel: "org:custom:model",
 			expectedSort:  "",
 		},

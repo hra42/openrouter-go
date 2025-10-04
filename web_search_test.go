@@ -99,7 +99,7 @@ func TestParseAnnotations(t *testing.T) {
 			},
 		},
 		{
-			Type: "other_type",
+			Type:        "other_type",
 			URLCitation: nil,
 		},
 	}

@@ -8,14 +8,14 @@ import (
 
 func TestRequestError(t *testing.T) {
 	tests := []struct {
-		name               string
-		err                *RequestError
-		expectedString     string
-		isRateLimit        bool
-		isAuth             bool
-		isPermission       bool
-		isNotFound         bool
-		isServer           bool
+		name           string
+		err            *RequestError
+		expectedString string
+		isRateLimit    bool
+		isAuth         bool
+		isPermission   bool
+		isNotFound     bool
+		isServer       bool
 	}{
 		{
 			name: "rate limit error",

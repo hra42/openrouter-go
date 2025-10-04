@@ -11,31 +11,31 @@ type ChatCompletionRequest struct {
 	Messages []Message `json:"messages"`
 
 	// Optional parameters
-	Temperature      *float64               `json:"temperature,omitempty"`
-	TopP             *float64               `json:"top_p,omitempty"`
-	TopK             *int                   `json:"top_k,omitempty"`
-	FrequencyPenalty *float64               `json:"frequency_penalty,omitempty"`
-	PresencePenalty  *float64               `json:"presence_penalty,omitempty"`
-	RepetitionPenalty *float64              `json:"repetition_penalty,omitempty"`
-	MaxTokens        *int                   `json:"max_tokens,omitempty"`
-	MinP             *float64               `json:"min_p,omitempty"`
-	TopA             *float64               `json:"top_a,omitempty"`
-	Seed             *int                   `json:"seed,omitempty"`
-	Stop             []string               `json:"stop,omitempty"`
-	Stream           bool                   `json:"stream,omitempty"`
-	LogProbs         *bool                  `json:"logprobs,omitempty"`
-	TopLogProbs      *int                   `json:"top_logprobs,omitempty"`
-	ResponseFormat   *ResponseFormat        `json:"response_format,omitempty"`
-	Tools            []Tool                 `json:"tools,omitempty"`
-	ToolChoice       interface{}            `json:"tool_choice,omitempty"`
-	ParallelToolCalls *bool                 `json:"parallel_tool_calls,omitempty"`
-	Provider         *Provider              `json:"provider,omitempty"`
-	Transforms       []string               `json:"transforms,omitempty"`
-	Models           []string               `json:"models,omitempty"`
-	Route            string                 `json:"route,omitempty"`
-	Plugins          []Plugin               `json:"plugins,omitempty"`
-	WebSearchOptions *WebSearchOptions      `json:"web_search_options,omitempty"`
-	Metadata         map[string]interface{} `json:"-"` // Used for headers
+	Temperature       *float64               `json:"temperature,omitempty"`
+	TopP              *float64               `json:"top_p,omitempty"`
+	TopK              *int                   `json:"top_k,omitempty"`
+	FrequencyPenalty  *float64               `json:"frequency_penalty,omitempty"`
+	PresencePenalty   *float64               `json:"presence_penalty,omitempty"`
+	RepetitionPenalty *float64               `json:"repetition_penalty,omitempty"`
+	MaxTokens         *int                   `json:"max_tokens,omitempty"`
+	MinP              *float64               `json:"min_p,omitempty"`
+	TopA              *float64               `json:"top_a,omitempty"`
+	Seed              *int                   `json:"seed,omitempty"`
+	Stop              []string               `json:"stop,omitempty"`
+	Stream            bool                   `json:"stream,omitempty"`
+	LogProbs          *bool                  `json:"logprobs,omitempty"`
+	TopLogProbs       *int                   `json:"top_logprobs,omitempty"`
+	ResponseFormat    *ResponseFormat        `json:"response_format,omitempty"`
+	Tools             []Tool                 `json:"tools,omitempty"`
+	ToolChoice        interface{}            `json:"tool_choice,omitempty"`
+	ParallelToolCalls *bool                  `json:"parallel_tool_calls,omitempty"`
+	Provider          *Provider              `json:"provider,omitempty"`
+	Transforms        []string               `json:"transforms,omitempty"`
+	Models            []string               `json:"models,omitempty"`
+	Route             string                 `json:"route,omitempty"`
+	Plugins           []Plugin               `json:"plugins,omitempty"`
+	WebSearchOptions  *WebSearchOptions      `json:"web_search_options,omitempty"`
+	Metadata          map[string]interface{} `json:"-"` // Used for headers
 }
 
 // CompletionRequest represents a legacy completion request to the OpenRouter API.
@@ -139,43 +139,43 @@ type FunctionCall struct {
 // Provider represents provider-specific parameters for routing requests.
 type Provider struct {
 	// Order specifies provider slugs to try in order (e.g. ["anthropic", "openai"])
-	Order            []string               `json:"order,omitempty"`
+	Order []string `json:"order,omitempty"`
 	// RequireParameters only uses providers that support all parameters in the request
-	RequireParameters *bool                 `json:"require_parameters,omitempty"`
+	RequireParameters *bool `json:"require_parameters,omitempty"`
 	// DataCollection controls whether to use providers that may store data ("allow" or "deny")
-	DataCollection   string                 `json:"data_collection,omitempty"`
+	DataCollection string `json:"data_collection,omitempty"`
 	// AllowFallbacks allows backup providers when the primary is unavailable
-	AllowFallbacks   *bool                  `json:"allow_fallbacks,omitempty"`
+	AllowFallbacks *bool `json:"allow_fallbacks,omitempty"`
 	// Ignore specifies provider slugs to skip for this request
-	Ignore           []string               `json:"ignore,omitempty"`
+	Ignore []string `json:"ignore,omitempty"`
 	// Quantizations filters providers by quantization levels (e.g. ["int4", "int8"])
-	Quantizations    []string               `json:"quantizations,omitempty"`
+	Quantizations []string `json:"quantizations,omitempty"`
 	// ZDR restricts routing to only Zero Data Retention endpoints
-	ZDR              *bool                  `json:"zdr,omitempty"`
+	ZDR *bool `json:"zdr,omitempty"`
 	// Only specifies provider slugs to allow for this request
-	Only             []string               `json:"only,omitempty"`
+	Only []string `json:"only,omitempty"`
 	// Sort providers by "price", "throughput", or "latency"
-	Sort             string                 `json:"sort,omitempty"`
+	Sort string `json:"sort,omitempty"`
 	// MaxPrice specifies maximum pricing constraints for the request
-	MaxPrice         *MaxPrice              `json:"max_price,omitempty"`
+	MaxPrice *MaxPrice `json:"max_price,omitempty"`
 
 	// Deprecated: Use Ignore instead
-	IgnoreProviders  []string               `json:"-"`
+	IgnoreProviders []string `json:"-"`
 	// Deprecated: Use Quantizations instead
-	QuantizationFallback map[string]string  `json:"-"`
+	QuantizationFallback map[string]string `json:"-"`
 	// Internal provider parameters
-	ProviderParams   map[string]interface{} `json:"-"`
+	ProviderParams map[string]interface{} `json:"-"`
 }
 
 // ChatCompletionResponse represents a chat completion response from the OpenRouter API.
 type ChatCompletionResponse struct {
-	ID                string    `json:"id"`
-	Object            string    `json:"object"`
-	Created           int64     `json:"created"`
-	Model             string    `json:"model"`
-	Choices           []Choice  `json:"choices"`
-	Usage             Usage     `json:"usage"`
-	SystemFingerprint string    `json:"system_fingerprint,omitempty"`
+	ID                string   `json:"id"`
+	Object            string   `json:"object"`
+	Created           int64    `json:"created"`
+	Model             string   `json:"model"`
+	Choices           []Choice `json:"choices"`
+	Usage             Usage    `json:"usage"`
+	SystemFingerprint string   `json:"system_fingerprint,omitempty"`
 }
 
 // CompletionResponse represents a legacy completion response from the OpenRouter API.
@@ -190,11 +190,11 @@ type CompletionResponse struct {
 
 // Choice represents a choice in the chat completion response.
 type Choice struct {
-	Index        int          `json:"index"`
-	Message      Message      `json:"message"`
-	FinishReason string       `json:"finish_reason"`
-	LogProbs     *LogProbs    `json:"logprobs,omitempty"`
-	Delta        *Message     `json:"delta,omitempty"` // For streaming
+	Index        int       `json:"index"`
+	Message      Message   `json:"message"`
+	FinishReason string    `json:"finish_reason"`
+	LogProbs     *LogProbs `json:"logprobs,omitempty"`
+	Delta        *Message  `json:"delta,omitempty"` // For streaming
 }
 
 // CompletionChoice represents a choice in the legacy completion response.
@@ -219,9 +219,9 @@ type LogProbs struct {
 
 // LogProbContent represents log probability content.
 type LogProbContent struct {
-	Token       string     `json:"token"`
-	LogProb     float64    `json:"logprob"`
-	Bytes       []int      `json:"bytes,omitempty"`
+	Token       string       `json:"token"`
+	LogProb     float64      `json:"logprob"`
+	Bytes       []int        `json:"bytes,omitempty"`
 	TopLogProbs []TopLogProb `json:"top_logprobs,omitempty"`
 }
 
@@ -246,10 +246,10 @@ type MaxPrice struct {
 
 // StreamEvent represents a server-sent event for streaming responses.
 type StreamEvent struct {
-	ID      string
-	Event   string
-	Data    string
-	Retry   *time.Duration
+	ID    string
+	Event string
+	Data  string
+	Retry *time.Duration
 }
 
 // ErrorResponse represents an error response from the OpenRouter API.
@@ -259,9 +259,9 @@ type ErrorResponse struct {
 
 // APIError represents the error details in an error response.
 type APIError struct {
-	Message string                 `json:"message"`
-	Type    string                 `json:"type"`
-	Code    string                 `json:"code,omitempty"`
+	Message  string                 `json:"message"`
+	Type     string                 `json:"type"`
+	Code     string                 `json:"code,omitempty"`
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
 }
 
@@ -312,19 +312,19 @@ type ModelsResponse struct {
 
 // Model represents a model available on OpenRouter.
 type Model struct {
-	ID                  string                 `json:"id"`
-	Name                string                 `json:"name"`
-	CanonicalSlug       *string                `json:"canonical_slug"`
-	Created             float64                `json:"created"`
-	Description         string                 `json:"description"`
-	ContextLength       *float64               `json:"context_length"`
-	HuggingFaceID       *string                `json:"hugging_face_id"`
-	Architecture        ModelArchitecture      `json:"architecture"`
-	TopProvider         ModelTopProvider       `json:"top_provider"`
-	PerRequestLimits    *ModelPerRequestLimits `json:"per_request_limits"`
-	SupportedParameters []string               `json:"supported_parameters,omitempty"`
+	ID                  string                  `json:"id"`
+	Name                string                  `json:"name"`
+	CanonicalSlug       *string                 `json:"canonical_slug"`
+	Created             float64                 `json:"created"`
+	Description         string                  `json:"description"`
+	ContextLength       *float64                `json:"context_length"`
+	HuggingFaceID       *string                 `json:"hugging_face_id"`
+	Architecture        ModelArchitecture       `json:"architecture"`
+	TopProvider         ModelTopProvider        `json:"top_provider"`
+	PerRequestLimits    *ModelPerRequestLimits  `json:"per_request_limits"`
+	SupportedParameters []string                `json:"supported_parameters,omitempty"`
 	DefaultParameters   *ModelDefaultParameters `json:"default_parameters"`
-	Pricing             ModelPricing           `json:"pricing"`
+	Pricing             ModelPricing            `json:"pricing"`
 }
 
 // ModelArchitecture contains information about a model's architecture.
@@ -356,12 +356,57 @@ type ModelDefaultParameters struct {
 
 // ModelPricing contains pricing information for a model.
 type ModelPricing struct {
-	Prompt             string  `json:"prompt"`
-	Completion         string  `json:"completion"`
-	Image              string  `json:"image"`
-	Request            string  `json:"request"`
-	InputCacheRead     *string `json:"input_cache_read"`
-	InputCacheWrite    *string `json:"input_cache_write"`
-	WebSearch          string  `json:"web_search"`
-	InternalReasoning  string  `json:"internal_reasoning"`
+	Prompt            string  `json:"prompt"`
+	Completion        string  `json:"completion"`
+	Image             string  `json:"image"`
+	Request           string  `json:"request"`
+	InputCacheRead    *string `json:"input_cache_read"`
+	InputCacheWrite   *string `json:"input_cache_write"`
+	WebSearch         string  `json:"web_search"`
+	InternalReasoning string  `json:"internal_reasoning"`
+}
+
+// ModelEndpointsResponse represents the response from the model endpoints endpoint.
+type ModelEndpointsResponse struct {
+	Data ModelEndpointsData `json:"data"`
+}
+
+// ModelEndpointsData contains details about a model and its endpoints.
+type ModelEndpointsData struct {
+	ID           string                     `json:"id"`
+	Name         string                     `json:"name"`
+	Created      float64                    `json:"created"`
+	Description  string                     `json:"description"`
+	Architecture ModelEndpointsArchitecture `json:"architecture"`
+	Endpoints    []ModelEndpoint            `json:"endpoints"`
+}
+
+// ModelEndpointsArchitecture contains architecture information for a model's endpoints.
+type ModelEndpointsArchitecture struct {
+	Tokenizer        *string  `json:"tokenizer"`
+	InstructType     *string  `json:"instruct_type"`
+	InputModalities  []string `json:"input_modalities"`
+	OutputModalities []string `json:"output_modalities"`
+}
+
+// ModelEndpoint represents a single endpoint for a model.
+type ModelEndpoint struct {
+	Name                string               `json:"name"`
+	ContextLength       float64              `json:"context_length"`
+	Pricing             ModelEndpointPricing `json:"pricing"`
+	ProviderName        string               `json:"provider_name"`
+	Quantization        *string              `json:"quantization"`
+	MaxCompletionTokens *float64             `json:"max_completion_tokens"`
+	MaxPromptTokens     *float64             `json:"max_prompt_tokens"`
+	SupportedParameters []string             `json:"supported_parameters"`
+	Status              string               `json:"status"`
+	UptimeLast30m       *float64             `json:"uptime_last_30m"`
+}
+
+// ModelEndpointPricing contains pricing information for a specific endpoint.
+type ModelEndpointPricing struct {
+	Request    string `json:"request"`
+	Image      string `json:"image"`
+	Prompt     string `json:"prompt"`
+	Completion string `json:"completion"`
 }
