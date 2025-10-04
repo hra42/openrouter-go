@@ -503,6 +503,48 @@ This endpoint is useful for:
 - Creating keys with custom credit limits
 - Setting up BYOK (Bring Your Own Key) configurations
 - Building self-service key management systems
+
+### Deleting API Keys
+
+Delete an API key by its hash. Requires a Provisioning API key:
+
+```go
+// Delete a key by hash (hash obtained from ListKeys or key creation)
+hash := "abc123hash"
+result, err := client.DeleteKey(ctx, hash)
+if err != nil {
+    log.Fatal(err)
+}
+
+if result.Data.Success {
+    fmt.Println("API key successfully deleted")
+}
+
+// Example: Delete a key created in the same session
+keyResp, err := client.CreateKey(ctx, &openrouter.CreateKeyRequest{
+    Name: "Temporary Key",
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+// Later... delete it
+deleteResult, err := client.DeleteKey(ctx, keyResp.Data.Hash)
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+**⚠️ WARNING**: This operation is **irreversible**! Once deleted, the API key cannot be recovered and any applications using it will immediately lose access.
+
+**Important**: This endpoint requires a provisioning key (not a regular inference API key). Create one at: https://openrouter.ai/settings/provisioning-keys
+
+This endpoint is useful for:
+- Automated key rotation and cleanup
+- Removing compromised or unused keys
+- Implementing temporary key workflows
+- Building key lifecycle management systems
+- Programmatic key revocation
 ```
 
 ## Package Structure

@@ -828,3 +828,135 @@ func TestGetKeyByHashUnauthorized(t *testing.T) {
 		t.Errorf("expected error message 'Provisioning key required', got %q", reqErr.Message)
 	}
 }
+
+func TestDeleteKey(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify request method and path
+		if r.Method != "DELETE" {
+			t.Errorf("expected DELETE request, got %s", r.Method)
+		}
+		expectedPath := "/keys/testhash123"
+		if r.URL.Path != expectedPath {
+			t.Errorf("expected path %s, got %s", expectedPath, r.URL.Path)
+		}
+
+		// Verify Authorization header
+		auth := r.Header.Get("Authorization")
+		if auth != "Bearer test-key" {
+			t.Errorf("expected Authorization header 'Bearer test-key', got %q", auth)
+		}
+
+		// Send response
+		response := DeleteKeyResponse{
+			Data: DeleteKeyData{
+				Success: true,
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	resp, err := client.DeleteKey(context.Background(), "testhash123")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Validate response
+	if !resp.Data.Success {
+		t.Errorf("expected Success true, got %t", resp.Data.Success)
+	}
+}
+
+func TestDeleteKeyValidation(t *testing.T) {
+	client := NewClient(
+		WithAPIKey("test-key"),
+	)
+
+	// Test empty hash
+	_, err := client.DeleteKey(context.Background(), "")
+	if err == nil {
+		t.Fatal("expected error for empty hash, got nil")
+	}
+	if !IsValidationError(err) {
+		t.Errorf("expected ValidationError, got %T", err)
+	}
+}
+
+func TestDeleteKeyNotFound(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(ErrorResponse{
+			Error: APIError{
+				Message: "API key not found",
+				Type:    "not_found_error",
+				Code:    "key_not_found",
+			},
+		})
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	_, err := client.DeleteKey(context.Background(), "nonexistenthash")
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	reqErr, ok := err.(*RequestError)
+	if !ok {
+		t.Fatalf("expected RequestError, got %T", err)
+	}
+	if reqErr.StatusCode != http.StatusNotFound {
+		t.Errorf("expected status code %d, got %d", http.StatusNotFound, reqErr.StatusCode)
+	}
+	if reqErr.Message != "API key not found" {
+		t.Errorf("expected error message 'API key not found', got %q", reqErr.Message)
+	}
+}
+
+func TestDeleteKeyUnauthorized(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(ErrorResponse{
+			Error: APIError{
+				Message: "Provisioning key required",
+				Type:    "authentication_error",
+				Code:    "invalid_key_type",
+			},
+		})
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("invalid-key"),
+		WithBaseURL(server.URL),
+	)
+
+	_, err := client.DeleteKey(context.Background(), "somehash")
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	reqErr, ok := err.(*RequestError)
+	if !ok {
+		t.Fatalf("expected RequestError, got %T", err)
+	}
+	if reqErr.StatusCode != http.StatusUnauthorized {
+		t.Errorf("expected status code %d, got %d", http.StatusUnauthorized, reqErr.StatusCode)
+	}
+	if reqErr.Message != "Provisioning key required" {
+		t.Errorf("expected error message 'Provisioning key required', got %q", reqErr.Message)
+	}
+}

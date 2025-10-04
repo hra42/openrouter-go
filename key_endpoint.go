@@ -152,3 +152,35 @@ func (c *Client) GetKeyByHash(ctx context.Context, hash string) (*GetKeyByHashRe
 
 	return &response, nil
 }
+
+// DeleteKey deletes an API key by its hash.
+// Requires a Provisioning API key (not a regular inference API key).
+//
+// WARNING: This operation is irreversible! The API key will be permanently deleted.
+//
+// Example:
+//
+//	ctx := context.Background()
+//	// Get the hash from ListKeys or from key creation
+//	hash := "abc123hash"
+//	result, err := client.DeleteKey(ctx, hash)
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	if result.Data.Success {
+//	    fmt.Println("API key successfully deleted")
+//	}
+func (c *Client) DeleteKey(ctx context.Context, hash string) (*DeleteKeyResponse, error) {
+	if hash == "" {
+		return nil, &ValidationError{Message: "hash is required"}
+	}
+
+	endpoint := fmt.Sprintf("/keys/%s", hash)
+
+	var response DeleteKeyResponse
+	if err := c.doRequest(ctx, "DELETE", endpoint, nil, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}

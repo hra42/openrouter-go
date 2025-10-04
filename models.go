@@ -523,3 +523,13 @@ type CreateKeyResponse struct {
 type GetKeyByHashResponse struct {
 	Data APIKey `json:"data"`
 }
+
+// DeleteKeyResponse represents the response from deleting an API key.
+type DeleteKeyResponse struct {
+	Data DeleteKeyData `json:"data"`
+}
+
+// DeleteKeyData contains the result of a delete operation.
+type DeleteKeyData struct {
+	Success bool `json:"success"`
+}
