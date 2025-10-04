@@ -17,7 +17,7 @@ func main() {
 	var (
 		apiKey    = flag.String("key", os.Getenv("OPENROUTER_API_KEY"), "OpenRouter API key (or set OPENROUTER_API_KEY env var)")
 		model     = flag.String("model", "openai/gpt-3.5-turbo", "Model to use")
-		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models, endpoints, providers, credits")
+		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models, endpoints, providers, credits, activity")
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -162,6 +162,12 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "activity":
+		if runActivityTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -202,6 +208,7 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, m
 		{"Model Endpoints", func() bool { return runModelEndpointsTest(ctx, client, verbose) }},
 		{"List Providers", func() bool { return runProvidersTest(ctx, client, verbose) }},
 		{"Get Credits", func() bool { return runCreditsTest(ctx, client, verbose) }},
+		{"Get Activity", func() bool { return runActivityTest(ctx, client, verbose) }},
 	}
 
 	for _, test := range tests {
@@ -2052,5 +2059,259 @@ func runCreditsTest(ctx context.Context, client *openrouter.Client, verbose bool
 	fmt.Printf("   ✅ Custom timeout context works\n")
 
 	fmt.Printf("\n✅ Get credits tests completed\n")
+	return true
+}
+
+func runActivityTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
+	fmt.Printf("🔄 Test: Get Activity\n")
+
+	// Test 1: Get all activity data
+	fmt.Printf("   Testing get all activity...\n")
+	start := time.Now()
+	resp, err := client.GetActivity(ctx, nil)
+	elapsed := time.Since(start)
+
+	if err != nil {
+		// Check if it's a provisioning key error
+		if reqErr, ok := err.(*openrouter.RequestError); ok {
+			if reqErr.StatusCode == 401 || reqErr.StatusCode == 403 {
+				fmt.Printf("   ⚠️  Activity endpoint requires a provisioning key: %v\n", reqErr.Message)
+				fmt.Printf("   Skipping test (provisioning keys are separate from inference API keys)\n")
+				return true // Don't fail the test - this is expected with regular API keys
+			}
+		}
+		fmt.Printf("❌ Failed to get activity: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("   ✅ Retrieved activity data (%.2fs)\n", elapsed.Seconds())
+	fmt.Printf("      Total activity records: %d\n", len(resp.Data))
+
+	// Display activity information
+	if len(resp.Data) > 0 {
+		// Calculate some statistics
+		totalUsage := 0.0
+		totalRequests := 0.0
+		uniqueDates := make(map[string]bool)
+		uniqueModels := make(map[string]bool)
+
+		for _, data := range resp.Data {
+			totalUsage += data.Usage
+			totalRequests += data.Requests
+			uniqueDates[data.Date] = true
+			uniqueModels[data.Model] = true
+		}
+
+		fmt.Printf("      Unique dates: %d\n", len(uniqueDates))
+		fmt.Printf("      Unique models: %d\n", len(uniqueModels))
+		fmt.Printf("      Total usage: $%.4f\n", totalUsage)
+		fmt.Printf("      Total requests: %.0f\n", totalRequests)
+
+		if verbose {
+			fmt.Printf("\n   First 5 activity records:\n")
+			for i, data := range resp.Data {
+				if i >= 5 {
+					break
+				}
+				fmt.Printf("      %d. %s - %s\n", i+1, data.Date, data.Model)
+				fmt.Printf("         Provider: %s\n", data.ProviderName)
+				fmt.Printf("         Requests: %.0f\n", data.Requests)
+				fmt.Printf("         Usage: $%.4f\n", data.Usage)
+				fmt.Printf("         Tokens: %.0f prompt, %.0f completion", data.PromptTokens, data.CompletionTokens)
+				if data.ReasoningTokens > 0 {
+					fmt.Printf(", %.0f reasoning", data.ReasoningTokens)
+				}
+				fmt.Printf("\n")
+				if data.BYOKUsageInference > 0 {
+					fmt.Printf("         BYOK Usage: $%.4f\n", data.BYOKUsageInference)
+				}
+			}
+		} else if len(resp.Data) > 0 {
+			// Show just one example in non-verbose mode
+			example := resp.Data[0]
+			fmt.Printf("      Example: %s - %s (%.0f requests, $%.4f)\n",
+				example.Date, example.Model, example.Requests, example.Usage)
+		}
+	} else {
+		fmt.Printf("   ℹ️  No activity data found (this is normal for new accounts)\n")
+	}
+
+	// Test 2: Filter by specific date
+	if len(resp.Data) > 0 {
+		// Get the most recent date from the data
+		latestDate := resp.Data[0].Date
+
+		fmt.Printf("\n   Testing date filter (%s)...\n", latestDate)
+		start = time.Now()
+		dateResp, err := client.GetActivity(ctx, &openrouter.ActivityOptions{
+			Date: latestDate,
+		})
+		elapsed = time.Since(start)
+
+		if err != nil {
+			fmt.Printf("   ❌ Failed to get activity with date filter: %v\n", err)
+			return false
+		}
+
+		fmt.Printf("   ✅ Retrieved activity for %s (%.2fs)\n", latestDate, elapsed.Seconds())
+		fmt.Printf("      Records for this date: %d\n", len(dateResp.Data))
+
+		// Verify all records match the requested date
+		allMatch := true
+		for _, data := range dateResp.Data {
+			if data.Date != latestDate {
+				fmt.Printf("   ❌ Found record with mismatched date: %s (expected %s)\n", data.Date, latestDate)
+				allMatch = false
+				break
+			}
+		}
+
+		if allMatch && len(dateResp.Data) > 0 {
+			fmt.Printf("   ✅ All records match the requested date\n")
+		}
+
+		if verbose && len(dateResp.Data) > 0 {
+			// Show activity breakdown by model for this date
+			fmt.Printf("\n   Activity breakdown for %s:\n", latestDate)
+			modelUsage := make(map[string]float64)
+			modelRequests := make(map[string]float64)
+
+			for _, data := range dateResp.Data {
+				modelUsage[data.Model] += data.Usage
+				modelRequests[data.Model] += data.Requests
+			}
+
+			fmt.Printf("   %-40s %-12s %-12s\n", "Model", "Requests", "Usage")
+			fmt.Printf("   %s\n", strings.Repeat("-", 70))
+			count := 0
+			for model, usage := range modelUsage {
+				if count >= 5 {
+					fmt.Printf("   ... and %d more models\n", len(modelUsage)-5)
+					break
+				}
+				fmt.Printf("   %-40s %-12.0f $%-11.4f\n",
+					truncateString(model, 40),
+					modelRequests[model],
+					usage,
+				)
+				count++
+			}
+		}
+	}
+
+	// Test 3: Validate response structure
+	if len(resp.Data) > 0 {
+		fmt.Printf("\n   Validating response structure...\n")
+		firstRecord := resp.Data[0]
+
+		// Check required fields
+		if firstRecord.Date == "" {
+			fmt.Printf("   ❌ Activity record missing Date\n")
+			return false
+		}
+		if firstRecord.Model == "" {
+			fmt.Printf("   ❌ Activity record missing Model\n")
+			return false
+		}
+		if firstRecord.ModelPermaslug == "" {
+			fmt.Printf("   ❌ Activity record missing ModelPermaslug\n")
+			return false
+		}
+		if firstRecord.EndpointID == "" {
+			fmt.Printf("   ❌ Activity record missing EndpointID\n")
+			return false
+		}
+		if firstRecord.ProviderName == "" {
+			fmt.Printf("   ❌ Activity record missing ProviderName\n")
+			return false
+		}
+
+		// Numeric fields should be non-negative
+		if firstRecord.Usage < 0 {
+			fmt.Printf("   ❌ Invalid Usage value: %.4f (should be >= 0)\n", firstRecord.Usage)
+			return false
+		}
+		if firstRecord.BYOKUsageInference < 0 {
+			fmt.Printf("   ❌ Invalid BYOKUsageInference value: %.4f (should be >= 0)\n", firstRecord.BYOKUsageInference)
+			return false
+		}
+		if firstRecord.Requests < 0 {
+			fmt.Printf("   ❌ Invalid Requests value: %.0f (should be >= 0)\n", firstRecord.Requests)
+			return false
+		}
+		if firstRecord.PromptTokens < 0 {
+			fmt.Printf("   ❌ Invalid PromptTokens value: %.0f (should be >= 0)\n", firstRecord.PromptTokens)
+			return false
+		}
+		if firstRecord.CompletionTokens < 0 {
+			fmt.Printf("   ❌ Invalid CompletionTokens value: %.0f (should be >= 0)\n", firstRecord.CompletionTokens)
+			return false
+		}
+		if firstRecord.ReasoningTokens < 0 {
+			fmt.Printf("   ❌ Invalid ReasoningTokens value: %.0f (should be >= 0)\n", firstRecord.ReasoningTokens)
+			return false
+		}
+
+		fmt.Printf("   ✅ Response structure validation passed\n")
+
+		if verbose {
+			fmt.Printf("\n   First record details:\n")
+			fmt.Printf("      Date: %s\n", firstRecord.Date)
+			fmt.Printf("      Model: %s\n", firstRecord.Model)
+			fmt.Printf("      Model Permaslug: %s\n", firstRecord.ModelPermaslug)
+			fmt.Printf("      Endpoint ID: %s\n", firstRecord.EndpointID)
+			fmt.Printf("      Provider: %s\n", firstRecord.ProviderName)
+			fmt.Printf("      Usage: $%.4f\n", firstRecord.Usage)
+			if firstRecord.BYOKUsageInference > 0 {
+				fmt.Printf("      BYOK Usage (Inference): $%.4f\n", firstRecord.BYOKUsageInference)
+			}
+			fmt.Printf("      Requests: %.0f\n", firstRecord.Requests)
+			fmt.Printf("      Prompt Tokens: %.0f\n", firstRecord.PromptTokens)
+			fmt.Printf("      Completion Tokens: %.0f\n", firstRecord.CompletionTokens)
+			if firstRecord.ReasoningTokens > 0 {
+				fmt.Printf("      Reasoning Tokens: %.0f\n", firstRecord.ReasoningTokens)
+			}
+		}
+	}
+
+	// Test 4: Test with invalid date format
+	fmt.Printf("\n   Testing error handling with invalid date...\n")
+	_, err = client.GetActivity(ctx, &openrouter.ActivityOptions{
+		Date: "invalid-date-format",
+	})
+
+	if err != nil {
+		fmt.Printf("   ✅ Error handling works correctly\n")
+		if verbose {
+			fmt.Printf("      Error: %v\n", err)
+		}
+	} else {
+		fmt.Printf("   ⚠️  No error with invalid date (API may be lenient)\n")
+	}
+
+	// Test 5: Test with custom timeout
+	fmt.Printf("\n   Testing with custom timeout...\n")
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	_, err = client.GetActivity(ctxWithTimeout, nil)
+	if err != nil {
+		// Only fail if it's not a provisioning key error
+		if reqErr, ok := err.(*openrouter.RequestError); ok {
+			if reqErr.StatusCode == 401 || reqErr.StatusCode == 403 {
+				fmt.Printf("   ⚠️  Provisioning key required (expected)\n")
+			} else {
+				fmt.Printf("   ❌ Failed with custom timeout: %v\n", err)
+				return false
+			}
+		} else if err != context.DeadlineExceeded {
+			fmt.Printf("   ❌ Failed with custom timeout: %v\n", err)
+			return false
+		}
+	} else {
+		fmt.Printf("   ✅ Custom timeout context works\n")
+	}
+
+	fmt.Printf("\n✅ Get activity tests completed\n")
 	return true
 }

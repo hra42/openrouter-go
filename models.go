@@ -435,3 +435,23 @@ type CreditsData struct {
 	TotalCredits float64 `json:"total_credits"`
 	TotalUsage   float64 `json:"total_usage"`
 }
+
+// ActivityResponse represents the response from the activity endpoint.
+type ActivityResponse struct {
+	Data []ActivityData `json:"data"`
+}
+
+// ActivityData represents daily user activity data grouped by model endpoint.
+type ActivityData struct {
+	Date               string  `json:"date"`
+	Model              string  `json:"model"`
+	ModelPermaslug     string  `json:"model_permaslug"`
+	EndpointID         string  `json:"endpoint_id"`
+	ProviderName       string  `json:"provider_name"`
+	Usage              float64 `json:"usage"`
+	BYOKUsageInference float64 `json:"byok_usage_inference"`
+	Requests           float64 `json:"requests"`
+	PromptTokens       float64 `json:"prompt_tokens"`
+	CompletionTokens   float64 `json:"completion_tokens"`
+	ReasoningTokens    float64 `json:"reasoning_tokens"`
+}

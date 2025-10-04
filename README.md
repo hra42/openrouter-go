@@ -21,6 +21,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Model endpoint inspection with pricing and uptime details
 - ✅ Provider listing with policy information
 - ✅ Credit balance and usage tracking
+- ✅ Activity analytics for usage monitoring and cost tracking
 
 ## Installation
 
@@ -261,6 +262,61 @@ This endpoint is useful for:
 - Setting up alerts for low balance
 - Tracking API usage costs
 - Budget management and forecasting
+
+### Getting Activity Data
+
+Retrieve daily user activity data grouped by model endpoint for the last 30 (completed) UTC days:
+
+```go
+// Get all activity data
+response, err := client.GetActivity(ctx, nil)
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Total activity records: %d\n\n", len(response.Data))
+
+// Calculate summary statistics
+totalUsage := 0.0
+totalRequests := 0.0
+
+for _, data := range response.Data {
+    totalUsage += data.Usage
+    totalRequests += data.Requests
+}
+
+fmt.Printf("Total usage: $%.4f\n", totalUsage)
+fmt.Printf("Total requests: %.0f\n", totalRequests)
+
+// Filter by specific date
+yesterday := time.Now().AddDate(0, 0, -1).Format("2006-01-02")
+dateActivity, err := client.GetActivity(ctx, &openrouter.ActivityOptions{
+    Date: yesterday,
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+// Display activity for specific date
+for _, data := range dateActivity.Data {
+    fmt.Printf("Date: %s\n", data.Date)
+    fmt.Printf("Model: %s\n", data.Model)
+    fmt.Printf("Provider: %s\n", data.ProviderName)
+    fmt.Printf("Requests: %.0f\n", data.Requests)
+    fmt.Printf("Usage: $%.4f\n", data.Usage)
+    fmt.Printf("Tokens: %.0f prompt, %.0f completion, %.0f reasoning\n",
+        data.PromptTokens, data.CompletionTokens, data.ReasoningTokens)
+}
+```
+
+**Important**: This endpoint requires a provisioning key (not a regular inference API key). Create one at: https://openrouter.ai/settings/provisioning-keys
+
+This endpoint is useful for:
+- Daily usage analytics and cost tracking
+- Model performance comparison
+- Provider usage distribution analysis
+- Historical cost analysis and forecasting
+- BYOK (Bring Your Own Key) usage tracking
 ```
 
 ## Package Structure
@@ -274,6 +330,7 @@ openrouter-go/
 ├── model_endpoints.go   # Model endpoints inspection methods
 ├── providers_endpoint.go # Providers listing endpoint methods
 ├── credits_endpoint.go  # Credits balance endpoint methods
+├── activity_endpoint.go # Activity analytics endpoint methods
 ├── models.go            # Request/response type definitions
 ├── options.go           # Functional options for configuration
 ├── stream.go            # SSE streaming implementation
@@ -289,6 +346,7 @@ openrouter-go/
 │   ├── model-endpoints/   # Model endpoints inspection examples
 │   ├── list-providers/    # Provider listing examples
 │   ├── get-credits/       # Credit balance tracking examples
+│   ├── activity/          # Activity analytics examples
 │   └── advanced/          # Advanced configuration examples
 └── internal/
     └── sse/               # Internal SSE parser implementation
