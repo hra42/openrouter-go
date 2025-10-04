@@ -4,7 +4,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 
 ## Features
 
-- ✅ Complete API coverage (chat completions, legacy completions, models, and model endpoints)
+- ✅ Complete API coverage (chat completions, legacy completions, models, model endpoints, and providers)
 - ✅ Full streaming support with Server-Sent Events (SSE)
 - ✅ Zero external dependencies
 - ✅ Go 1.25.1 support
@@ -19,6 +19,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Web Search plugin for real-time web data integration
 - ✅ Model listing and discovery with category filtering
 - ✅ Model endpoint inspection with pricing and uptime details
+- ✅ Provider listing with policy information
 
 ## Installation
 
@@ -192,6 +193,44 @@ This endpoint is useful for:
 - Discovering which parameters are supported by each provider
 ```
 
+### Listing Available Providers
+
+Get information about all providers available through OpenRouter:
+
+```go
+// List all providers
+response, err := client.ListProviders(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Total providers: %d\n\n", len(response.Data))
+
+// Display provider information
+for _, provider := range response.Data {
+    fmt.Printf("Provider: %s (%s)\n", provider.Name, provider.Slug)
+
+    if provider.PrivacyPolicyURL != nil {
+        fmt.Printf("  Privacy Policy: %s\n", *provider.PrivacyPolicyURL)
+    }
+
+    if provider.TermsOfServiceURL != nil {
+        fmt.Printf("  Terms of Service: %s\n", *provider.TermsOfServiceURL)
+    }
+
+    if provider.StatusPageURL != nil {
+        fmt.Printf("  Status Page: %s\n", *provider.StatusPageURL)
+    }
+}
+```
+
+This endpoint is useful for:
+- Reviewing provider policies and terms
+- Finding provider status pages for uptime monitoring
+- Understanding which providers are available
+- Checking provider compliance information
+```
+
 ## Package Structure
 
 ```
@@ -201,6 +240,7 @@ openrouter-go/
 ├── chat.go              # Chat completion endpoint methods
 ├── models_endpoint.go   # Models listing endpoint methods
 ├── model_endpoints.go   # Model endpoints inspection methods
+├── providers_endpoint.go # Providers listing endpoint methods
 ├── models.go            # Request/response type definitions
 ├── options.go           # Functional options for configuration
 ├── stream.go            # SSE streaming implementation
@@ -214,6 +254,7 @@ openrouter-go/
 │   ├── web_search/        # Web search plugin examples
 │   ├── list-models/       # Model listing examples
 │   ├── model-endpoints/   # Model endpoints inspection examples
+│   ├── list-providers/    # Provider listing examples
 │   └── advanced/          # Advanced configuration examples
 └── internal/
     └── sse/               # Internal SSE parser implementation
@@ -902,6 +943,7 @@ The `examples/` directory contains comprehensive examples:
 - **streaming/** - Real-time streaming response handling
 - **list-models/** - List and discover available models with filtering
 - **model-endpoints/** - Inspect model endpoints with pricing and provider details
+- **list-providers/** - List available providers with policy information
 - **structured-output/** - JSON schema validation and structured responses
 - **tool-calling/** - Complete tool/function calling examples with streaming
 - **transforms/** - Message transforms for context window management
@@ -925,6 +967,9 @@ go run examples/list-models/main.go
 
 # Run model endpoints examples
 go run examples/model-endpoints/main.go
+
+# Run list providers examples
+go run examples/list-providers/main.go
 
 # Run advanced examples
 go run examples/advanced/main.go

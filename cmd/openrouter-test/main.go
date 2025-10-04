@@ -17,7 +17,7 @@ func main() {
 	var (
 		apiKey    = flag.String("key", os.Getenv("OPENROUTER_API_KEY"), "OpenRouter API key (or set OPENROUTER_API_KEY env var)")
 		model     = flag.String("model", "openai/gpt-3.5-turbo", "Model to use")
-		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models, endpoints")
+		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models, endpoints, providers")
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -150,6 +150,12 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "providers":
+		if runProvidersTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -188,6 +194,7 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, m
 		{"Web Search", func() bool { return runWebSearchTest(ctx, client, model, verbose) }},
 		{"List Models", func() bool { return runModelsTest(ctx, client, verbose) }},
 		{"Model Endpoints", func() bool { return runModelEndpointsTest(ctx, client, verbose) }},
+		{"List Providers", func() bool { return runProvidersTest(ctx, client, verbose) }},
 	}
 
 	for _, test := range tests {
@@ -1818,5 +1825,153 @@ func runModelEndpointsTest(ctx context.Context, client *openrouter.Client, verbo
 	}
 
 	fmt.Printf("\n✅ Model endpoints tests completed\n")
+	return true
+}
+
+func runProvidersTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
+	fmt.Printf("🔄 Test: List Providers\n")
+
+	// Test: List all providers
+	fmt.Printf("   Testing list all providers...\n")
+	start := time.Now()
+	resp, err := client.ListProviders(ctx)
+	elapsed := time.Since(start)
+
+	if err != nil {
+		fmt.Printf("❌ Failed to list providers: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("   ✅ Listed all providers (%.2fs)\n", elapsed.Seconds())
+	fmt.Printf("      Total providers: %d\n", len(resp.Data))
+
+	if len(resp.Data) == 0 {
+		fmt.Printf("   ❌ No providers returned\n")
+		return false
+	}
+
+	// Display first few providers
+	if verbose {
+		fmt.Printf("\n   First 5 providers:\n")
+		for i, provider := range resp.Data {
+			if i >= 5 {
+				break
+			}
+			fmt.Printf("      %d. %s (%s)\n", i+1, provider.Name, provider.Slug)
+			if provider.PrivacyPolicyURL != nil {
+				fmt.Printf("         Privacy Policy: %s\n", *provider.PrivacyPolicyURL)
+			}
+			if provider.TermsOfServiceURL != nil {
+				fmt.Printf("         Terms of Service: %s\n", *provider.TermsOfServiceURL)
+			}
+			if provider.StatusPageURL != nil {
+				fmt.Printf("         Status Page: %s\n", *provider.StatusPageURL)
+			}
+		}
+	} else {
+		// Show just a couple in non-verbose mode
+		for i, provider := range resp.Data {
+			if i >= 3 {
+				break
+			}
+			fmt.Printf("      Example: %s (%s)\n", provider.Name, provider.Slug)
+		}
+	}
+
+	// Validate provider structure
+	fmt.Printf("\n   Validating provider data structure...\n")
+	firstProvider := resp.Data[0]
+
+	// Check required fields
+	if firstProvider.Name == "" {
+		fmt.Printf("   ❌ Provider missing Name\n")
+		return false
+	}
+	if firstProvider.Slug == "" {
+		fmt.Printf("   ❌ Provider missing Slug\n")
+		return false
+	}
+
+	fmt.Printf("   ✅ Provider structure validation passed\n")
+
+	if verbose {
+		fmt.Printf("\n   First provider details:\n")
+		fmt.Printf("      Name: %s\n", firstProvider.Name)
+		fmt.Printf("      Slug: %s\n", firstProvider.Slug)
+		if firstProvider.PrivacyPolicyURL != nil {
+			fmt.Printf("      Privacy Policy URL: %s\n", *firstProvider.PrivacyPolicyURL)
+		} else {
+			fmt.Printf("      Privacy Policy URL: (not provided)\n")
+		}
+		if firstProvider.TermsOfServiceURL != nil {
+			fmt.Printf("      Terms of Service URL: %s\n", *firstProvider.TermsOfServiceURL)
+		} else {
+			fmt.Printf("      Terms of Service URL: (not provided)\n")
+		}
+		if firstProvider.StatusPageURL != nil {
+			fmt.Printf("      Status Page URL: %s\n", *firstProvider.StatusPageURL)
+		} else {
+			fmt.Printf("      Status Page URL: (not provided)\n")
+		}
+	}
+
+	// Check for well-known providers
+	fmt.Printf("\n   Checking for well-known providers...\n")
+	wellKnownProviders := []string{
+		"openai",
+		"anthropic",
+		"google",
+		"meta",
+	}
+
+	foundProviders := make(map[string]bool)
+	for _, provider := range resp.Data {
+		for _, knownProvider := range wellKnownProviders {
+			if provider.Slug == knownProvider {
+				foundProviders[knownProvider] = true
+			}
+		}
+	}
+
+	foundCount := len(foundProviders)
+	fmt.Printf("   Found %d/%d well-known providers\n", foundCount, len(wellKnownProviders))
+
+	if verbose {
+		for _, knownProvider := range wellKnownProviders {
+			status := "❌"
+			if foundProviders[knownProvider] {
+				status = "✅"
+			}
+			fmt.Printf("      %s %s\n", status, knownProvider)
+		}
+	}
+
+	// Verify policy URLs
+	fmt.Printf("\n   Validating policy URLs...\n")
+	hasPrivacyPolicy := 0
+	hasTermsOfService := 0
+	hasStatusPage := 0
+
+	for _, provider := range resp.Data {
+		if provider.PrivacyPolicyURL != nil && *provider.PrivacyPolicyURL != "" {
+			hasPrivacyPolicy++
+		}
+		if provider.TermsOfServiceURL != nil && *provider.TermsOfServiceURL != "" {
+			hasTermsOfService++
+		}
+		if provider.StatusPageURL != nil && *provider.StatusPageURL != "" {
+			hasStatusPage++
+		}
+	}
+
+	privacyPercent := (float64(hasPrivacyPolicy) / float64(len(resp.Data))) * 100
+	termsPercent := (float64(hasTermsOfService) / float64(len(resp.Data))) * 100
+	statusPercent := (float64(hasStatusPage) / float64(len(resp.Data))) * 100
+
+	fmt.Printf("   %.1f%% have privacy policy (%d/%d)\n", privacyPercent, hasPrivacyPolicy, len(resp.Data))
+	fmt.Printf("   %.1f%% have terms of service (%d/%d)\n", termsPercent, hasTermsOfService, len(resp.Data))
+	fmt.Printf("   %.1f%% have status page (%d/%d)\n", statusPercent, hasStatusPage, len(resp.Data))
+
+	fmt.Printf("\n✅ List providers tests completed\n")
 	return true
 }
