@@ -22,6 +22,8 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Provider listing with policy information
 - ✅ Credit balance and usage tracking
 - ✅ Activity analytics for usage monitoring and cost tracking
+- ✅ API key information retrieval with usage and rate limit details
+- ✅ API key management with listing, filtering, and creation capabilities
 
 ## Installation
 
@@ -317,6 +319,284 @@ This endpoint is useful for:
 - Provider usage distribution analysis
 - Historical cost analysis and forecasting
 - BYOK (Bring Your Own Key) usage tracking
+
+### Getting API Key Information
+
+Retrieve information about your current API key including usage, limits, and rate limits:
+
+```go
+// Get API key information
+response, err := client.GetKey(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("API Key Label: %s\n", response.Data.Label)
+
+// Display limit information
+if response.Data.Limit != nil {
+    fmt.Printf("Credit Limit: $%.2f\n", *response.Data.Limit)
+} else {
+    fmt.Printf("Credit Limit: Unlimited\n")
+}
+
+fmt.Printf("Usage: $%.4f\n", response.Data.Usage)
+
+// Display remaining balance
+if response.Data.LimitRemaining != nil {
+    fmt.Printf("Remaining: $%.4f\n", *response.Data.LimitRemaining)
+
+    // Calculate usage percentage
+    if response.Data.Limit != nil && *response.Data.Limit > 0 {
+        usagePercent := (response.Data.Usage / *response.Data.Limit) * 100
+        fmt.Printf("Usage: %.2f%%\n", usagePercent)
+    }
+}
+
+// Display key type
+fmt.Printf("Free Tier: %v\n", response.Data.IsFreeTier)
+fmt.Printf("Provisioning Key: %v\n", response.Data.IsProvisioningKey)
+
+// Display rate limit if available
+if response.Data.RateLimit != nil {
+    fmt.Printf("Rate Limit: %.0f requests per %s\n",
+        response.Data.RateLimit.Requests,
+        response.Data.RateLimit.Interval)
+}
+```
+
+This endpoint is useful for:
+- Monitoring API key usage and limits
+- Checking remaining credits
+- Understanding rate limit constraints
+- Identifying key type (free tier vs paid, inference vs provisioning)
+- Building usage alerts and notifications
+
+### Listing All API Keys
+
+Retrieve a list of all API keys associated with your account. Requires a Provisioning API key (not a regular inference API key):
+
+```go
+// List all API keys
+response, err := client.ListKeys(ctx, nil)
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Total API keys: %d\n\n", len(response.Data))
+
+// Display key information
+for i, key := range response.Data {
+    status := "Active"
+    if key.Disabled {
+        status = "Disabled"
+    }
+
+    fmt.Printf("%d. %s [%s]\n", i+1, key.Label, status)
+    fmt.Printf("   Name: %s\n", key.Name)
+    fmt.Printf("   Limit: $%.2f\n", key.Limit)
+    fmt.Printf("   Created: %s\n", key.CreatedAt)
+    fmt.Printf("   Updated: %s\n", key.UpdatedAt)
+}
+
+// Example with pagination and filtering
+offset := 10
+includeDisabled := true
+filteredKeys, err := client.ListKeys(ctx, &openrouter.ListKeysOptions{
+    Offset:          &offset,
+    IncludeDisabled: &includeDisabled,
+})
+```
+
+**Important**: This endpoint requires a provisioning key (not a regular inference API key). Create one at: https://openrouter.ai/settings/provisioning-keys
+
+This endpoint is useful for:
+- Managing multiple API keys programmatically
+- Auditing key usage and creation dates
+- Identifying and managing disabled keys
+- Implementing key rotation strategies
+- Building API key management dashboards
+
+### Getting API Key by Hash
+
+Retrieve details about a specific API key by its hash. Requires a Provisioning API key:
+
+```go
+// Get key details by hash (hash obtained from ListKeys or key creation)
+hash := "abc123hash"
+keyDetails, err := client.GetKeyByHash(ctx, hash)
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Label: %s\n", keyDetails.Data.Label)
+fmt.Printf("Name: %s\n", keyDetails.Data.Name)
+fmt.Printf("Limit: $%.2f\n", keyDetails.Data.Limit)
+fmt.Printf("Disabled: %v\n", keyDetails.Data.Disabled)
+fmt.Printf("Created: %s\n", keyDetails.Data.CreatedAt)
+fmt.Printf("Updated: %s\n", keyDetails.Data.UpdatedAt)
+
+// Example: Get hash from list and retrieve details
+keys, err := client.ListKeys(ctx, nil)
+if err != nil {
+    log.Fatal(err)
+}
+
+if len(keys.Data) > 0 {
+    firstHash := keys.Data[0].Hash
+    details, err := client.GetKeyByHash(ctx, firstHash)
+    // ...
+}
+```
+
+**Important**: This endpoint requires a provisioning key (not a regular inference API key). Create one at: https://openrouter.ai/settings/provisioning-keys
+
+This endpoint is useful for:
+- Inspecting individual API key details
+- Verifying key status and configuration
+- Monitoring specific key usage patterns
+- Building key detail views in dashboards
+- Auditing key configuration changes
+
+### Creating API Keys
+
+Create new API keys programmatically with custom limits and settings. Requires a Provisioning API key:
+
+```go
+// Create an API key with a credit limit
+limit := 100.0
+keyResp, err := client.CreateKey(ctx, &openrouter.CreateKeyRequest{
+    Name:  "Production API Key",
+    Limit: &limit,
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+// ⚠️ IMPORTANT: Save this value immediately!
+// This is the ONLY time the full API key will be returned
+fmt.Printf("New API Key: %s\n", keyResp.Key)
+fmt.Printf("Label: %s\n", keyResp.Data.Label)
+fmt.Printf("Limit: $%.2f\n", keyResp.Data.Limit)
+
+// Create a key with BYOK limit inclusion
+includeBYOK := true
+keyResp2, err := client.CreateKey(ctx, &openrouter.CreateKeyRequest{
+    Name:               "BYOK Key",
+    Limit:              &limit,
+    IncludeBYOKInLimit: &includeBYOK,
+})
+
+// Create a key without a specific limit (uses account limit)
+keyResp3, err := client.CreateKey(ctx, &openrouter.CreateKeyRequest{
+    Name: "Unlimited Key",
+})
+```
+
+**Critical Security Note**: The `Key` field in the response contains the actual API key value. This is the **ONLY** time this value will ever be returned. Store it securely immediately!
+
+**Important**: This endpoint requires a provisioning key (not a regular inference API key). Create one at: https://openrouter.ai/settings/provisioning-keys
+
+This endpoint is useful for:
+- Automated API key provisioning
+- Implementing key rotation workflows
+- Creating keys with custom credit limits
+- Setting up BYOK (Bring Your Own Key) configurations
+- Building self-service key management systems
+
+### Deleting API Keys
+
+Delete an API key by its hash. Requires a Provisioning API key:
+
+```go
+// Delete a key by hash (hash obtained from ListKeys or key creation)
+hash := "abc123hash"
+result, err := client.DeleteKey(ctx, hash)
+if err != nil {
+    log.Fatal(err)
+}
+
+if result.Data.Success {
+    fmt.Println("API key successfully deleted")
+}
+
+// Example: Delete a key created in the same session
+keyResp, err := client.CreateKey(ctx, &openrouter.CreateKeyRequest{
+    Name: "Temporary Key",
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+// Later... delete it
+deleteResult, err := client.DeleteKey(ctx, keyResp.Data.Hash)
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+**⚠️ WARNING**: This operation is **irreversible**! Once deleted, the API key cannot be recovered and any applications using it will immediately lose access.
+
+**Important**: This endpoint requires a provisioning key (not a regular inference API key). Create one at: https://openrouter.ai/settings/provisioning-keys
+
+This endpoint is useful for:
+- Automated key rotation and cleanup
+- Removing compromised or unused keys
+- Implementing temporary key workflows
+- Building key lifecycle management systems
+- Programmatic key revocation
+
+### Updating API Keys
+
+Update an existing API key's properties (name, limit, disabled status) by its hash. Requires a Provisioning API key:
+
+```go
+// Update just the key name
+hash := "abc123hash"
+newName := "Updated Production Key"
+result, err := client.UpdateKey(ctx, hash, &openrouter.UpdateKeyRequest{
+    Name: &newName,
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Updated key: %s\n", result.Data.Label)
+
+// Disable a key
+disabled := true
+result, err := client.UpdateKey(ctx, hash, &openrouter.UpdateKeyRequest{
+    Disabled: &disabled,
+})
+
+// Update credit limit
+newLimit := 200.0
+result, err := client.UpdateKey(ctx, hash, &openrouter.UpdateKeyRequest{
+    Limit: &newLimit,
+})
+
+// Update multiple fields at once
+result, err := client.UpdateKey(ctx, hash, &openrouter.UpdateKeyRequest{
+    Name:               &newName,
+    Limit:              &newLimit,
+    IncludeBYOKInLimit: &[]bool{true}[0],
+})
+```
+
+**Important**: This endpoint requires a provisioning key (not a regular inference API key). Create one at: https://openrouter.ai/settings/provisioning-keys
+
+All fields in `UpdateKeyRequest` are optional - only include the fields you want to update:
+- **Name**: Display name for the API key
+- **Disabled**: Set to true to disable the key (prevents usage)
+- **Limit**: Credit limit in dollars
+- **IncludeBYOKInLimit**: Whether BYOK (Bring Your Own Key) usage counts toward the limit
+
+This endpoint is useful for:
+- Rotating key names for better organization
+- Adjusting credit limits based on usage patterns
+- Temporarily disabling keys without deletion
+- Managing BYOK limit policies
+- Implementing dynamic key management workflows
 ```
 
 ## Package Structure
@@ -331,6 +611,7 @@ openrouter-go/
 ├── providers_endpoint.go # Providers listing endpoint methods
 ├── credits_endpoint.go  # Credits balance endpoint methods
 ├── activity_endpoint.go # Activity analytics endpoint methods
+├── key_endpoint.go      # API key information endpoint methods
 ├── models.go            # Request/response type definitions
 ├── options.go           # Functional options for configuration
 ├── stream.go            # SSE streaming implementation
@@ -347,6 +628,9 @@ openrouter-go/
 │   ├── list-providers/    # Provider listing examples
 │   ├── get-credits/       # Credit balance tracking examples
 │   ├── activity/          # Activity analytics examples
+│   ├── key/               # API key information examples
+│   ├── list-keys/         # API key listing examples
+│   ├── create-key/        # API key creation examples
 │   └── advanced/          # Advanced configuration examples
 └── internal/
     └── sse/               # Internal SSE parser implementation
