@@ -204,3 +204,197 @@ func TestGetKeyError(t *testing.T) {
 		t.Errorf("expected error message 'Invalid API key', got %q", reqErr.Message)
 	}
 }
+
+func TestListKeys(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify request method and path
+		if r.Method != "GET" {
+			t.Errorf("expected GET request, got %s", r.Method)
+		}
+		if r.URL.Path != "/keys" {
+			t.Errorf("expected path /keys, got %s", r.URL.Path)
+		}
+
+		// Verify Authorization header
+		auth := r.Header.Get("Authorization")
+		if auth != "Bearer test-key" {
+			t.Errorf("expected Authorization header 'Bearer test-key', got %q", auth)
+		}
+
+		// Send response
+		response := ListKeysResponse{
+			Data: []APIKey{
+				{
+					Name:      "sk-or-v1-abc123",
+					Label:     "Production Key",
+					Limit:     100.0,
+					Disabled:  false,
+					CreatedAt: "2024-01-01T00:00:00Z",
+					UpdatedAt: "2024-01-02T00:00:00Z",
+					Hash:      "abc123hash",
+				},
+				{
+					Name:      "sk-or-v1-def456",
+					Label:     "Development Key",
+					Limit:     50.0,
+					Disabled:  false,
+					CreatedAt: "2024-01-03T00:00:00Z",
+					UpdatedAt: "2024-01-04T00:00:00Z",
+					Hash:      "def456hash",
+				},
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	resp, err := client.ListKeys(context.Background(), nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(resp.Data) != 2 {
+		t.Errorf("expected 2 keys, got %d", len(resp.Data))
+	}
+
+	// Validate first key
+	if resp.Data[0].Label != "Production Key" {
+		t.Errorf("expected Label 'Production Key', got %q", resp.Data[0].Label)
+	}
+	if resp.Data[0].Limit != 100.0 {
+		t.Errorf("expected Limit 100.0, got %f", resp.Data[0].Limit)
+	}
+	if resp.Data[0].Disabled != false {
+		t.Errorf("expected Disabled false, got %t", resp.Data[0].Disabled)
+	}
+	if resp.Data[0].Hash != "abc123hash" {
+		t.Errorf("expected Hash 'abc123hash', got %q", resp.Data[0].Hash)
+	}
+}
+
+func TestListKeysWithOptions(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify query parameters
+		query := r.URL.Query()
+
+		offset := query.Get("offset")
+		if offset != "10" {
+			t.Errorf("expected offset '10', got %q", offset)
+		}
+
+		includeDisabled := query.Get("include_disabled")
+		if includeDisabled != "true" {
+			t.Errorf("expected include_disabled 'true', got %q", includeDisabled)
+		}
+
+		response := ListKeysResponse{
+			Data: []APIKey{
+				{
+					Name:      "sk-or-v1-disabled",
+					Label:     "Disabled Key",
+					Limit:     25.0,
+					Disabled:  true,
+					CreatedAt: "2024-01-05T00:00:00Z",
+					UpdatedAt: "2024-01-06T00:00:00Z",
+					Hash:      "disabledhash",
+				},
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	offset := 10
+	includeDisabled := true
+
+	resp, err := client.ListKeys(context.Background(), &ListKeysOptions{
+		Offset:          &offset,
+		IncludeDisabled: &includeDisabled,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(resp.Data) != 1 {
+		t.Errorf("expected 1 key, got %d", len(resp.Data))
+	}
+
+	if resp.Data[0].Disabled != true {
+		t.Errorf("expected Disabled true, got %t", resp.Data[0].Disabled)
+	}
+}
+
+func TestListKeysEmpty(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		response := ListKeysResponse{
+			Data: []APIKey{},
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	resp, err := client.ListKeys(context.Background(), nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(resp.Data) != 0 {
+		t.Errorf("expected 0 keys, got %d", len(resp.Data))
+	}
+}
+
+func TestListKeysError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(ErrorResponse{
+			Error: APIError{
+				Message: "Provisioning key required",
+				Type:    "authentication_error",
+				Code:    "invalid_key_type",
+			},
+		})
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("invalid-key"),
+		WithBaseURL(server.URL),
+	)
+
+	_, err := client.ListKeys(context.Background(), nil)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	reqErr, ok := err.(*RequestError)
+	if !ok {
+		t.Fatalf("expected RequestError, got %T", err)
+	}
+	if reqErr.StatusCode != http.StatusUnauthorized {
+		t.Errorf("expected status code %d, got %d", http.StatusUnauthorized, reqErr.StatusCode)
+	}
+	if reqErr.Message != "Provisioning key required" {
+		t.Errorf("expected error message 'Provisioning key required', got %q", reqErr.Message)
+	}
+}

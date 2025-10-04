@@ -17,7 +17,7 @@ func main() {
 	var (
 		apiKey    = flag.String("key", os.Getenv("OPENROUTER_API_KEY"), "OpenRouter API key (or set OPENROUTER_API_KEY env var)")
 		model     = flag.String("model", "openai/gpt-3.5-turbo", "Model to use")
-		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models, endpoints, providers, credits, activity, key")
+		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models, endpoints, providers, credits, activity, key, listkeys")
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -174,6 +174,12 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "listkeys":
+		if runListKeysTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -216,6 +222,7 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, m
 		{"Get Credits", func() bool { return runCreditsTest(ctx, client, verbose) }},
 		{"Get Activity", func() bool { return runActivityTest(ctx, client, verbose) }},
 		{"Get API Key Info", func() bool { return runKeyTest(ctx, client, verbose) }},
+		{"List API Keys", func() bool { return runListKeysTest(ctx, client, verbose) }},
 	}
 
 	for _, test := range tests {
@@ -2474,5 +2481,217 @@ func runKeyTest(ctx context.Context, client *openrouter.Client, verbose bool) bo
 	}
 
 	fmt.Printf("\n✅ Get API key info tests completed\n")
+	return true
+}
+
+func runListKeysTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
+	fmt.Printf("🔄 Test: List API Keys\n")
+
+	// Test: List all API keys
+	fmt.Printf("   Testing list all API keys...\n")
+	start := time.Now()
+	resp, err := client.ListKeys(ctx, nil)
+	elapsed := time.Since(start)
+
+	if err != nil {
+		// Check if it's a provisioning key error
+		if reqErr, ok := err.(*openrouter.RequestError); ok {
+			if reqErr.StatusCode == 401 || reqErr.StatusCode == 403 {
+				fmt.Printf("   ⚠️  List keys endpoint requires a provisioning key: %v\n", reqErr.Message)
+				fmt.Printf("   Skipping test (provisioning keys are separate from inference API keys)\n")
+				fmt.Printf("   Create a provisioning key at: https://openrouter.ai/settings/provisioning-keys\n")
+				return true // Don't fail the test - this is expected with regular API keys
+			}
+		}
+		fmt.Printf("❌ Failed to list API keys: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("   ✅ Retrieved API keys list (%.2fs)\n", elapsed.Seconds())
+	fmt.Printf("      Total API keys: %d\n", len(resp.Data))
+
+	// Display API keys information
+	if len(resp.Data) > 0 {
+		// Calculate some statistics
+		activeKeys := 0
+		disabledKeys := 0
+		totalLimit := 0.0
+
+		for _, key := range resp.Data {
+			if key.Disabled {
+				disabledKeys++
+			} else {
+				activeKeys++
+			}
+			totalLimit += key.Limit
+		}
+
+		fmt.Printf("      Active keys: %d\n", activeKeys)
+		fmt.Printf("      Disabled keys: %d\n", disabledKeys)
+		if totalLimit > 0 {
+			fmt.Printf("      Total limit across all keys: $%.2f\n", totalLimit)
+		}
+
+		if verbose {
+			fmt.Printf("\n   First 5 API keys:\n")
+			for i, key := range resp.Data {
+				if i >= 5 {
+					break
+				}
+				status := "Active"
+				if key.Disabled {
+					status = "Disabled"
+				}
+				fmt.Printf("      %d. %s (%s)\n", i+1, key.Label, status)
+				fmt.Printf("         Name: %s\n", key.Name)
+				fmt.Printf("         Limit: $%.2f\n", key.Limit)
+				fmt.Printf("         Created: %s\n", key.CreatedAt)
+				fmt.Printf("         Updated: %s\n", key.UpdatedAt)
+				fmt.Printf("         Hash: %s\n", key.Hash)
+			}
+		} else if len(resp.Data) > 0 {
+			// Show just one example in non-verbose mode
+			example := resp.Data[0]
+			status := "Active"
+			if example.Disabled {
+				status = "Disabled"
+			}
+			fmt.Printf("      Example: %s (%s, $%.2f limit)\n", example.Label, status, example.Limit)
+		}
+	} else {
+		fmt.Printf("   ℹ️  No API keys found (this might be unusual)\n")
+	}
+
+	// Test 2: Filter with options (if we have keys)
+	if len(resp.Data) > 0 {
+		fmt.Printf("\n   Testing with include_disabled option...\n")
+		includeDisabled := true
+		start = time.Now()
+		filteredResp, err := client.ListKeys(ctx, &openrouter.ListKeysOptions{
+			IncludeDisabled: &includeDisabled,
+		})
+		elapsed = time.Since(start)
+
+		if err != nil {
+			fmt.Printf("   ❌ Failed to list keys with options: %v\n", err)
+			return false
+		}
+
+		fmt.Printf("   ✅ Retrieved keys with include_disabled=true (%.2fs)\n", elapsed.Seconds())
+		fmt.Printf("      Keys returned: %d\n", len(filteredResp.Data))
+
+		// Test 3: Test pagination with offset
+		if len(resp.Data) > 1 {
+			fmt.Printf("\n   Testing pagination with offset...\n")
+			offset := 1
+			start = time.Now()
+			paginatedResp, err := client.ListKeys(ctx, &openrouter.ListKeysOptions{
+				Offset: &offset,
+			})
+			elapsed = time.Since(start)
+
+			if err != nil {
+				fmt.Printf("   ❌ Failed to list keys with offset: %v\n", err)
+				return false
+			}
+
+			fmt.Printf("   ✅ Retrieved keys with offset=1 (%.2fs)\n", elapsed.Seconds())
+			fmt.Printf("      Keys returned: %d\n", len(paginatedResp.Data))
+
+			if len(paginatedResp.Data) > 0 && verbose {
+				fmt.Printf("      First key after offset: %s\n", paginatedResp.Data[0].Label)
+			}
+		}
+	}
+
+	// Test 4: Validate response structure
+	if len(resp.Data) > 0 {
+		fmt.Printf("\n   Validating response structure...\n")
+		firstKey := resp.Data[0]
+
+		// Check required fields
+		if firstKey.Name == "" {
+			fmt.Printf("   ❌ API key missing Name\n")
+			return false
+		}
+		if firstKey.Label == "" {
+			fmt.Printf("   ❌ API key missing Label\n")
+			return false
+		}
+		if firstKey.Hash == "" {
+			fmt.Printf("   ❌ API key missing Hash\n")
+			return false
+		}
+		if firstKey.CreatedAt == "" {
+			fmt.Printf("   ❌ API key missing CreatedAt\n")
+			return false
+		}
+		if firstKey.UpdatedAt == "" {
+			fmt.Printf("   ❌ API key missing UpdatedAt\n")
+			return false
+		}
+
+		// Limit should be non-negative
+		if firstKey.Limit < 0 {
+			fmt.Printf("   ❌ Invalid Limit value: %.2f (should be >= 0)\n", firstKey.Limit)
+			return false
+		}
+
+		fmt.Printf("   ✅ Response structure validation passed\n")
+
+		if verbose {
+			fmt.Printf("\n   First key details:\n")
+			fmt.Printf("      Name: %s\n", firstKey.Name)
+			fmt.Printf("      Label: %s\n", firstKey.Label)
+			fmt.Printf("      Limit: $%.4f\n", firstKey.Limit)
+			fmt.Printf("      Disabled: %v\n", firstKey.Disabled)
+			fmt.Printf("      Created At: %s\n", firstKey.CreatedAt)
+			fmt.Printf("      Updated At: %s\n", firstKey.UpdatedAt)
+			fmt.Printf("      Hash: %s\n", firstKey.Hash)
+		}
+	}
+
+	// Test 5: Test with custom timeout
+	fmt.Printf("\n   Testing with custom timeout...\n")
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	_, err = client.ListKeys(ctxWithTimeout, nil)
+	if err != nil {
+		// Only fail if it's not a provisioning key error
+		if reqErr, ok := err.(*openrouter.RequestError); ok {
+			if reqErr.StatusCode == 401 || reqErr.StatusCode == 403 {
+				fmt.Printf("   ⚠️  Provisioning key required (expected)\n")
+			} else {
+				fmt.Printf("   ❌ Failed with custom timeout: %v\n", err)
+				return false
+			}
+		} else if err != context.DeadlineExceeded {
+			fmt.Printf("   ❌ Failed with custom timeout: %v\n", err)
+			return false
+		}
+	} else {
+		fmt.Printf("   ✅ Custom timeout context works\n")
+	}
+
+	// Informational summary
+	if len(resp.Data) > 0 {
+		activeCount := 0
+		for _, key := range resp.Data {
+			if !key.Disabled {
+				activeCount++
+			}
+		}
+
+		if activeCount == 0 {
+			fmt.Printf("\n   ⚠️  Warning: No active API keys found!\n")
+		} else if activeCount == len(resp.Data) {
+			fmt.Printf("\n   ℹ️  All %d API keys are active\n", activeCount)
+		} else {
+			fmt.Printf("\n   ℹ️  %d active, %d disabled API keys\n", activeCount, len(resp.Data)-activeCount)
+		}
+	}
+
+	fmt.Printf("\n✅ List API keys tests completed\n")
 	return true
 }

@@ -23,6 +23,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Credit balance and usage tracking
 - ✅ Activity analytics for usage monitoring and cost tracking
 - ✅ API key information retrieval with usage and rate limit details
+- ✅ API key management with listing and filtering capabilities
 
 ## Installation
 
@@ -370,6 +371,51 @@ This endpoint is useful for:
 - Understanding rate limit constraints
 - Identifying key type (free tier vs paid, inference vs provisioning)
 - Building usage alerts and notifications
+
+### Listing All API Keys
+
+Retrieve a list of all API keys associated with your account. Requires a Provisioning API key (not a regular inference API key):
+
+```go
+// List all API keys
+response, err := client.ListKeys(ctx, nil)
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Total API keys: %d\n\n", len(response.Data))
+
+// Display key information
+for i, key := range response.Data {
+    status := "Active"
+    if key.Disabled {
+        status = "Disabled"
+    }
+
+    fmt.Printf("%d. %s [%s]\n", i+1, key.Label, status)
+    fmt.Printf("   Name: %s\n", key.Name)
+    fmt.Printf("   Limit: $%.2f\n", key.Limit)
+    fmt.Printf("   Created: %s\n", key.CreatedAt)
+    fmt.Printf("   Updated: %s\n", key.UpdatedAt)
+}
+
+// Example with pagination and filtering
+offset := 10
+includeDisabled := true
+filteredKeys, err := client.ListKeys(ctx, &openrouter.ListKeysOptions{
+    Offset:          &offset,
+    IncludeDisabled: &includeDisabled,
+})
+```
+
+**Important**: This endpoint requires a provisioning key (not a regular inference API key). Create one at: https://openrouter.ai/settings/provisioning-keys
+
+This endpoint is useful for:
+- Managing multiple API keys programmatically
+- Auditing key usage and creation dates
+- Identifying and managing disabled keys
+- Implementing key rotation strategies
+- Building API key management dashboards
 ```
 
 ## Package Structure
@@ -402,6 +448,7 @@ openrouter-go/
 │   ├── get-credits/       # Credit balance tracking examples
 │   ├── activity/          # Activity analytics examples
 │   ├── key/               # API key information examples
+│   ├── list-keys/         # API key listing examples
 │   └── advanced/          # Advanced configuration examples
 └── internal/
     └── sse/               # Internal SSE parser implementation

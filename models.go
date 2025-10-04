@@ -477,3 +477,27 @@ type KeyRateLimit struct {
 	Interval string  `json:"interval"`
 	Requests float64 `json:"requests"`
 }
+
+// ListKeysResponse represents the response from the list API keys endpoint.
+type ListKeysResponse struct {
+	Data []APIKey `json:"data"`
+}
+
+// APIKey represents an API key in the list keys response.
+type APIKey struct {
+	Name      string  `json:"name"`
+	Label     string  `json:"label"`
+	Limit     float64 `json:"limit"`
+	Disabled  bool    `json:"disabled"`
+	CreatedAt string  `json:"created_at"`
+	UpdatedAt string  `json:"updated_at"`
+	Hash      string  `json:"hash"`
+}
+
+// ListKeysOptions contains optional parameters for listing API keys.
+type ListKeysOptions struct {
+	// Offset for pagination
+	Offset *int `json:"offset,omitempty"`
+	// IncludeDisabled controls whether to include disabled API keys
+	IncludeDisabled *bool `json:"include_disabled,omitempty"`
+}
