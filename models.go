@@ -410,3 +410,17 @@ type ModelEndpointPricing struct {
 	Prompt     string `json:"prompt"`
 	Completion string `json:"completion"`
 }
+
+// ProvidersResponse represents the response from the list providers endpoint.
+type ProvidersResponse struct {
+	Data []ProviderInfo `json:"data"`
+}
+
+// ProviderInfo represents information about a provider available on OpenRouter.
+type ProviderInfo struct {
+	Name               string  `json:"name"`
+	Slug               string  `json:"slug"`
+	PrivacyPolicyURL   *string `json:"privacy_policy_url"`
+	TermsOfServiceURL  *string `json:"terms_of_service_url"`
+	StatusPageURL      *string `json:"status_page_url"`
+}
