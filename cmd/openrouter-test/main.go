@@ -17,7 +17,7 @@ func main() {
 	var (
 		apiKey    = flag.String("key", os.Getenv("OPENROUTER_API_KEY"), "OpenRouter API key (or set OPENROUTER_API_KEY env var)")
 		model     = flag.String("model", "openai/gpt-3.5-turbo", "Model to use")
-		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models, endpoints, providers")
+		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, models, endpoints, providers, credits")
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -156,6 +156,12 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "credits":
+		if runCreditsTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -195,6 +201,7 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, m
 		{"List Models", func() bool { return runModelsTest(ctx, client, verbose) }},
 		{"Model Endpoints", func() bool { return runModelEndpointsTest(ctx, client, verbose) }},
 		{"List Providers", func() bool { return runProvidersTest(ctx, client, verbose) }},
+		{"Get Credits", func() bool { return runCreditsTest(ctx, client, verbose) }},
 	}
 
 	for _, test := range tests {
@@ -1973,5 +1980,77 @@ func runProvidersTest(ctx context.Context, client *openrouter.Client, verbose bo
 	fmt.Printf("   %.1f%% have status page (%d/%d)\n", statusPercent, hasStatusPage, len(resp.Data))
 
 	fmt.Printf("\n✅ List providers tests completed\n")
+	return true
+}
+
+func runCreditsTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
+	fmt.Printf("🔄 Test: Get Credits\n")
+
+	// Test: Get credits for authenticated user
+	fmt.Printf("   Testing get credits...\n")
+	start := time.Now()
+	resp, err := client.GetCredits(ctx)
+	elapsed := time.Since(start)
+
+	if err != nil {
+		fmt.Printf("❌ Failed to get credits: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("   ✅ Retrieved credits (%.2fs)\n", elapsed.Seconds())
+
+	// Display credits information
+	fmt.Printf("      Total Credits: $%.2f\n", resp.Data.TotalCredits)
+	fmt.Printf("      Total Usage: $%.2f\n", resp.Data.TotalUsage)
+
+	remaining := resp.Data.TotalCredits - resp.Data.TotalUsage
+	fmt.Printf("      Remaining: $%.2f\n", remaining)
+
+	if remaining < 0 {
+		fmt.Printf("      ⚠️  Warning: Usage exceeds credits (negative balance)\n")
+	}
+
+	// Validate response structure
+	fmt.Printf("\n   Validating response structure...\n")
+
+	// Check that values are non-negative (usage can exceed credits, but both should be >= 0)
+	if resp.Data.TotalCredits < 0 {
+		fmt.Printf("   ❌ Invalid TotalCredits value: %.2f (should be >= 0)\n", resp.Data.TotalCredits)
+		return false
+	}
+	if resp.Data.TotalUsage < 0 {
+		fmt.Printf("   ❌ Invalid TotalUsage value: %.2f (should be >= 0)\n", resp.Data.TotalUsage)
+		return false
+	}
+
+	fmt.Printf("   ✅ Response structure validation passed\n")
+
+	if verbose {
+		fmt.Printf("\n   Credit details:\n")
+		fmt.Printf("      Total Credits: $%.4f\n", resp.Data.TotalCredits)
+		fmt.Printf("      Total Usage: $%.4f\n", resp.Data.TotalUsage)
+		fmt.Printf("      Remaining: $%.4f\n", remaining)
+
+		if resp.Data.TotalCredits > 0 {
+			usagePercent := (resp.Data.TotalUsage / resp.Data.TotalCredits) * 100
+			fmt.Printf("      Usage: %.2f%%\n", usagePercent)
+		}
+	}
+
+	// Test case variations
+	fmt.Printf("\n   Testing with different contexts...\n")
+
+	// Test with custom timeout
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	_, err = client.GetCredits(ctxWithTimeout)
+	if err != nil {
+		fmt.Printf("   ❌ Failed with custom timeout: %v\n", err)
+		return false
+	}
+	fmt.Printf("   ✅ Custom timeout context works\n")
+
+	fmt.Printf("\n✅ Get credits tests completed\n")
 	return true
 }

@@ -424,3 +424,14 @@ type ProviderInfo struct {
 	TermsOfServiceURL  *string `json:"terms_of_service_url"`
 	StatusPageURL      *string `json:"status_page_url"`
 }
+
+// CreditsResponse represents the response from the credits endpoint.
+type CreditsResponse struct {
+	Data CreditsData `json:"data"`
+}
+
+// CreditsData contains credit balance information for the authenticated user.
+type CreditsData struct {
+	TotalCredits float64 `json:"total_credits"`
+	TotalUsage   float64 `json:"total_usage"`
+}
