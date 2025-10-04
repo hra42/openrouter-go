@@ -442,3 +442,255 @@ func TestMultipleProviderOptions(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
+func TestUntestedOptions(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req ChatCompletionRequest
+		json.NewDecoder(r.Body).Decode(&req)
+
+		// Verify WithTools
+		if req.Tools == nil || len(req.Tools) != 1 {
+			t.Error("Tools not set correctly")
+		}
+
+		// Verify WithToolChoice
+		if req.ToolChoice == nil {
+			t.Error("ToolChoice not set")
+		}
+
+		// Verify WithParallelToolCalls
+		if req.ParallelToolCalls == nil || *req.ParallelToolCalls != false {
+			t.Error("ParallelToolCalls not set correctly")
+		}
+
+		// Verify WithMessages (should override the messages passed to ChatComplete)
+		if len(req.Messages) != 2 {
+			t.Errorf("expected 2 messages from WithMessages, got %d", len(req.Messages))
+		}
+
+		// Verify WithResponseFormat (JSON schema)
+		if req.ResponseFormat == nil || req.ResponseFormat.Type != "json_schema" {
+			t.Error("ResponseFormat not set correctly")
+		}
+
+		// Verify WithTransforms
+		if req.Transforms == nil || len(req.Transforms) != 1 || req.Transforms[0] != "middle-out" {
+			t.Error("Transforms not set correctly")
+		}
+
+		// Verify WithModels
+		if req.Models == nil || len(req.Models) != 2 {
+			t.Error("Models not set correctly")
+		}
+
+		// Verify WithRoute
+		if req.Route != "fallback" {
+			t.Error("Route not set correctly")
+		}
+
+		w.WriteHeader(200)
+		json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
+
+	tools := []Tool{
+		{
+			Type: "function",
+			Function: Function{
+				Name: "test_function",
+			},
+		},
+	}
+
+	messages := []Message{CreateUserMessage("Original")}
+	overrideMessages := []Message{
+		CreateSystemMessage("System"),
+		CreateUserMessage("Override"),
+	}
+
+	schema := map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"field": map[string]interface{}{"type": "string"},
+		},
+	}
+
+	parallelCalls := false
+
+	_, err := client.ChatComplete(context.Background(), messages,
+		WithModel("test-model"),
+		WithTools(tools...),
+		WithToolChoice("auto"),
+		WithParallelToolCalls(&parallelCalls),
+		WithMessages(overrideMessages),
+		WithJSONSchema("test_schema", true, schema),
+		WithTransforms("middle-out"),
+		WithModels("model1", "model2"),
+		WithRoute("fallback"),
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestCompletionUntestedOptions(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req CompletionRequest
+		json.NewDecoder(r.Body).Decode(&req)
+
+		// Verify WithCompletionProvider
+		if req.Provider == nil {
+			t.Error("Provider not set")
+		}
+
+		// Verify WithCompletionResponseFormat (JSON schema)
+		if req.ResponseFormat == nil {
+			t.Error("ResponseFormat not set")
+		}
+
+		// Verify WithCompletionTransforms
+		if req.Transforms == nil || len(req.Transforms) != 1 {
+			t.Error("Transforms not set correctly")
+		}
+
+		// Verify WithCompletionModels
+		if req.Models == nil || len(req.Models) != 2 {
+			t.Error("Models not set correctly")
+		}
+
+		// Verify WithCompletionRoute
+		if req.Route != "fallback" {
+			t.Error("Route not set correctly")
+		}
+
+		// Verify WithCompletionPlugins
+		if req.Plugins == nil || len(req.Plugins) != 1 {
+			t.Error("Plugins not set correctly")
+		}
+
+		// Verify WithCompletionWebSearchOptions
+		if req.WebSearchOptions == nil {
+			t.Error("WebSearchOptions not set")
+		}
+
+		w.WriteHeader(200)
+		json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
+
+	provider := Provider{
+		Order: []string{"openai"},
+	}
+
+	schema := map[string]interface{}{
+		"type": "object",
+	}
+
+	_, err := client.Complete(context.Background(), "Test prompt",
+		WithCompletionModel("test-model"),
+		WithCompletionProvider(provider),
+		WithCompletionJSONSchema("test_schema", true, schema),
+		WithCompletionTransforms("middle-out"),
+		WithCompletionModels("model1", "model2"),
+		WithCompletionRoute("fallback"),
+		WithCompletionPlugins(Plugin{ID: "web"}),
+		WithCompletionWebSearchOptions(&WebSearchOptions{SearchContextSize: "medium"}),
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestJSONModeOptions(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req ChatCompletionRequest
+		json.NewDecoder(r.Body).Decode(&req)
+
+		// Verify WithJSONMode sets type to json_object
+		if req.ResponseFormat == nil || req.ResponseFormat.Type != "json_object" {
+			t.Error("JSON mode not set correctly")
+		}
+
+		w.WriteHeader(200)
+		json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
+	messages := []Message{CreateUserMessage("Test")}
+
+	_, err := client.ChatComplete(context.Background(), messages,
+		WithModel("test-model"),
+		WithJSONMode(),
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestCompletionJSONModeOptions(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req CompletionRequest
+		json.NewDecoder(r.Body).Decode(&req)
+
+		// Verify WithCompletionJSONMode sets type to json_object
+		if req.ResponseFormat == nil || req.ResponseFormat.Type != "json_object" {
+			t.Error("JSON mode not set correctly")
+		}
+
+		w.WriteHeader(200)
+		json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
+
+	_, err := client.Complete(context.Background(), "Test",
+		WithCompletionModel("test-model"),
+		WithCompletionJSONMode(),
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestTopKAndRepetitionPenalty(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req ChatCompletionRequest
+		json.NewDecoder(r.Body).Decode(&req)
+
+		// Verify WithTopK
+		if req.TopK == nil || *req.TopK != 40 {
+			t.Error("TopK not set correctly")
+		}
+
+		// Verify WithRepetitionPenalty
+		if req.RepetitionPenalty == nil || *req.RepetitionPenalty != 1.1 {
+			t.Error("RepetitionPenalty not set correctly")
+		}
+
+		w.WriteHeader(200)
+		json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
+	messages := []Message{CreateUserMessage("Test")}
+
+	_, err := client.ChatComplete(context.Background(), messages,
+		WithModel("test-model"),
+		WithTopK(40),
+		WithRepetitionPenalty(1.1),
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}

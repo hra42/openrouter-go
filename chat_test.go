@@ -396,3 +396,83 @@ func TestHandleModelSuffix(t *testing.T) {
 		})
 	}
 }
+
+func TestChatCompleteStream(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify request method and path
+		if r.Method != "POST" {
+			t.Errorf("expected POST request, got %s", r.Method)
+		}
+		if r.URL.Path != "/chat/completions" {
+			t.Errorf("expected path /chat/completions, got %s", r.URL.Path)
+		}
+
+		// Parse request body
+		var req ChatCompletionRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			t.Fatalf("failed to decode request: %v", err)
+		}
+
+		// Verify stream is enabled
+		if !req.Stream {
+			t.Error("expected stream to be true")
+		}
+
+		// Set headers for SSE
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Connection", "keep-alive")
+
+		flusher, ok := w.(http.Flusher)
+		if !ok {
+			t.Fatal("expected http.ResponseWriter to be an http.Flusher")
+		}
+
+		// Send streaming events
+		events := []string{
+			`data: {"id":"chat-123","object":"chat.completion.chunk","created":1234567890,"model":"gpt-3.5-turbo","choices":[{"index":0,"delta":{"role":"assistant","content":"Hello"},"finish_reason":null}]}`,
+			`data: {"id":"chat-123","object":"chat.completion.chunk","created":1234567890,"model":"gpt-3.5-turbo","choices":[{"index":0,"delta":{"content":" world"},"finish_reason":null}]}`,
+			`data: {"id":"chat-123","object":"chat.completion.chunk","created":1234567890,"model":"gpt-3.5-turbo","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}`,
+			`data: [DONE]`,
+		}
+
+		for _, event := range events {
+			w.Write([]byte(event + "\n\n"))
+			flusher.Flush()
+		}
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	messages := []Message{
+		CreateUserMessage("Hello"),
+	}
+
+	stream, err := client.ChatCompleteStream(context.Background(), messages,
+		WithModel("gpt-3.5-turbo"),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer stream.Close()
+
+	eventCount := 0
+	for event := range stream.Events() {
+		eventCount++
+		if len(event.Choices) > 0 && event.Choices[0].Delta != nil {
+			// Valid event received
+		}
+	}
+
+	if err := stream.Err(); err != nil {
+		t.Fatalf("stream error: %v", err)
+	}
+
+	if eventCount == 0 {
+		t.Error("expected to receive at least one event")
+	}
+}
