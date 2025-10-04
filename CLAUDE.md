@@ -120,6 +120,17 @@ This is a zero-dependency Go client library for the OpenRouter API that follows 
 3. Implement a `runXxxTest()` function with comprehensive validation
 4. Add the test to the `runAllTests()` function array
 
+**CRITICAL E2E Test Guidelines**:
+- **ALWAYS use the `model` parameter** for ANY test that makes actual API calls to chat/completion endpoints
+- **NEVER hardcode model names** in test functions (e.g., "openai/gpt-4o", "meta-llama/llama-3.1-8b-instruct")
+- Test function signatures that make API calls MUST accept `model string` as a parameter
+- Pass the `model` parameter through the switch statement and `runAllTests()` function
+- The ONLY exceptions are:
+  - `runModelEndpointsTest` - uses hardcoded models for metadata inspection (not API calls)
+  - `runErrorTest` - uses "invalid/nonexistent-model-xyz" for error testing
+  - `runModelsTest` - doesn't make completion calls
+- When using model suffixes, concatenate properly: `model+":nitro"`, `model+":floor"`, `model+":online"`
+
 ### Important Notes
 
 - Always check error returns from API calls
