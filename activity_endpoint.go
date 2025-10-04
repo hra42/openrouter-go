@@ -9,6 +9,9 @@ import (
 // ActivityOptions contains optional parameters for retrieving activity data.
 type ActivityOptions struct {
 	// Date filters by a single UTC date in the last 30 days (YYYY-MM-DD format).
+	// Example: "2024-01-15"
+	// Note: The API returns dates with timestamps (e.g., "2024-01-15 00:00:00") but expects
+	// the filter parameter in YYYY-MM-DD format.
 	Date string
 }
 

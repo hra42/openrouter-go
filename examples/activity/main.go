@@ -106,6 +106,7 @@ func main() {
 	fmt.Println("-----------------------------------")
 
 	// Get yesterday's date in YYYY-MM-DD format
+	// Note: API expects YYYY-MM-DD format, but may return dates with timestamps
 	yesterday := time.Now().AddDate(0, 0, -1).Format("2006-01-02")
 	fmt.Printf("Requesting activity for: %s\n\n", yesterday)
 

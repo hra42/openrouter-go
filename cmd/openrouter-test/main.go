@@ -2139,7 +2139,16 @@ func runActivityTest(ctx context.Context, client *openrouter.Client, verbose boo
 	// Test 2: Filter by specific date
 	if len(resp.Data) > 0 {
 		// Get the most recent date from the data
-		latestDate := resp.Data[0].Date
+		// The API returns dates like "2025-10-03 00:00:00" but expects "2025-10-03" format
+		latestDateRaw := resp.Data[0].Date
+
+		// Parse and extract just the date part (YYYY-MM-DD)
+		var latestDate string
+		if len(latestDateRaw) >= 10 {
+			latestDate = latestDateRaw[:10] // Extract YYYY-MM-DD
+		} else {
+			latestDate = latestDateRaw
+		}
 
 		fmt.Printf("\n   Testing date filter (%s)...\n", latestDate)
 		start = time.Now()
@@ -2157,9 +2166,15 @@ func runActivityTest(ctx context.Context, client *openrouter.Client, verbose boo
 		fmt.Printf("      Records for this date: %d\n", len(dateResp.Data))
 
 		// Verify all records match the requested date
+		// Note: API returns dates with timestamps, so we need to check just the date portion
 		allMatch := true
 		for _, data := range dateResp.Data {
-			if data.Date != latestDate {
+			// Extract date portion from response (might be "2025-10-03" or "2025-10-03 00:00:00")
+			responseDate := data.Date
+			if len(responseDate) >= 10 {
+				responseDate = responseDate[:10]
+			}
+			if responseDate != latestDate {
 				fmt.Printf("   ❌ Found record with mismatched date: %s (expected %s)\n", data.Date, latestDate)
 				allMatch = false
 				break
