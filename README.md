@@ -20,6 +20,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Model listing and discovery with category filtering
 - ✅ Model endpoint inspection with pricing and uptime details
 - ✅ Provider listing with policy information
+- ✅ Credit balance and usage tracking
 
 ## Installation
 
@@ -229,6 +230,37 @@ This endpoint is useful for:
 - Finding provider status pages for uptime monitoring
 - Understanding which providers are available
 - Checking provider compliance information
+
+### Getting Credit Balance
+
+Retrieve your current credit balance and usage for the authenticated user:
+
+```go
+// Get credit balance
+response, err := client.GetCredits(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Total Credits: $%.2f\n", response.Data.TotalCredits)
+fmt.Printf("Total Usage: $%.2f\n", response.Data.TotalUsage)
+
+// Calculate remaining balance
+remaining := response.Data.TotalCredits - response.Data.TotalUsage
+fmt.Printf("Remaining: $%.2f\n", remaining)
+
+// Check usage percentage
+if response.Data.TotalCredits > 0 {
+    usagePercent := (response.Data.TotalUsage / response.Data.TotalCredits) * 100
+    fmt.Printf("Usage: %.2f%%\n", usagePercent)
+}
+```
+
+This endpoint is useful for:
+- Monitoring credit consumption in real-time
+- Setting up alerts for low balance
+- Tracking API usage costs
+- Budget management and forecasting
 ```
 
 ## Package Structure
@@ -241,6 +273,7 @@ openrouter-go/
 ├── models_endpoint.go   # Models listing endpoint methods
 ├── model_endpoints.go   # Model endpoints inspection methods
 ├── providers_endpoint.go # Providers listing endpoint methods
+├── credits_endpoint.go  # Credits balance endpoint methods
 ├── models.go            # Request/response type definitions
 ├── options.go           # Functional options for configuration
 ├── stream.go            # SSE streaming implementation
@@ -255,6 +288,7 @@ openrouter-go/
 │   ├── list-models/       # Model listing examples
 │   ├── model-endpoints/   # Model endpoints inspection examples
 │   ├── list-providers/    # Provider listing examples
+│   ├── get-credits/       # Credit balance tracking examples
 │   └── advanced/          # Advanced configuration examples
 └── internal/
     └── sse/               # Internal SSE parser implementation
