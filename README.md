@@ -689,7 +689,9 @@ See the [app attribution example](examples/app-attribution/main.go) for more det
 
 ## Testing
 
-Run the test suite:
+### Unit Tests
+
+Run the unit test suite:
 
 ```bash
 # Run all tests
@@ -703,6 +705,53 @@ go test -race ./...
 
 # Run specific test
 go test -run TestChatComplete
+```
+
+### E2E Tests
+
+The project includes a comprehensive end-to-end test suite in `cmd/openrouter-test/` that tests against the live OpenRouter API. The test suite is organized into logical modules:
+
+**Test Structure:**
+```
+cmd/openrouter-test/
+├── main.go              # Entry point and CLI
+└── tests/
+    ├── helpers.go       # Shared utilities
+    ├── chat.go          # Chat, streaming, completion tests
+    ├── routing.go       # Provider routing, ZDR, model suffixes
+    ├── advanced.go      # Structured output, tool calling, transforms
+    ├── search.go        # Web search tests
+    ├── models.go        # Models, endpoints, providers tests
+    ├── account.go       # Credits, activity tests
+    └── apikeys.go       # API key management tests
+```
+
+**Running E2E Tests:**
+
+```bash
+# Set your API key
+export OPENROUTER_API_KEY="your-api-key"
+
+# Run all tests (excluding web search)
+go run cmd/openrouter-test/main.go -test all
+
+# Run specific test categories
+go run cmd/openrouter-test/main.go -test chat
+go run cmd/openrouter-test/main.go -test streaming
+go run cmd/openrouter-test/main.go -test tools
+go run cmd/openrouter-test/main.go -test websearch  # Run separately on demand
+
+# Run with custom model
+go run cmd/openrouter-test/main.go -test all -model anthropic/claude-3-haiku
+
+# Run with verbose output
+go run cmd/openrouter-test/main.go -test chat -v
+
+# Available tests:
+# all, chat, stream, completion, error, provider, zdr, suffix,
+# price, structured, tools, transforms, websearch, models,
+# endpoints, providers, credits, activity, key, listkeys,
+# createkey, updatekey, deletekey
 ```
 
 ### CI/CD with Jenkins
