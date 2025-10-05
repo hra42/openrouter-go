@@ -7,6 +7,17 @@ import (
 	"time"
 )
 
+const (
+	// defaultJitterFactor is the default jitter factor for retry backoff (±25%).
+	defaultJitterFactor = 0.25
+	// maxReconnectBackoff is the maximum backoff duration for stream reconnection attempts.
+	maxReconnectBackoff = 10 * time.Second
+	// defaultMaxDelay is the default maximum delay for retry backoff.
+	defaultMaxDelay = 30 * time.Second
+	// defaultMultiplier is the default multiplier for exponential backoff.
+	defaultMultiplier = 2.0
+)
+
 // RetryConfig configures retry behavior for API requests.
 type RetryConfig struct {
 	MaxRetries     int
@@ -22,8 +33,8 @@ func DefaultRetryConfig() *RetryConfig {
 	return &RetryConfig{
 		MaxRetries:   3,
 		InitialDelay: 1 * time.Second,
-		MaxDelay:     30 * time.Second,
-		Multiplier:   2.0,
+		MaxDelay:     defaultMaxDelay,
+		Multiplier:   defaultMultiplier,
 		Jitter:       true,
 		RetryableError: func(err error) bool {
 			if reqErr, ok := err.(*RequestError); ok {
@@ -56,7 +67,7 @@ func (rc *RetryConfig) calculateBackoff(attempt int) time.Duration {
 	// Add jitter if enabled
 	if rc.Jitter {
 		// Add ±25% jitter
-		jitter := delay * 0.25
+		jitter := delay * defaultJitterFactor
 		delay = delay + (rand.Float64()*2-1)*jitter
 	}
 
@@ -187,13 +198,13 @@ func (rl *RateLimiter) Close() {
 	close(rl.done)
 }
 
-// withRetry wraps the client's doRequest method with retry logic.
-func (c *Client) doRequestWithRetry(ctx context.Context, method, endpoint string, body interface{}, v interface{}) error {
+// doRequest performs an HTTP request to the OpenRouter API with retry logic.
+func (c *Client) doRequest(ctx context.Context, method, endpoint string, body interface{}, v interface{}) error {
 	config := &RetryConfig{
 		MaxRetries:   c.maxRetries,
 		InitialDelay: c.retryDelay,
-		MaxDelay:     30 * time.Second,
-		Multiplier:   2.0,
+		MaxDelay:     defaultMaxDelay,
+		Multiplier:   defaultMultiplier,
 		Jitter:       true,
 		RetryableError: func(err error) bool {
 			if reqErr, ok := err.(*RequestError); ok {
@@ -210,6 +221,6 @@ func (c *Client) doRequestWithRetry(ctx context.Context, method, endpoint string
 	}
 
 	return RetryWithBackoff(ctx, config, func() error {
-		return c.doRequest(ctx, method, endpoint, body, v)
+		return c.doRequestOnce(ctx, method, endpoint, body, v)
 	})
 }

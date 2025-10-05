@@ -305,7 +305,7 @@ func TestDoRequestRetry(t *testing.T) {
 	}
 
 	var resp ChatCompletionResponse
-	err := client.doRequestWithRetry(context.Background(), "POST", "/chat/completions", req, &resp)
+	err := client.doRequest(context.Background(), "POST", "/chat/completions", req, &resp)
 
 	if err != nil {
 		t.Fatalf("unexpected error after retries: %v", err)

@@ -400,7 +400,7 @@ func RunListKeysTest(ctx context.Context, client *openrouter.Client, verbose boo
 				printError("Should have failed with empty hash", nil)
 				return false
 			}
-			if !openrouter.IsValidationError(err) {
+			if _, ok := openrouter.IsValidationError(err); !ok {
 				fmt.Printf("   ❌ Expected ValidationError for empty hash, got %T\n", err)
 				return false
 			}
@@ -530,7 +530,7 @@ func RunCreateKeyTest(ctx context.Context, client *openrouter.Client, verbose bo
 		printError("Should have failed with empty name", nil)
 		return false
 	}
-	if !openrouter.IsValidationError(err) {
+	if _, ok := openrouter.IsValidationError(err); !ok {
 		fmt.Printf("   ❌ Expected ValidationError for empty name, got %T\n", err)
 		return false
 	}
@@ -542,7 +542,7 @@ func RunCreateKeyTest(ctx context.Context, client *openrouter.Client, verbose bo
 		printError("Should have failed with nil request", nil)
 		return false
 	}
-	if !openrouter.IsValidationError(err) {
+	if _, ok := openrouter.IsValidationError(err); !ok {
 		fmt.Printf("   ❌ Expected ValidationError for nil request, got %T\n", err)
 		return false
 	}
@@ -702,7 +702,7 @@ func RunUpdateKeyTest(ctx context.Context, client *openrouter.Client, verbose bo
 		printError("Should have failed with empty hash", nil)
 		return false
 	}
-	if !openrouter.IsValidationError(err) {
+	if _, ok := openrouter.IsValidationError(err); !ok {
 		fmt.Printf("   ❌ Expected ValidationError for empty hash, got %T\n", err)
 		return false
 	}
@@ -714,7 +714,7 @@ func RunUpdateKeyTest(ctx context.Context, client *openrouter.Client, verbose bo
 		printError("Should have failed with nil request", nil)
 		return false
 	}
-	if !openrouter.IsValidationError(err) {
+	if _, ok := openrouter.IsValidationError(err); !ok {
 		fmt.Printf("   ❌ Expected ValidationError for nil request, got %T\n", err)
 		return false
 	}
@@ -842,7 +842,7 @@ func RunDeleteKeyTest(ctx context.Context, client *openrouter.Client, verbose bo
 		printError("Should have failed with empty hash", nil)
 		return false
 	}
-	if !openrouter.IsValidationError(err) {
+	if _, ok := openrouter.IsValidationError(err); !ok {
 		fmt.Printf("   ❌ Expected ValidationError for empty hash, got %T\n", err)
 		return false
 	}

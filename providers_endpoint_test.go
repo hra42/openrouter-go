@@ -22,18 +22,18 @@ func TestListProviders(t *testing.T) {
 		response := ProvidersResponse{
 			Data: []ProviderInfo{
 				{
-					Name:               "OpenAI",
-					Slug:               "openai",
-					PrivacyPolicyURL:   stringPtr("https://openai.com/privacy"),
-					TermsOfServiceURL:  stringPtr("https://openai.com/terms"),
-					StatusPageURL:      stringPtr("https://status.openai.com"),
+					Name:              "OpenAI",
+					Slug:              "openai",
+					PrivacyPolicyURL:  stringPtr("https://openai.com/privacy"),
+					TermsOfServiceURL: stringPtr("https://openai.com/terms"),
+					StatusPageURL:     stringPtr("https://status.openai.com"),
 				},
 				{
-					Name:               "Anthropic",
-					Slug:               "anthropic",
-					PrivacyPolicyURL:   stringPtr("https://anthropic.com/privacy"),
-					TermsOfServiceURL:  stringPtr("https://anthropic.com/terms"),
-					StatusPageURL:      nil,
+					Name:              "Anthropic",
+					Slug:              "anthropic",
+					PrivacyPolicyURL:  stringPtr("https://anthropic.com/privacy"),
+					TermsOfServiceURL: stringPtr("https://anthropic.com/terms"),
+					StatusPageURL:     nil,
 				},
 			},
 		}

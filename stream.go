@@ -31,21 +31,8 @@ type eventStream struct {
 	body      interface{}
 }
 
-// createStream creates a new SSE stream for the given endpoint and request.
-func (c *Client) createStream(ctx context.Context, endpoint string, body interface{}) (*eventStream, error) {
-	url := c.baseURL + endpoint
-
-	jsonData, err := json.Marshal(body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request body: %w", err)
-	}
-
-	req, err := http.NewRequestWithContext(ctx, "POST", url, strings.NewReader(string(jsonData)))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	// Set headers
+// setStreamHeaders sets all required headers for SSE streaming requests.
+func (c *Client) setStreamHeaders(req *http.Request) {
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "text/event-stream")
@@ -64,6 +51,24 @@ func (c *Client) createStream(ctx context.Context, endpoint string, body interfa
 	for key, value := range c.customHeaders {
 		req.Header.Set(key, value)
 	}
+}
+
+// createStream creates a new SSE stream for the given endpoint and request.
+func (c *Client) createStream(ctx context.Context, endpoint string, body interface{}) (*eventStream, error) {
+	url := c.baseURL + endpoint
+
+	jsonData, err := json.Marshal(body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request body: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", url, strings.NewReader(string(jsonData)))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Set headers
+	c.setStreamHeaders(req)
 
 	// Make the request
 	resp, err := c.httpClient.Do(req)
@@ -223,8 +228,8 @@ func (es *eventStream) attemptReconnect(attempt int) bool {
 
 	// Calculate backoff
 	backoff := time.Duration(attempt) * time.Second
-	if backoff > 10*time.Second {
-		backoff = 10 * time.Second
+	if backoff > maxReconnectBackoff {
+		backoff = maxReconnectBackoff
 	}
 
 	// Wait before reconnecting
@@ -248,24 +253,7 @@ func (es *eventStream) attemptReconnect(attempt int) bool {
 	}
 
 	// Set headers
-	req.Header.Set("Authorization", "Bearer "+es.client.apiKey)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "text/event-stream")
-	req.Header.Set("Cache-Control", "no-cache")
-	req.Header.Set("Connection", "keep-alive")
-
-	if es.client.referer != "" {
-		req.Header.Set("HTTP-Referer", es.client.referer)
-	}
-
-	if es.client.appName != "" {
-		req.Header.Set("X-Title", es.client.appName)
-	}
-
-	// Add custom headers
-	for key, value := range es.client.customHeaders {
-		req.Header.Set(key, value)
-	}
+	es.client.setStreamHeaders(req)
 
 	// Make the request
 	resp, err := es.client.httpClient.Do(req)
@@ -300,6 +288,53 @@ func parseSSEData(data string, v interface{}) error {
 
 	return nil
 }
+
+// Stream represents a generic streaming response wrapper.
+type Stream[T any] struct {
+	stream *eventStream
+}
+
+// Events returns a channel that receives streaming events.
+func (s *Stream[T]) Events() <-chan T {
+	events := make(chan T)
+
+	go func() {
+		defer close(events)
+
+		for event := range s.stream.Events() {
+			// Parse the event data into the response type
+			var response T
+			if err := parseSSEData(event.Data, &response); err != nil {
+				s.stream.setError(err)
+				return
+			}
+
+			select {
+			case events <- response:
+			case <-s.stream.ctx.Done():
+				return
+			}
+		}
+	}()
+
+	return events
+}
+
+// Err returns any error that occurred during streaming.
+func (s *Stream[T]) Err() error {
+	return s.stream.Err()
+}
+
+// Close closes the stream.
+func (s *Stream[T]) Close() error {
+	return s.stream.Close()
+}
+
+// ChatStream represents a streaming chat completion response.
+type ChatStream = Stream[ChatCompletionResponse]
+
+// CompletionStream represents a streaming completion response.
+type CompletionStream = Stream[CompletionResponse]
 
 // Helper function to concatenate streaming chat responses.
 func ConcatenateChatStreamResponses(responses []ChatCompletionResponse) string {

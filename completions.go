@@ -3,7 +3,6 @@ package openrouter
 import (
 	"context"
 	"fmt"
-	"strings"
 )
 
 // Complete sends a legacy completion request to the OpenRouter API.
@@ -26,7 +25,7 @@ func (c *Client) Complete(ctx context.Context, prompt string, opts ...Completion
 	}
 
 	// Handle model suffixes
-	req.Model = c.handleCompletionModelSuffix(req.Model, req)
+	req.Model = processModelSuffix(req.Model, req)
 
 	// Ensure model is set
 	if req.Model == "" {
@@ -35,7 +34,7 @@ func (c *Client) Complete(ctx context.Context, prompt string, opts ...Completion
 
 	// Make request
 	var resp CompletionResponse
-	err := c.doRequestWithRetry(ctx, "POST", "/completions", req, &resp)
+	err := c.doRequest(ctx, "POST", "/completions", req, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +63,7 @@ func (c *Client) CompleteStream(ctx context.Context, prompt string, opts ...Comp
 	}
 
 	// Handle model suffixes
-	req.Model = c.handleCompletionModelSuffix(req.Model, req)
+	req.Model = processModelSuffix(req.Model, req)
 
 	// Ensure model is set
 	if req.Model == "" {
@@ -80,47 +79,6 @@ func (c *Client) CompleteStream(ctx context.Context, prompt string, opts ...Comp
 	return &CompletionStream{
 		stream: stream,
 	}, nil
-}
-
-// CompletionStream represents a streaming completion response.
-type CompletionStream struct {
-	stream *eventStream
-}
-
-// Events returns a channel that receives streaming events.
-func (cs *CompletionStream) Events() <-chan CompletionResponse {
-	events := make(chan CompletionResponse)
-
-	go func() {
-		defer close(events)
-
-		for event := range cs.stream.Events() {
-			// Parse the event data into a CompletionResponse
-			var response CompletionResponse
-			if err := parseSSEData(event.Data, &response); err != nil {
-				cs.stream.setError(err)
-				return
-			}
-
-			select {
-			case events <- response:
-			case <-cs.stream.ctx.Done():
-				return
-			}
-		}
-	}()
-
-	return events
-}
-
-// Err returns any error that occurred during streaming.
-func (cs *CompletionStream) Err() error {
-	return cs.stream.Err()
-}
-
-// Close closes the stream.
-func (cs *CompletionStream) Close() error {
-	return cs.stream.Close()
 }
 
 // validateCompletionRequest validates the completion request parameters.
@@ -156,24 +114,4 @@ func (c *Client) CompleteWithExamples(ctx context.Context, instruction string, e
 	fullPrompt += fmt.Sprintf("\n\nNow: %s", prompt)
 
 	return c.Complete(ctx, fullPrompt, opts...)
-}
-
-// handleCompletionModelSuffix processes model suffixes like :nitro and :floor for completion requests
-func (c *Client) handleCompletionModelSuffix(model string, req *CompletionRequest) string {
-	if strings.HasSuffix(model, ":nitro") {
-		// Remove suffix and apply throughput sorting
-		model = strings.TrimSuffix(model, ":nitro")
-		if req.Provider == nil {
-			req.Provider = &Provider{}
-		}
-		req.Provider.Sort = "throughput"
-	} else if strings.HasSuffix(model, ":floor") {
-		// Remove suffix and apply price sorting
-		model = strings.TrimSuffix(model, ":floor")
-		if req.Provider == nil {
-			req.Provider = &Provider{}
-		}
-		req.Provider.Sort = "price"
-	}
-	return model
 }

@@ -308,8 +308,6 @@ Now: Good morning`
 }
 
 func TestHandleCompletionModelSuffix(t *testing.T) {
-	client := &Client{}
-
 	tests := []struct {
 		name          string
 		model         string
@@ -348,7 +346,7 @@ func TestHandleCompletionModelSuffix(t *testing.T) {
 				Model: tt.model,
 			}
 
-			actualModel := client.handleCompletionModelSuffix(tt.model, req)
+			actualModel := processModelSuffix(tt.model, req)
 
 			if actualModel != tt.expectedModel {
 				t.Errorf("expected model %q, got %q", tt.expectedModel, actualModel)

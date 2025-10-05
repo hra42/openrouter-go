@@ -177,11 +177,10 @@ func TestListModelEndpointsNotFound(t *testing.T) {
 		t.Fatal("expected error for non-existent model, got nil")
 	}
 
-	if !IsRequestError(err) {
+	reqErr, ok := IsRequestError(err)
+	if !ok {
 		t.Errorf("expected RequestError, got %T", err)
 	}
-
-	reqErr := err.(*RequestError)
 	if reqErr.StatusCode != http.StatusNotFound {
 		t.Errorf("expected status code 404, got %d", reqErr.StatusCode)
 	}

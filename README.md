@@ -599,6 +599,26 @@ This endpoint is useful for:
 - Implementing dynamic key management workflows
 ```
 
+## Code Quality
+
+The library is built with a focus on code quality and maintainability:
+
+- **Named Constants**: Magic numbers have been extracted as named constants for better readability and maintainability
+  - `defaultJitterFactor` (0.25): Default jitter factor for retry backoff (±25%)
+  - `maxReconnectBackoff` (10s): Maximum backoff duration for stream reconnection attempts
+  - `defaultMaxDelay` (30s): Default maximum delay for retry backoff
+  - `defaultMultiplier` (2.0): Default multiplier for exponential backoff
+
+- **Generic Options Pattern**: Uses Go 1.18+ generics to reduce code duplication in functional options
+  - Type-safe option setters with `RequestConfig` interface constraint
+  - Shared implementation for common fields across ChatCompletion and Completion requests
+  - Eliminates ~400 lines of duplicate code while maintaining type safety
+
+- **Comprehensive Testing**: Extensive unit test coverage with table-driven tests
+- **Race Detection**: All code is tested for race conditions
+- **Thread Safety**: Client is safe for concurrent use across goroutines
+- **Error Handling**: Rich error types with detailed context
+
 ## Package Structure
 
 ```
@@ -614,9 +634,9 @@ openrouter-go/
 ├── key_endpoint.go      # API key information endpoint methods
 ├── models.go            # Request/response type definitions
 ├── options.go           # Functional options for configuration
-├── stream.go            # SSE streaming implementation
+├── stream.go            # SSE streaming with generic Stream[T] implementation
 ├── errors.go            # Custom error types
-├── retry.go             # Retry and backoff logic
+├── retry.go             # Retry and backoff logic with named constants
 ├── examples/
 │   ├── basic/             # Basic usage examples
 │   ├── streaming/         # Streaming examples

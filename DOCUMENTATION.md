@@ -102,9 +102,7 @@ The library provides typed errors for different failure scenarios:
 ```go
 resp, err := client.ChatComplete(ctx, messages, opts...)
 if err != nil {
-    if openrouter.IsRequestError(err) {
-        reqErr := err.(*openrouter.RequestError)
-
+    if reqErr, ok := openrouter.IsRequestError(err); ok {
         switch {
         case reqErr.IsRateLimitError():
             // Handle rate limiting - wait and retry
@@ -130,9 +128,9 @@ if err != nil {
 
 ### Error Checking Functions
 
-- `IsRequestError(err)` - Check if error is a RequestError
-- `IsValidationError(err)` - Check if error is a ValidationError
-- `IsStreamError(err)` - Check if error is a StreamError
+- `IsRequestError(err) (*RequestError, bool)` - Check if error is a RequestError and return it
+- `IsValidationError(err) (*ValidationError, bool)` - Check if error is a ValidationError and return it
+- `IsStreamError(err) (*StreamError, bool)` - Check if error is a StreamError and return it
 
 ## Features
 
