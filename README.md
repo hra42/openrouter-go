@@ -719,7 +719,9 @@ cmd/openrouter-test/
     ├── helpers.go       # Shared utilities
     ├── chat.go          # Chat, streaming, completion tests
     ├── routing.go       # Provider routing, ZDR, model suffixes
-    ├── advanced.go      # Structured output, tool calling, transforms
+    ├── structured.go    # Structured output tests
+    ├── tools.go         # Tool/function calling tests
+    ├── transforms.go    # Message transforms tests
     ├── search.go        # Web search tests
     ├── models.go        # Models, endpoints, providers tests
     ├── account.go       # Credits, activity tests
