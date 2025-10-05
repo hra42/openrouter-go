@@ -252,13 +252,16 @@ func TestErrorTypeChecking(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsRequestError(tt.err); got != tt.isRequestError {
+			_, got := IsRequestError(tt.err)
+			if got != tt.isRequestError {
 				t.Errorf("IsRequestError() = %v, want %v", got, tt.isRequestError)
 			}
-			if got := IsStreamError(tt.err); got != tt.isStreamError {
+			_, got = IsStreamError(tt.err)
+			if got != tt.isStreamError {
 				t.Errorf("IsStreamError() = %v, want %v", got, tt.isStreamError)
 			}
-			if got := IsValidationError(tt.err); got != tt.isValidation {
+			_, got = IsValidationError(tt.err)
+			if got != tt.isValidation {
 				t.Errorf("IsValidationError() = %v, want %v", got, tt.isValidation)
 			}
 		})

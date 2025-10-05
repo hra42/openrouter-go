@@ -418,11 +418,11 @@ type ProvidersResponse struct {
 
 // ProviderInfo represents information about a provider available on OpenRouter.
 type ProviderInfo struct {
-	Name               string  `json:"name"`
-	Slug               string  `json:"slug"`
-	PrivacyPolicyURL   *string `json:"privacy_policy_url"`
-	TermsOfServiceURL  *string `json:"terms_of_service_url"`
-	StatusPageURL      *string `json:"status_page_url"`
+	Name              string  `json:"name"`
+	Slug              string  `json:"slug"`
+	PrivacyPolicyURL  *string `json:"privacy_policy_url"`
+	TermsOfServiceURL *string `json:"terms_of_service_url"`
+	StatusPageURL     *string `json:"status_page_url"`
 }
 
 // CreditsResponse represents the response from the credits endpoint.
@@ -463,12 +463,12 @@ type KeyResponse struct {
 
 // KeyData contains information about an API key.
 type KeyData struct {
-	Label             string       `json:"label"`
-	Limit             *float64     `json:"limit"`
-	Usage             float64      `json:"usage"`
-	IsFreeTier        bool         `json:"is_free_tier"`
-	LimitRemaining    *float64     `json:"limit_remaining"`
-	IsProvisioningKey bool         `json:"is_provisioning_key"`
+	Label             string        `json:"label"`
+	Limit             *float64      `json:"limit"`
+	Usage             float64       `json:"usage"`
+	IsFreeTier        bool          `json:"is_free_tier"`
+	LimitRemaining    *float64      `json:"limit_remaining"`
+	IsProvisioningKey bool          `json:"is_provisioning_key"`
 	RateLimit         *KeyRateLimit `json:"rate_limit,omitempty"`
 }
 

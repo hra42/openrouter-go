@@ -1,6 +1,7 @@
 package openrouter
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -90,20 +91,23 @@ var ErrNoMessages = &ValidationError{Field: "messages", Message: "at least one m
 // ErrNoPrompt is returned when no prompt is provided for completion.
 var ErrNoPrompt = &ValidationError{Field: "prompt", Message: "prompt is required"}
 
-// IsRequestError checks if an error is a RequestError.
-func IsRequestError(err error) bool {
-	_, ok := err.(*RequestError)
-	return ok
+// IsRequestError checks if an error is a RequestError and returns it.
+func IsRequestError(err error) (*RequestError, bool) {
+	var reqErr *RequestError
+	ok := errors.As(err, &reqErr)
+	return reqErr, ok
 }
 
-// IsStreamError checks if an error is a StreamError.
-func IsStreamError(err error) bool {
-	_, ok := err.(*StreamError)
-	return ok
+// IsStreamError checks if an error is a StreamError and returns it.
+func IsStreamError(err error) (*StreamError, bool) {
+	var streamErr *StreamError
+	ok := errors.As(err, &streamErr)
+	return streamErr, ok
 }
 
-// IsValidationError checks if an error is a ValidationError.
-func IsValidationError(err error) bool {
-	_, ok := err.(*ValidationError)
-	return ok
+// IsValidationError checks if an error is a ValidationError and returns it.
+func IsValidationError(err error) (*ValidationError, bool) {
+	var valErr *ValidationError
+	ok := errors.As(err, &valErr)
+	return valErr, ok
 }

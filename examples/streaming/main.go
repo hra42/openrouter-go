@@ -226,8 +226,7 @@ func streamingErrorHandling(client *openrouter.Client) {
 		log.Printf("Error creating stream: %v", err)
 
 		// Check error type
-		if openrouter.IsRequestError(err) {
-			reqErr := err.(*openrouter.RequestError)
+		if reqErr, ok := openrouter.IsRequestError(err); ok {
 			fmt.Printf("Request error (status %d): %s\n", reqErr.StatusCode, reqErr.Message)
 		}
 		return
@@ -260,8 +259,7 @@ func streamingErrorHandling(client *openrouter.Client) {
 	}
 
 	if err := stream.Err(); err != nil {
-		if openrouter.IsStreamError(err) {
-			streamErr := err.(*openrouter.StreamError)
+		if streamErr, ok := openrouter.IsStreamError(err); ok {
 			fmt.Printf("Stream error: %s\n", streamErr.Message)
 			if streamErr.Unwrap() != nil {
 				fmt.Printf("Underlying error: %v\n", streamErr.Unwrap())

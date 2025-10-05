@@ -592,7 +592,7 @@ func TestCreateKeyValidation(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for nil request, got nil")
 	}
-	if !IsValidationError(err) {
+	if _, ok := IsValidationError(err); !ok {
 		t.Errorf("expected ValidationError, got %T", err)
 	}
 
@@ -603,7 +603,7 @@ func TestCreateKeyValidation(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for empty name, got nil")
 	}
-	if !IsValidationError(err) {
+	if _, ok := IsValidationError(err); !ok {
 		t.Errorf("expected ValidationError, got %T", err)
 	}
 }
@@ -752,7 +752,7 @@ func TestGetKeyByHashValidation(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for empty hash, got nil")
 	}
-	if !IsValidationError(err) {
+	if _, ok := IsValidationError(err); !ok {
 		t.Errorf("expected ValidationError, got %T", err)
 	}
 }
@@ -884,7 +884,7 @@ func TestDeleteKeyValidation(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for empty hash, got nil")
 	}
-	if !IsValidationError(err) {
+	if _, ok := IsValidationError(err); !ok {
 		t.Errorf("expected ValidationError, got %T", err)
 	}
 }
@@ -1191,7 +1191,7 @@ func TestUpdateKeyValidation(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for empty hash, got nil")
 	}
-	if !IsValidationError(err) {
+	if _, ok := IsValidationError(err); !ok {
 		t.Errorf("expected ValidationError, got %T", err)
 	}
 
@@ -1200,7 +1200,7 @@ func TestUpdateKeyValidation(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for nil request, got nil")
 	}
-	if !IsValidationError(err) {
+	if _, ok := IsValidationError(err); !ok {
 		t.Errorf("expected ValidationError, got %T", err)
 	}
 }

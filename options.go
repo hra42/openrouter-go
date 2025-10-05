@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+// RequestConfig is an interface that both ChatCompletionRequest and CompletionRequest satisfy.
+// It provides access to common fields for generic option functions.
+type RequestConfig interface {
+	*ChatCompletionRequest | *CompletionRequest
+}
+
 // ClientOption is a functional option for configuring the Client.
 type ClientOption func(*Client)
 
@@ -230,38 +236,187 @@ func WithMetadata(metadata map[string]interface{}) ChatCompletionOption {
 // CompletionOption is a functional option for completion requests.
 type CompletionOption func(*CompletionRequest)
 
+// Generic helper functions for common fields
+
+// setModel is a generic helper to set the model field.
+func setModel[T RequestConfig](r T, model string) {
+	switch req := any(r).(type) {
+	case *ChatCompletionRequest:
+		req.Model = model
+	case *CompletionRequest:
+		req.Model = model
+	}
+}
+
+// setTemperature is a generic helper to set the temperature field.
+func setTemperature[T RequestConfig](r T, temperature float64) {
+	switch req := any(r).(type) {
+	case *ChatCompletionRequest:
+		req.Temperature = &temperature
+	case *CompletionRequest:
+		req.Temperature = &temperature
+	}
+}
+
+// setTopP is a generic helper to set the top_p field.
+func setTopP[T RequestConfig](r T, topP float64) {
+	switch req := any(r).(type) {
+	case *ChatCompletionRequest:
+		req.TopP = &topP
+	case *CompletionRequest:
+		req.TopP = &topP
+	}
+}
+
+// setMaxTokens is a generic helper to set the max_tokens field.
+func setMaxTokens[T RequestConfig](r T, maxTokens int) {
+	switch req := any(r).(type) {
+	case *ChatCompletionRequest:
+		req.MaxTokens = &maxTokens
+	case *CompletionRequest:
+		req.MaxTokens = &maxTokens
+	}
+}
+
+// setStop is a generic helper to set the stop sequences.
+func setStop[T RequestConfig](r T, stop []string) {
+	switch req := any(r).(type) {
+	case *ChatCompletionRequest:
+		req.Stop = stop
+	case *CompletionRequest:
+		req.Stop = stop
+	}
+}
+
+// setResponseFormat is a generic helper to set the response format.
+func setResponseFormat[T RequestConfig](r T, format *ResponseFormat) {
+	switch req := any(r).(type) {
+	case *ChatCompletionRequest:
+		req.ResponseFormat = format
+	case *CompletionRequest:
+		req.ResponseFormat = format
+	}
+}
+
+// setProvider is a generic helper to set the provider.
+func setProvider[T RequestConfig](r T, provider *Provider) {
+	switch req := any(r).(type) {
+	case *ChatCompletionRequest:
+		req.Provider = provider
+	case *CompletionRequest:
+		req.Provider = provider
+	}
+}
+
+// setTransforms is a generic helper to set transforms.
+func setTransforms[T RequestConfig](r T, transforms []string) {
+	switch req := any(r).(type) {
+	case *ChatCompletionRequest:
+		req.Transforms = transforms
+	case *CompletionRequest:
+		req.Transforms = transforms
+	}
+}
+
+// setModels is a generic helper to set models for fallback.
+func setModels[T RequestConfig](r T, models []string) {
+	switch req := any(r).(type) {
+	case *ChatCompletionRequest:
+		req.Models = models
+	case *CompletionRequest:
+		req.Models = models
+	}
+}
+
+// setRoute is a generic helper to set the route.
+func setRoute[T RequestConfig](r T, route string) {
+	switch req := any(r).(type) {
+	case *ChatCompletionRequest:
+		req.Route = route
+	case *CompletionRequest:
+		req.Route = route
+	}
+}
+
+// setMetadata is a generic helper to set metadata.
+func setMetadata[T RequestConfig](r T, metadata map[string]interface{}) {
+	switch req := any(r).(type) {
+	case *ChatCompletionRequest:
+		req.Metadata = metadata
+	case *CompletionRequest:
+		req.Metadata = metadata
+	}
+}
+
+// setPlugins is a generic helper to set plugins.
+func setPlugins[T RequestConfig](r T, plugins []Plugin) {
+	switch req := any(r).(type) {
+	case *ChatCompletionRequest:
+		req.Plugins = plugins
+	case *CompletionRequest:
+		req.Plugins = plugins
+	}
+}
+
+// setWebSearchOptions is a generic helper to set web search options.
+func setWebSearchOptions[T RequestConfig](r T, options *WebSearchOptions) {
+	switch req := any(r).(type) {
+	case *ChatCompletionRequest:
+		req.WebSearchOptions = options
+	case *CompletionRequest:
+		req.WebSearchOptions = options
+	}
+}
+
+// ensureProvider is a generic helper to ensure provider is initialized.
+func ensureProvider[T RequestConfig](r T) *Provider {
+	switch req := any(r).(type) {
+	case *ChatCompletionRequest:
+		if req.Provider == nil {
+			req.Provider = &Provider{}
+		}
+		return req.Provider
+	case *CompletionRequest:
+		if req.Provider == nil {
+			req.Provider = &Provider{}
+		}
+		return req.Provider
+	}
+	return nil
+}
+
 // WithCompletionModel sets the model for the completion request.
 func WithCompletionModel(model string) CompletionOption {
 	return func(r *CompletionRequest) {
-		r.Model = model
+		setModel(r, model)
 	}
 }
 
 // WithCompletionTemperature sets the temperature for completion.
 func WithCompletionTemperature(temperature float64) CompletionOption {
 	return func(r *CompletionRequest) {
-		r.Temperature = &temperature
+		setTemperature(r, temperature)
 	}
 }
 
 // WithCompletionTopP sets the top_p for completion.
 func WithCompletionTopP(topP float64) CompletionOption {
 	return func(r *CompletionRequest) {
-		r.TopP = &topP
+		setTopP(r, topP)
 	}
 }
 
 // WithCompletionMaxTokens sets the max_tokens for completion.
 func WithCompletionMaxTokens(maxTokens int) CompletionOption {
 	return func(r *CompletionRequest) {
-		r.MaxTokens = &maxTokens
+		setMaxTokens(r, maxTokens)
 	}
 }
 
 // WithCompletionStop sets stop sequences for completion.
 func WithCompletionStop(stop ...string) CompletionOption {
 	return func(r *CompletionRequest) {
-		r.Stop = stop
+		setStop(r, stop)
 	}
 }
 
@@ -303,35 +458,35 @@ func WithCompletionSuffix(suffix string) CompletionOption {
 // WithCompletionProvider sets provider-specific parameters for completion.
 func WithCompletionProvider(provider Provider) CompletionOption {
 	return func(r *CompletionRequest) {
-		r.Provider = &provider
+		setProvider(r, &provider)
 	}
 }
 
 // WithCompletionMetadata sets metadata headers for the completion request.
 func WithCompletionMetadata(metadata map[string]interface{}) CompletionOption {
 	return func(r *CompletionRequest) {
-		r.Metadata = metadata
+		setMetadata(r, metadata)
 	}
 }
 
 // WithCompletionTransforms sets the transforms to apply to completion requests.
 func WithCompletionTransforms(transforms ...string) CompletionOption {
 	return func(r *CompletionRequest) {
-		r.Transforms = transforms
+		setTransforms(r, transforms)
 	}
 }
 
 // WithCompletionModels sets the models for fallback in completion requests.
 func WithCompletionModels(models ...string) CompletionOption {
 	return func(r *CompletionRequest) {
-		r.Models = models
+		setModels(r, models)
 	}
 }
 
 // WithCompletionRoute sets the routing preference for completion requests.
 func WithCompletionRoute(route string) CompletionOption {
 	return func(r *CompletionRequest) {
-		r.Route = route
+		setRoute(r, route)
 	}
 }
 
@@ -339,10 +494,7 @@ func WithCompletionRoute(route string) CompletionOption {
 // This ensures the request is only routed to endpoints with Zero Data Retention policy.
 func WithZDR(enabled bool) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.ZDR = &enabled
+		ensureProvider(r).ZDR = &enabled
 	}
 }
 
@@ -350,10 +502,7 @@ func WithZDR(enabled bool) ChatCompletionOption {
 // This ensures the request is only routed to endpoints with Zero Data Retention policy.
 func WithCompletionZDR(enabled bool) CompletionOption {
 	return func(r *CompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.ZDR = &enabled
+		ensureProvider(r).ZDR = &enabled
 	}
 }
 
@@ -361,20 +510,14 @@ func WithCompletionZDR(enabled bool) CompletionOption {
 // The router will prioritize providers in this list, and in this order.
 func WithProviderOrder(providers ...string) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.Order = providers
+		ensureProvider(r).Order = providers
 	}
 }
 
 // WithCompletionProviderOrder sets the order of providers to try for completion requests.
 func WithCompletionProviderOrder(providers ...string) CompletionOption {
 	return func(r *CompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.Order = providers
+		ensureProvider(r).Order = providers
 	}
 }
 
@@ -382,40 +525,28 @@ func WithCompletionProviderOrder(providers ...string) CompletionOption {
 // When set to false, the request will fail if primary providers are unavailable.
 func WithAllowFallbacks(allow bool) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.AllowFallbacks = &allow
+		ensureProvider(r).AllowFallbacks = &allow
 	}
 }
 
 // WithCompletionAllowFallbacks controls whether to allow backup providers for completion requests.
 func WithCompletionAllowFallbacks(allow bool) CompletionOption {
 	return func(r *CompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.AllowFallbacks = &allow
+		ensureProvider(r).AllowFallbacks = &allow
 	}
 }
 
 // WithRequireParameters only routes to providers that support all request parameters.
 func WithRequireParameters(require bool) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.RequireParameters = &require
+		ensureProvider(r).RequireParameters = &require
 	}
 }
 
 // WithCompletionRequireParameters only routes to providers that support all request parameters.
 func WithCompletionRequireParameters(require bool) CompletionOption {
 	return func(r *CompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.RequireParameters = &require
+		ensureProvider(r).RequireParameters = &require
 	}
 }
 
@@ -423,60 +554,42 @@ func WithCompletionRequireParameters(require bool) CompletionOption {
 // Use "allow" to allow data collection, "deny" to prevent it.
 func WithDataCollection(policy string) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.DataCollection = policy
+		ensureProvider(r).DataCollection = policy
 	}
 }
 
 // WithCompletionDataCollection controls whether to use providers that may store data.
 func WithCompletionDataCollection(policy string) CompletionOption {
 	return func(r *CompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.DataCollection = policy
+		ensureProvider(r).DataCollection = policy
 	}
 }
 
 // WithOnlyProviders restricts the request to only use specified providers.
 func WithOnlyProviders(providers ...string) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.Only = providers
+		ensureProvider(r).Only = providers
 	}
 }
 
 // WithCompletionOnlyProviders restricts the request to only use specified providers.
 func WithCompletionOnlyProviders(providers ...string) CompletionOption {
 	return func(r *CompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.Only = providers
+		ensureProvider(r).Only = providers
 	}
 }
 
 // WithIgnoreProviders specifies providers to skip for this request.
 func WithIgnoreProviders(providers ...string) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.Ignore = providers
+		ensureProvider(r).Ignore = providers
 	}
 }
 
 // WithCompletionIgnoreProviders specifies providers to skip for this request.
 func WithCompletionIgnoreProviders(providers ...string) CompletionOption {
 	return func(r *CompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.Ignore = providers
+		ensureProvider(r).Ignore = providers
 	}
 }
 
@@ -484,20 +597,14 @@ func WithCompletionIgnoreProviders(providers ...string) CompletionOption {
 // Valid values: "int4", "int8", "fp4", "fp6", "fp8", "fp16", "bf16", "fp32", "unknown"
 func WithQuantizations(quantizations ...string) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.Quantizations = quantizations
+		ensureProvider(r).Quantizations = quantizations
 	}
 }
 
 // WithCompletionQuantizations filters providers by quantization levels.
 func WithCompletionQuantizations(quantizations ...string) CompletionOption {
 	return func(r *CompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.Quantizations = quantizations
+		ensureProvider(r).Quantizations = quantizations
 	}
 }
 
@@ -505,40 +612,28 @@ func WithCompletionQuantizations(quantizations ...string) CompletionOption {
 // Valid values: "price" (lowest cost), "throughput" (highest), "latency" (lowest)
 func WithProviderSort(sort string) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.Sort = sort
+		ensureProvider(r).Sort = sort
 	}
 }
 
 // WithCompletionProviderSort sorts providers by the specified attribute.
 func WithCompletionProviderSort(sort string) CompletionOption {
 	return func(r *CompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.Sort = sort
+		ensureProvider(r).Sort = sort
 	}
 }
 
 // WithMaxPrice sets maximum pricing constraints for the request.
 func WithMaxPrice(maxPrice MaxPrice) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.MaxPrice = &maxPrice
+		ensureProvider(r).MaxPrice = &maxPrice
 	}
 }
 
 // WithCompletionMaxPrice sets maximum pricing constraints for the completion request.
 func WithCompletionMaxPrice(maxPrice MaxPrice) CompletionOption {
 	return func(r *CompletionRequest) {
-		if r.Provider == nil {
-			r.Provider = &Provider{}
-		}
-		r.Provider.MaxPrice = &maxPrice
+		ensureProvider(r).MaxPrice = &maxPrice
 	}
 }
 
@@ -568,7 +663,7 @@ func WithCompletionFloorPrice() CompletionOption {
 // This ensures the model response follows the provided schema exactly.
 func WithJSONSchema(name string, strict bool, schema map[string]interface{}) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
-		r.ResponseFormat = &ResponseFormat{
+		format := &ResponseFormat{
 			Type: "json_schema",
 			JSONSchema: &JSONSchema{
 				Name:   name,
@@ -576,13 +671,14 @@ func WithJSONSchema(name string, strict bool, schema map[string]interface{}) Cha
 				Schema: schema,
 			},
 		}
+		setResponseFormat(r, format)
 	}
 }
 
 // WithCompletionJSONSchema sets the response format to use a specific JSON schema for completion requests.
 func WithCompletionJSONSchema(name string, strict bool, schema map[string]interface{}) CompletionOption {
 	return func(r *CompletionRequest) {
-		r.ResponseFormat = &ResponseFormat{
+		format := &ResponseFormat{
 			Type: "json_schema",
 			JSONSchema: &JSONSchema{
 				Name:   name,
@@ -590,13 +686,14 @@ func WithCompletionJSONSchema(name string, strict bool, schema map[string]interf
 				Schema: schema,
 			},
 		}
+		setResponseFormat(r, format)
 	}
 }
 
 // WithCompletionResponseFormat sets the response format for completion requests.
 func WithCompletionResponseFormat(format ResponseFormat) CompletionOption {
 	return func(r *CompletionRequest) {
-		r.ResponseFormat = &format
+		setResponseFormat(r, &format)
 	}
 }
 
@@ -604,45 +701,47 @@ func WithCompletionResponseFormat(format ResponseFormat) CompletionOption {
 // Note: This is less strict than WithJSONSchema and doesn't enforce a specific structure.
 func WithJSONMode() ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
-		r.ResponseFormat = &ResponseFormat{
+		format := &ResponseFormat{
 			Type: "json_object",
 		}
+		setResponseFormat(r, format)
 	}
 }
 
 // WithCompletionJSONMode sets the response format to return JSON for completion requests.
 func WithCompletionJSONMode() CompletionOption {
 	return func(r *CompletionRequest) {
-		r.ResponseFormat = &ResponseFormat{
+		format := &ResponseFormat{
 			Type: "json_object",
 		}
+		setResponseFormat(r, format)
 	}
 }
 
 // WithPlugins adds plugin configurations to the request.
 func WithPlugins(plugins ...Plugin) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
-		r.Plugins = plugins
+		setPlugins(r, plugins)
 	}
 }
 
 // WithCompletionPlugins adds plugin configurations to the completion request.
 func WithCompletionPlugins(plugins ...Plugin) CompletionOption {
 	return func(r *CompletionRequest) {
-		r.Plugins = plugins
+		setPlugins(r, plugins)
 	}
 }
 
 // WithWebSearchOptions sets web search options for the request.
 func WithWebSearchOptions(options *WebSearchOptions) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
-		r.WebSearchOptions = options
+		setWebSearchOptions(r, options)
 	}
 }
 
 // WithCompletionWebSearchOptions sets web search options for the completion request.
 func WithCompletionWebSearchOptions(options *WebSearchOptions) CompletionOption {
 	return func(r *CompletionRequest) {
-		r.WebSearchOptions = options
+		setWebSearchOptions(r, options)
 	}
 }

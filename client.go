@@ -51,8 +51,8 @@ func NewClient(opts ...ClientOption) *Client {
 	return c
 }
 
-// doRequest performs an HTTP request to the OpenRouter API.
-func (c *Client) doRequest(ctx context.Context, method, endpoint string, body interface{}, v interface{}) error {
+// doRequestOnce performs a single HTTP request to the OpenRouter API without retry logic.
+func (c *Client) doRequestOnce(ctx context.Context, method, endpoint string, body interface{}, v interface{}) error {
 	url := c.baseURL + endpoint
 
 	var reqBody io.Reader
@@ -98,41 +98,11 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body in
 		}
 	}
 
-	// Perform request with retries
-	var resp *http.Response
-	for attempt := 0; attempt <= c.maxRetries; attempt++ {
-		if attempt > 0 {
-			select {
-			case <-time.After(c.retryDelay * time.Duration(attempt)):
-			case <-ctx.Done():
-				return ctx.Err()
-			}
-		}
-
-		resp, err = c.httpClient.Do(req)
-		if err != nil {
-			if attempt == c.maxRetries {
-				return fmt.Errorf("request failed after %d retries: %w", c.maxRetries, err)
-			}
-			continue
-		}
-
-		// Don't retry on client errors (4xx)
-		if resp.StatusCode >= 400 && resp.StatusCode < 500 {
-			break
-		}
-
-		// Retry on server errors (5xx) or rate limit
-		if resp.StatusCode >= 500 || resp.StatusCode == 429 {
-			if attempt < c.maxRetries {
-				resp.Body.Close()
-				continue
-			}
-		}
-
-		break
+	// Perform request
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("request failed: %w", err)
 	}
-
 	defer resp.Body.Close()
 
 	// Read response body
@@ -175,4 +145,57 @@ func (r *ChatCompletionRequest) GetMetadata() map[string]interface{} {
 
 func (r *CompletionRequest) GetMetadata() map[string]interface{} {
 	return r.Metadata
+}
+
+// RequestWithProvider is a type constraint for requests that have provider settings.
+// This constraint allows generic functions to work with both ChatCompletionRequest
+// and CompletionRequest in a type-safe manner.
+type RequestWithProvider interface {
+	*ChatCompletionRequest | *CompletionRequest
+}
+
+// getProvider returns the provider from a request (helper for generic functions).
+func getProvider[T RequestWithProvider](req T) *Provider {
+	switch r := any(req).(type) {
+	case *ChatCompletionRequest:
+		return r.Provider
+	case *CompletionRequest:
+		return r.Provider
+	}
+	return nil
+}
+
+// setProviderField sets the provider on a request (helper for generic functions).
+func setProviderField[T RequestWithProvider](req T, p *Provider) {
+	switch r := any(req).(type) {
+	case *ChatCompletionRequest:
+		r.Provider = p
+	case *CompletionRequest:
+		r.Provider = p
+	}
+}
+
+// processModelSuffix processes model suffixes like :nitro and :floor
+// and applies the appropriate provider settings using generics.
+func processModelSuffix[T RequestWithProvider](model string, req T) string {
+	if strings.HasSuffix(model, ":nitro") {
+		// Remove suffix and apply throughput sorting
+		model = strings.TrimSuffix(model, ":nitro")
+		provider := getProvider(req)
+		if provider == nil {
+			provider = &Provider{}
+		}
+		provider.Sort = "throughput"
+		setProviderField(req, provider)
+	} else if strings.HasSuffix(model, ":floor") {
+		// Remove suffix and apply price sorting
+		model = strings.TrimSuffix(model, ":floor")
+		provider := getProvider(req)
+		if provider == nil {
+			provider = &Provider{}
+		}
+		provider.Sort = "price"
+		setProviderField(req, provider)
+	}
+	return model
 }

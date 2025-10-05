@@ -179,14 +179,13 @@ func errorHandling(client *openrouter.Client) {
 
 	if err != nil {
 		// Check error type
-		if openrouter.IsRequestError(err) {
-			reqErr := err.(*openrouter.RequestError)
+		if reqErr, ok := openrouter.IsRequestError(err); ok {
 			fmt.Printf("Request error (status %d): %s\n", reqErr.StatusCode, reqErr.Message)
 
 			if reqErr.IsNotFoundError() {
 				fmt.Println("Model not found!")
 			}
-		} else if openrouter.IsValidationError(err) {
+		} else if _, ok := openrouter.IsValidationError(err); ok {
 			fmt.Printf("Validation error: %v\n", err)
 		} else {
 			fmt.Printf("Other error: %v\n", err)
