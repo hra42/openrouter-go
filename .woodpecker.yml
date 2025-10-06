@@ -22,7 +22,7 @@ steps:
   race-detection:
     image: golang:1.25.1-alpine
     environment:
-      CGO_ENABLED: "1"  # Required for race detector
+      CGO_ENABLED: "1"
     commands:
       - apk add --no-cache gcc musl-dev
       - go test -race ./...
@@ -56,3 +56,14 @@ steps:
       - go run cmd/openrouter-test/main.go -key $ORPROVKEY -test createkey
       - go run cmd/openrouter-test/main.go -key $ORPROVKEY -test updatekey
       - go run cmd/openrouter-test/main.go -key $ORPROVKEY -test deletekey
+
+  discord-notification:
+    image: woodpeckerci/plugin-discord
+    settings:
+      webhook_id:
+        from_secret: discord_webhook_id
+      webhook_token:
+        from_secret: discord_webhook_token
+    when:
+      status: [success, failure]
+    failure: ignore
