@@ -57,13 +57,58 @@ steps:
       - go run cmd/openrouter-test/main.go -key $ORPROVKEY -test updatekey
       - go run cmd/openrouter-test/main.go -key $ORPROVKEY -test deletekey
 
-  discord-notification:
+  discord-success-notification:
     image: appleboy/drone-discord
     settings:
       webhook_id:
         from_secret: discord_webhook_id
       webhook_token:
         from_secret: discord_webhook_token
+      username: Woodpecker CI
+      message: >
+        ✅ **Build Succeeded**
+
+        Repository: `{{repo.name}}/{{commit.branch}}`
+
+        Event: `{{uppercase build.event}}`
+
+        - Commit: [{{commit.sha}}]({{commit.link}})
+
+        - Author: `{{commit.author}} <{{commit.email}}>`
+
+        - Message: {{commit.message}}
+
+        - Build: [#{{build.number}}]({{build.link}})
+
+        - Finished: `{{datetime build.finished "2006.01.02 15:04" ""}}`
     when:
-      status: [success, failure]
+      status: [success]
+    failure: ignore
+
+  discord-failure-notification:
+    image: appleboy/drone-discord
+    settings:
+      webhook_id:
+        from_secret: discord_webhook_id
+      webhook_token:
+        from_secret: discord_webhook_token
+      username: Woodpecker CI
+      message: >
+        ❌ **Build Failed**
+
+        Repository: `{{repo.name}}/{{commit.branch}}`
+
+        Event: `{{uppercase build.event}}`
+
+        - Commit: [{{commit.sha}}]({{commit.link}})
+
+        - Author: `{{commit.author}} <{{commit.email}}>`
+
+        - Message: {{commit.message}}
+
+        - Build: [#{{build.number}}]({{build.link}})
+
+        - Finished: `{{datetime build.finished "2006.01.02 15:04" ""}}`
+    when:
+      status: [failure]
     failure: ignore
