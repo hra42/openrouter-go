@@ -58,7 +58,7 @@ steps:
       - go run cmd/openrouter-test/main.go -key $ORPROVKEY -test deletekey
 
   discord-notification:
-    image: woodpeckerci/plugin-discord
+    image: appleboy/drone-discord
     settings:
       webhook_id:
         from_secret: discord_webhook_id
