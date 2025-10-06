@@ -66,21 +66,21 @@ steps:
         from_secret: discord_webhook_token
       username: Woodpecker CI
       message: >
-        ✅ **Build Succeeded**
+        ✅ **Build #{{build.number}} Succeeded**
 
-        Repository: `{{repo.name}}/{{commit.branch}}`
+        **Repository:** `{{repo.owner}}/{{repo.name}}` ({{build.branch}})
 
-        Event: `{{uppercase build.event}}`
+        **Event:** `{{uppercase build.event}}`
 
-        - Commit: [{{commit.sha}}]({{commit.link}})
+        **Commit:** [{{truncate build.commit 8}}]({{build.link}})
 
-        - Author: `{{commit.author}} <{{commit.email}}>`
+        **Author:** {{build.author}}
 
-        - Message: {{commit.message}}
+        **Message:** {{build.message}}
 
-        - Build: [#{{build.number}}]({{build.link}})
+        **Duration:** {{since build.started}}
 
-        - Finished: `{{datetime build.finished "2006.01.02 15:04" ""}}`
+        **Finished:** {{datetime build.finished "2006-01-02 15:04:05" ""}}
     when:
       status: [success]
     failure: ignore
@@ -94,21 +94,21 @@ steps:
         from_secret: discord_webhook_token
       username: Woodpecker CI
       message: >
-        ❌ **Build Failed**
+        ❌ **Build #{{build.number}} Failed**
 
-        Repository: `{{repo.name}}/{{commit.branch}}`
+        **Repository:** `{{repo.owner}}/{{repo.name}}` ({{build.branch}})
 
-        Event: `{{uppercase build.event}}`
+        **Event:** `{{uppercase build.event}}`
 
-        - Commit: [{{commit.sha}}]({{commit.link}})
+        **Commit:** [{{truncate build.commit 8}}]({{build.link}})
 
-        - Author: `{{commit.author}} <{{commit.email}}>`
+        **Author:** {{build.author}}
 
-        - Message: {{commit.message}}
+        **Message:** {{build.message}}
 
-        - Build: [#{{build.number}}]({{build.link}})
+        **Duration:** {{since build.started}}
 
-        - Finished: `{{datetime build.finished "2006.01.02 15:04" ""}}`
+        **Finished:** {{datetime build.finished "2006-01-02 15:04:05" ""}}
     when:
       status: [failure]
     failure: ignore
