@@ -195,7 +195,7 @@ This endpoint is useful for:
 - Checking provider availability and uptime
 - Finding endpoints with specific quantization levels
 - Discovering which parameters are supported by each provider
-```
+
 
 ### Listing Available Providers
 
@@ -597,7 +597,6 @@ This endpoint is useful for:
 - Temporarily disabling keys without deletion
 - Managing BYOK limit policies
 - Implementing dynamic key management workflows
-```
 
 ## Code Quality
 
@@ -775,16 +774,6 @@ go run cmd/openrouter-test/main.go -test chat -v
 # endpoints, providers, credits, activity, key, listkeys,
 # createkey, updatekey, deletekey
 ```
-
-### CI/CD with Jenkins
-
-The project includes a Jenkinsfile for continuous integration. The pipeline:
-- Runs all unit tests
-- Performs coverage analysis
-- Executes race condition detection
-- Runs integration tests with the OpenRouter API
-
-To use the Jenkins pipeline, ensure you have configured the `openrouter-api-key` credential in your Jenkins instance.
 
 ### Message Transforms
 
