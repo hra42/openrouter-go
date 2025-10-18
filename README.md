@@ -1,5 +1,10 @@
 # openrouter-go
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/hra42/openrouter-go)](https://goreportcard.com/report/github.com/hra42/openrouter-go)
+[![GoDoc](https://godoc.org/github.com/hra42/openrouter-go?status.svg)](https://godoc.org/github.com/hra42/openrouter-go)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/hra42/openrouter-go)](https://github.com/hra42/openrouter-go)
+
 A zero-dependency Go package providing complete bindings for the OpenRouter API, supporting all available endpoints with full streaming capabilities.
 
 ## Features
