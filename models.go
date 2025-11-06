@@ -84,17 +84,27 @@ type Message struct {
 // MessageContent can be either a string or an array of content parts.
 type MessageContent interface{}
 
-// ContentPart represents a part of message content (text or image).
+// ContentPart represents a part of message content (text, image, or file).
 type ContentPart struct {
 	Type     string    `json:"type"`
 	Text     string    `json:"text,omitempty"`
 	ImageURL *ImageURL `json:"image_url,omitempty"`
+	File     *File     `json:"file,omitempty"`
 }
 
 // ImageURL represents an image URL in the message content.
 type ImageURL struct {
 	URL    string `json:"url"`
 	Detail string `json:"detail,omitempty"`
+}
+
+// File represents a file attachment in the message content.
+// Supports both URLs and base64-encoded data URLs.
+type File struct {
+	// Filename is the name of the file (e.g., "document.pdf")
+	Filename string `json:"filename"`
+	// FileData can be either a URL or a base64-encoded data URL
+	FileData string `json:"file_data"`
 }
 
 // ResponseFormat specifies the format of the response.
@@ -267,7 +277,7 @@ type APIError struct {
 
 // Plugin represents a plugin configuration for enhancing model responses.
 type Plugin struct {
-	// ID is the plugin identifier (e.g., "web" for web search)
+	// ID is the plugin identifier (e.g., "web" for web search, "file-parser" for file parsing)
 	ID string `json:"id"`
 	// Engine specifies which search engine to use ("native", "exa", or undefined for auto)
 	Engine string `json:"engine,omitempty"`
@@ -275,6 +285,19 @@ type Plugin struct {
 	MaxResults int `json:"max_results,omitempty"`
 	// SearchPrompt customizes the prompt used to attach search results
 	SearchPrompt string `json:"search_prompt,omitempty"`
+	// PDF contains configuration for PDF file parsing (when ID is "file-parser")
+	PDF *PDFParserConfig `json:"pdf,omitempty"`
+}
+
+// PDFParserConfig configures PDF file parsing behavior.
+type PDFParserConfig struct {
+	// Engine specifies the PDF parsing engine to use.
+	// Options:
+	// - "pdf-text": Best for well-structured PDFs with clear text content (Free)
+	// - "mistral-ocr": Best for scanned documents or PDFs with images ($0.0004 per 1,000 pages)
+	// - "native": Only for models with native file support (charged as input tokens)
+	// If not specified, defaults to model's native support, then "pdf-text"
+	Engine string `json:"engine,omitempty"`
 }
 
 // WebSearchOptions configures native web search behavior for supported models.
@@ -285,10 +308,12 @@ type WebSearchOptions struct {
 
 // Annotation represents an annotation in a message response.
 type Annotation struct {
-	// Type of annotation (e.g., "url_citation")
+	// Type of annotation (e.g., "url_citation", "file")
 	Type string `json:"type"`
 	// URLCitation contains details for URL citation annotations
 	URLCitation *URLCitation `json:"url_citation,omitempty"`
+	// FileAnnotation contains details for file annotations (parsed file metadata)
+	FileAnnotation *FileAnnotation `json:"file,omitempty"`
 }
 
 // URLCitation represents a URL citation in a message annotation.
@@ -303,6 +328,19 @@ type URLCitation struct {
 	StartIndex int `json:"start_index"`
 	// EndIndex is the index of the last character of the citation in the message
 	EndIndex int `json:"end_index"`
+}
+
+// FileAnnotation represents metadata about a parsed file.
+// Can be sent back in subsequent requests to avoid re-parsing costs.
+type FileAnnotation struct {
+	// Filename is the name of the file
+	Filename string `json:"filename"`
+	// ContentType is the MIME type of the file (e.g., "application/pdf")
+	ContentType string `json:"content_type,omitempty"`
+	// ParsedContent contains the extracted text/data from the file
+	ParsedContent string `json:"parsed_content,omitempty"`
+	// Metadata contains additional file information
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
 }
 
 // ModelsResponse represents the response from the list models endpoint.
