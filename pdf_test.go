@@ -195,8 +195,8 @@ func TestCreateUserMessageWithFiles(t *testing.T) {
 
 func TestCreateFileParserPlugin(t *testing.T) {
 	tests := []struct {
-		name   string
-		engine string
+		name      string
+		engine    string
 		hasConfig bool
 	}{
 		{"Empty engine", "", false},

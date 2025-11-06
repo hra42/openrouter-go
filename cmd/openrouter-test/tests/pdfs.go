@@ -47,6 +47,12 @@ func RunPDFURLTest(ctx context.Context, client *openrouter.Client, model string,
 
 	printSuccess(fmt.Sprintf("Success! (%.2fs)", elapsed.Seconds()))
 
+	// Validate response has choices
+	if len(resp.Choices) == 0 {
+		printError("Invalid response", fmt.Errorf("no choices returned in response (generation_id: %s)", resp.ID))
+		return false
+	}
+
 	if verbose || true {
 		response := resp.Choices[0].Message.Content.(string)
 		if len(response) > 200 {
@@ -100,6 +106,12 @@ func RunPDFWithEngineTest(ctx context.Context, client *openrouter.Client, model 
 
 	printSuccess(fmt.Sprintf("Success! (%.2fs)", elapsed.Seconds()))
 
+	// Validate response has choices
+	if len(resp.Choices) == 0 {
+		printError("Invalid response", fmt.Errorf("no choices returned in response (generation_id: %s)", resp.ID))
+		return false
+	}
+
 	if verbose || true {
 		response := resp.Choices[0].Message.Content.(string)
 		if len(response) > 200 {
@@ -150,6 +162,12 @@ func RunPDFWithAnnotationsTest(ctx context.Context, client *openrouter.Client, m
 
 	printSuccess(fmt.Sprintf("First request success! (%.2fs)", elapsed.Seconds()))
 
+	// Validate response has choices
+	if len(resp.Choices) == 0 {
+		printError("Invalid response", fmt.Errorf("no choices returned in response (generation_id: %s)", resp.ID))
+		return false
+	}
+
 	if verbose || true {
 		response := resp.Choices[0].Message.Content.(string)
 		if len(response) > 150 {
@@ -184,6 +202,12 @@ func RunPDFWithAnnotationsTest(ctx context.Context, client *openrouter.Client, m
 		}
 
 		printSuccess(fmt.Sprintf("Follow-up success! (%.2fs)", elapsed2.Seconds()))
+
+		// Validate follow-up response has choices
+		if len(resp2.Choices) == 0 {
+			printError("Invalid follow-up response", fmt.Errorf("no choices returned in response (generation_id: %s)", resp2.ID))
+			return false
+		}
 
 		if verbose || true {
 			response2 := resp2.Choices[0].Message.Content.(string)
@@ -244,6 +268,12 @@ func RunMultipleFilesTest(ctx context.Context, client *openrouter.Client, model 
 
 	printSuccess(fmt.Sprintf("Success! (%.2fs)", elapsed.Seconds()))
 
+	// Validate response has choices
+	if len(resp.Choices) == 0 {
+		printError("Invalid response", fmt.Errorf("no choices returned in response (generation_id: %s)", resp.ID))
+		return false
+	}
+
 	if verbose || true {
 		response := resp.Choices[0].Message.Content.(string)
 		if len(response) > 200 {
@@ -297,6 +327,12 @@ func RunPDFContentBuilderTest(ctx context.Context, client *openrouter.Client, mo
 
 	printSuccess(fmt.Sprintf("Success! (%.2fs)", elapsed.Seconds()))
 
+	// Validate response has choices
+	if len(resp.Choices) == 0 {
+		printError("Invalid response", fmt.Errorf("no choices returned in response (generation_id: %s)", resp.ID))
+		return false
+	}
+
 	if verbose || true {
 		response := resp.Choices[0].Message.Content.(string)
 		if len(response) > 200 {
@@ -349,6 +385,12 @@ func RunBase64PDFTest(ctx context.Context, client *openrouter.Client, model stri
 	}
 
 	printSuccess(fmt.Sprintf("Success! (%.2fs)", elapsed.Seconds()))
+
+	// Validate response has choices
+	if len(resp.Choices) == 0 {
+		printError("Invalid response", fmt.Errorf("no choices returned in response (generation_id: %s)", resp.ID))
+		return false
+	}
 
 	if verbose || true {
 		response := resp.Choices[0].Message.Content.(string)
@@ -424,6 +466,16 @@ func RunPDFComparisonTest(ctx context.Context, client *openrouter.Client, model 
 	}
 
 	printSuccess(fmt.Sprintf("Success! URL: %.2fs, Base64: %.2fs", elapsed1.Seconds(), elapsed2.Seconds()))
+
+	// Validate both responses have choices
+	if len(resp1.Choices) == 0 {
+		printError("Invalid URL response", fmt.Errorf("no choices returned in response (generation_id: %s)", resp1.ID))
+		return false
+	}
+	if len(resp2.Choices) == 0 {
+		printError("Invalid Base64 response", fmt.Errorf("no choices returned in response (generation_id: %s)", resp2.ID))
+		return false
+	}
 
 	if verbose || true {
 		urlResponse := resp1.Choices[0].Message.Content.(string)
