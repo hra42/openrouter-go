@@ -219,9 +219,9 @@ func RunBase64ImageTest(ctx context.Context, client *openrouter.Client, model st
 
 	// Try multiple possible paths for the test image
 	imagePaths := []string{
-		"test-image.png",                         // Run from cmd/openrouter-test
-		"cmd/openrouter-test/test-image.png",    // Run from repo root
-		"../../test-image.png",                   // Run from nested directory
+		"test-image.png",                     // Run from cmd/openrouter-test
+		"cmd/openrouter-test/test-image.png", // Run from repo root
+		"../../test-image.png",               // Run from nested directory
 	}
 
 	var imagePath string

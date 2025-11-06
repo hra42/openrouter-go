@@ -17,7 +17,7 @@ func main() {
 	var (
 		apiKey    = flag.String("key", os.Getenv("OPENROUTER_API_KEY"), "OpenRouter API key (or set OPENROUTER_API_KEY env var)")
 		model     = flag.String("model", "openai/gpt-3.5-turbo", "Model to use")
-		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, image, multiimage, imagedetail, contentbuilder, base64image, models, endpoints, providers, credits, activity, key, listkeys, createkey, updatekey, deletekey")
+		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, image, multiimage, imagedetail, contentbuilder, base64image, pdf, pdfengine, pdfannotations, multiplefiles, pdfbuilder, base64pdf, pdfcomparison, models, endpoints, providers, credits, activity, key, listkeys, createkey, updatekey, deletekey")
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -168,6 +168,48 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "pdf":
+		if tests.RunPDFURLTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "pdfengine":
+		if tests.RunPDFWithEngineTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "pdfannotations":
+		if tests.RunPDFWithAnnotationsTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "multiplefiles":
+		if tests.RunMultipleFilesTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "pdfbuilder":
+		if tests.RunPDFContentBuilderTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "base64pdf":
+		if tests.RunBase64PDFTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "pdfcomparison":
+		if tests.RunPDFComparisonTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	case "models":
 		if tests.RunModelsTest(ctx, client, *verbose) {
 			success = 1
@@ -268,6 +310,13 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, m
 		{"Image with Detail", func() bool { return tests.RunImageDetailTest(ctx, client, model, maxTokens, verbose) }},
 		{"Content Builder", func() bool { return tests.RunContentBuilderTest(ctx, client, model, maxTokens, verbose) }},
 		{"Base64 Local Image", func() bool { return tests.RunBase64ImageTest(ctx, client, model, maxTokens, verbose) }},
+		{"PDF Input (URL)", func() bool { return tests.RunPDFURLTest(ctx, client, model, maxTokens, verbose) }},
+		{"PDF with Parser Engine", func() bool { return tests.RunPDFWithEngineTest(ctx, client, model, maxTokens, verbose) }},
+		{"PDF with Annotations", func() bool { return tests.RunPDFWithAnnotationsTest(ctx, client, model, maxTokens, verbose) }},
+		{"Multiple Files", func() bool { return tests.RunMultipleFilesTest(ctx, client, model, maxTokens, verbose) }},
+		{"ContentBuilder with PDF", func() bool { return tests.RunPDFContentBuilderTest(ctx, client, model, maxTokens, verbose) }},
+		{"Base64 Encoded PDF", func() bool { return tests.RunBase64PDFTest(ctx, client, model, maxTokens, verbose) }},
+		{"PDF URL vs Base64 Comparison", func() bool { return tests.RunPDFComparisonTest(ctx, client, model, maxTokens, verbose) }},
 		{"List Models", func() bool { return tests.RunModelsTest(ctx, client, verbose) }},
 		{"Model Endpoints", func() bool { return tests.RunModelEndpointsTest(ctx, client, verbose) }},
 		{"List Providers", func() bool { return tests.RunProvidersTest(ctx, client, verbose) }},
