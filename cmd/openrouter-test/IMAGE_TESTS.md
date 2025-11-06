@@ -40,15 +40,15 @@ Tests the detail parameter (low/high/auto) for controlling image analysis qualit
 Tests the flexible ContentBuilder API for constructing complex multimodal messages with interleaved text and images.
 
 ### 5. Base64 Local Image (NEW!)
-**Command:** `go run . -test base64image -model google/gemini-2.0-flash-thinking-exp:free`
+**Command:** `go run cmd/openrouter-test/main.go -test base64image -model google/gemini-2.0-flash-thinking-exp:free`
 
 Tests encoding and sending the local `test-image.png` file as a base64 data URL. This test:
-- Reads the local PNG file
+- Reads the local PNG file from `cmd/openrouter-test/test-image.png`
 - Automatically encodes it to base64 with proper data URL format
 - Sends it to a vision model
 - Verifies the model can analyze the image content
 
-**Important:** This test must be run from the `cmd/openrouter-test` directory.
+**Note:** The test automatically tries multiple paths and works whether run from the repository root or from the `cmd/openrouter-test` directory.
 
 ## Quick Verification
 

@@ -217,16 +217,31 @@ func RunContentBuilderTest(ctx context.Context, client *openrouter.Client, model
 func RunBase64ImageTest(ctx context.Context, client *openrouter.Client, model string, maxTokens int, verbose bool) bool {
 	fmt.Printf("🔄 Test: Base64-Encoded Local Image\n")
 
-	// Use the test image in the cmd/openrouter-test directory
-	imagePath := "test-image.png"
+	// Try multiple possible paths for the test image
+	imagePaths := []string{
+		"test-image.png",                         // Run from cmd/openrouter-test
+		"cmd/openrouter-test/test-image.png",    // Run from repo root
+		"../../test-image.png",                   // Run from nested directory
+	}
 
-	// Create message with base64-encoded image
-	message, err := openrouter.CreateUserMessageWithBase64Image(
-		"What's in this image? Keep your response brief.",
-		imagePath,
-	)
+	var imagePath string
+	var err error
+	var message openrouter.Message
+
+	// Try each path until we find the image
+	for _, path := range imagePaths {
+		message, err = openrouter.CreateUserMessageWithBase64Image(
+			"What's in this image? Keep your response brief.",
+			path,
+		)
+		if err == nil {
+			imagePath = path
+			break
+		}
+	}
+
 	if err != nil {
-		printError("Failed to encode image", err)
+		printError("Failed to encode image (tried: test-image.png, cmd/openrouter-test/test-image.png)", err)
 		return false
 	}
 

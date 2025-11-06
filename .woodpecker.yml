@@ -20,7 +20,7 @@ steps:
       - go test -cover ./...
 
   race-detection:
-    image: golang:1.25.1-alpine
+    image: golang:1.25.1
     environment:
       CGO_ENABLED: "1"
     commands:

@@ -12,6 +12,8 @@ export OPENROUTER_API_KEY="your-api-key"
 
 ## Running Tests
 
+**Note:** All commands should be run from the repository root directory.
+
 ### Run All Tests
 
 ```bash
@@ -66,7 +68,7 @@ go run cmd/openrouter-test/main.go -test chat -v
 The test suite includes comprehensive image input tests:
 
 ### URL-Based Images
-Tests sending images via public URLs to vision models.
+Tests sending images via public URLs to vision models. Uses `https://hra42.com/test-image.png`.
 
 ### Multiple Images
 Tests sending multiple images in a single request.
@@ -78,18 +80,15 @@ Tests the detail parameter (low/high/auto) for controlling image analysis qualit
 Tests the flexible builder API for constructing complex multimodal messages.
 
 ### Base64 Local Image
-Tests encoding and sending local image files. Uses the included `test-image.png` file (colorful test tubes in a laboratory).
+Tests encoding and sending local image files. Uses the included `cmd/openrouter-test/test-image.png` file (colorful test tubes in a laboratory).
 
-**Important:** The base64 image test must be run from the `cmd/openrouter-test` directory:
-
-```bash
-cd cmd/openrouter-test
-go run . -test base64image -model google/gemini-2.0-flash-thinking-exp:free
-```
+The test automatically finds the image whether you run from the repository root or from the `cmd/openrouter-test` directory.
 
 ## Test Image
 
 The `test-image.png` file contains a photograph of five test tubes with colorful liquids (red, orange, yellow, green, and blue) in a laboratory setting. This image is used to test base64 encoding and local file upload functionality.
+
+The same image is also hosted at `https://hra42.com/test-image.png` for URL-based tests.
 
 ## Available Tests
 
@@ -124,9 +123,25 @@ The `test-image.png` file contains a photograph of five test tubes with colorful
 | `updatekey` | Update API key |
 | `deletekey` | Delete API key |
 
+## Quick Verification
+
+Verify the hosted URL is accessible:
+
+```bash
+curl -I https://hra42.com/test-image.png
+# Should return: HTTP/2 200
+```
+
+Verify local base64 encoding works:
+
+```bash
+cd cmd/openrouter-test
+go run tools/verify_image.go
+```
+
 ## Notes
 
 - Vision tests (image, multiimage, imagedetail, contentbuilder, base64image) require vision-capable models
 - Some tests may be skipped if the selected model doesn't support the required features
 - Rate limits may apply depending on your OpenRouter account tier
-- The base64image test requires the test-image.png file in the working directory
+- The base64image test automatically tries multiple paths to find the test image
