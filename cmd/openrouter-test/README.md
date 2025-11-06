@@ -1,186 +1,132 @@
-# OpenRouter Go Client - Live API Test Tool
+# OpenRouter Go Client - E2E Test Suite
 
-A command-line tool to test the openrouter-go library against the live OpenRouter API.
+This is a comprehensive end-to-end test suite for the OpenRouter Go client library. It tests all API endpoints with live API calls.
 
-## Installation
+## Setup
 
-```bash
-go install github.com/hra42/openrouter-go/cmd/openrouter-test@latest
-```
-
-Or build from source:
+Set your OpenRouter API key:
 
 ```bash
-go build -o openrouter-test ./cmd/openrouter-test
-```
-
-## Usage
-
-### Prerequisites
-
-You need an OpenRouter API key. Get one at https://openrouter.ai/
-
-### Basic Usage
-
-```bash
-# Set API key via environment variable
 export OPENROUTER_API_KEY="your-api-key"
-openrouter-test
-
-# Or pass API key directly
-openrouter-test -key "your-api-key"
 ```
 
-### Available Tests
+## Running Tests
 
-Run all tests:
+### Run All Tests
+
 ```bash
-openrouter-test -test all
+go run cmd/openrouter-test/main.go -test all
 ```
 
-Run specific tests:
+### Run Specific Tests
+
 ```bash
-# Test chat completion
-openrouter-test -test chat
+# Chat completion
+go run cmd/openrouter-test/main.go -test chat
 
-# Test streaming
-openrouter-test -test stream
+# Streaming
+go run cmd/openrouter-test/main.go -test stream
 
-# Test legacy completion
-openrouter-test -test completion
+# Image tests
+go run cmd/openrouter-test/main.go -test image          # URL-based image
+go run cmd/openrouter-test/main.go -test multiimage     # Multiple images
+go run cmd/openrouter-test/main.go -test imagedetail    # Image with detail level
+go run cmd/openrouter-test/main.go -test contentbuilder # ContentBuilder API
+go run cmd/openrouter-test/main.go -test base64image    # Local image (base64)
 
-# Test error handling
-openrouter-test -test error
-
-# Test provider routing
-openrouter-test -test provider
-
-# Test Zero Data Retention (ZDR)
-openrouter-test -test zdr
-
-# Test model suffixes (nitro/floor)
-openrouter-test -test suffix
-
-# Test price constraints
-openrouter-test -test price
-
-# Test structured output
-openrouter-test -test structured
-
-# Test tool/function calling
-openrouter-test -test tools
-
-# Test message transforms
-openrouter-test -test transforms
-
-# Test web search
-openrouter-test -test websearch
+# Other tests
+go run cmd/openrouter-test/main.go -test structured     # Structured outputs
+go run cmd/openrouter-test/main.go -test tools          # Tool calling
+go run cmd/openrouter-test/main.go -test websearch      # Web search
+go run cmd/openrouter-test/main.go -test models         # List models
 ```
 
-### Options
+### Custom Model
 
-```
--key string
-    OpenRouter API key (or set OPENROUTER_API_KEY env var)
+Use a different model for testing:
 
--model string
-    Model to use (default: "openai/gpt-3.5-turbo")
-
--test string
-    Test to run: all, chat, stream, completion, error, provider, zdr, suffix,
-    price, structured, tools, transforms, websearch (default: "all")
-
--max-tokens int
-    Maximum tokens for response (default: 100)
-
--timeout duration
-    Request timeout (default: 30s)
-
--v
-    Verbose output
-```
-
-### Examples
-
-Test with a specific model:
 ```bash
-openrouter-test -model "anthropic/claude-3-haiku" -test chat
+go run cmd/openrouter-test/main.go -test chat -model anthropic/claude-3-haiku
 ```
 
-Test streaming with verbose output:
+For vision tests, use a vision-capable model:
+
 ```bash
-openrouter-test -test stream -v
+go run cmd/openrouter-test/main.go -test image -model google/gemini-2.0-flash-thinking-exp:free
 ```
 
-Quick test with minimal tokens:
+### Verbose Output
+
 ```bash
-openrouter-test -test chat -max-tokens 20
+go run cmd/openrouter-test/main.go -test chat -v
 ```
 
-Test with custom timeout:
+## Image Tests
+
+The test suite includes comprehensive image input tests:
+
+### URL-Based Images
+Tests sending images via public URLs to vision models.
+
+### Multiple Images
+Tests sending multiple images in a single request.
+
+### Detail Levels
+Tests the detail parameter (low/high/auto) for controlling image analysis quality.
+
+### ContentBuilder
+Tests the flexible builder API for constructing complex multimodal messages.
+
+### Base64 Local Image
+Tests encoding and sending local image files. Uses the included `test-image.png` file (colorful test tubes in a laboratory).
+
+**Important:** The base64 image test must be run from the `cmd/openrouter-test` directory:
+
 ```bash
-openrouter-test -timeout 60s -test all
+cd cmd/openrouter-test
+go run . -test base64image -model google/gemini-2.0-flash-thinking-exp:free
 ```
 
-## Test Descriptions
+## Test Image
 
-### Chat Completion Test
-Tests the standard chat completion endpoint with a simple math question.
+The `test-image.png` file contains a photograph of five test tubes with colorful liquids (red, orange, yellow, green, and blue) in a laboratory setting. This image is used to test base64 encoding and local file upload functionality.
 
-### Streaming Test
-Tests SSE streaming by asking the model to count from 1 to 5.
+## Available Tests
 
-### Legacy Completion Test
-Tests the legacy completion endpoint (requires instruct model support).
+| Test Name | Description |
+|-----------|-------------|
+| `all` | Run all tests |
+| `chat` | Basic chat completion |
+| `stream` | Streaming chat completion |
+| `completion` | Legacy completion API |
+| `error` | Error handling |
+| `provider` | Provider routing |
+| `zdr` | Zero Data Retention |
+| `suffix` | Model suffix handling (`:nitro`, `:floor`, `:online`) |
+| `price` | Price constraints |
+| `structured` | Structured outputs with JSON schema |
+| `tools` | Tool/function calling |
+| `transforms` | Message transforms |
+| `websearch` | Web search integration |
+| `image` | Single image input (URL) |
+| `multiimage` | Multiple images |
+| `imagedetail` | Image with detail level |
+| `contentbuilder` | ContentBuilder API |
+| `base64image` | Base64-encoded local image |
+| `models` | List available models |
+| `endpoints` | Model endpoint information |
+| `providers` | List providers |
+| `credits` | Get credit balance |
+| `activity` | Get usage activity |
+| `key` | Get API key info |
+| `listkeys` | List API keys |
+| `createkey` | Create API key |
+| `updatekey` | Update API key |
+| `deletekey` | Delete API key |
 
-### Error Handling Test
-Deliberately triggers an error to test error handling capabilities.
+## Notes
 
-### Provider Routing Test
-Tests provider order, fallbacks, and routing constraints.
-
-### ZDR Test
-Tests Zero Data Retention enforcement for privacy-sensitive requests.
-
-### Model Suffix Test
-Tests :nitro (throughput) and :floor (lowest price) model suffixes.
-
-### Price Constraint Test
-Tests maximum price constraints and data collection policies.
-
-### Structured Output Test
-Tests JSON schema validation and structured response formats.
-
-### Tool/Function Calling Test
-Tests function calling capabilities including parallel calls and streaming.
-
-### Message Transforms Test
-Tests middle-out compression for managing context window limits.
-
-### Web Search Test
-Tests web search integration using :online suffix, web plugins, and different search engines (Native/Exa).
-
-## Exit Codes
-
-- `0`: All tests passed
-- `1`: One or more tests failed or error occurred
-
-## Output
-
-The tool provides colored output with:
-- 🔄 Test in progress
-- ✅ Test passed
-- ❌ Test failed
-- ⚠️ Test skipped (e.g., model not available)
-- 📊 Summary statistics
-
-## Troubleshooting
-
-### "Model not found" errors
-Some models require specific permissions or paid access. Try using `openai/gpt-3.5-turbo` which is widely available.
-
-### Rate limiting
-If you encounter rate limits, the tool will automatically retry with exponential backoff.
-
-### Timeout errors
-Increase the timeout with `-timeout 60s` for slower models or connections.
+- Vision tests (image, multiimage, imagedetail, contentbuilder, base64image) require vision-capable models
+- Some tests may be skipped if the selected model doesn't support the required features
+- Rate limits may apply depending on your OpenRouter account tier
+- The base64image test requires the test-image.png file in the working directory
