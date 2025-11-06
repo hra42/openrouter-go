@@ -22,6 +22,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Tool/Function calling support with streaming
 - ✅ Message transforms for automatic context window management
 - ✅ Web Search plugin for real-time web data integration
+- ✅ Image inputs (multimodal) with URL and base64 support
 - ✅ Model listing and discovery with category filtering
 - ✅ Model endpoint inspection with pricing and uptime details
 - ✅ Provider listing with policy information
@@ -959,6 +960,162 @@ response, err := client.ChatComplete(ctx, messages,
 ```
 
 Note: The request-level `zdr` parameter operates as an "OR" with your account-wide ZDR setting. If either is enabled, ZDR enforcement will be applied.
+
+### Image Inputs (Multimodal)
+
+The library provides comprehensive support for sending images to vision models through the OpenRouter API. You can send images via URLs or base64-encoded data.
+
+#### Single Image with URL
+
+```go
+// Send a single image with text
+messages := []openrouter.Message{
+    openrouter.CreateUserMessageWithImage(
+        "What's in this image?",
+        "https://example.com/image.jpg",
+    ),
+}
+
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("google/gemini-2.0-flash-thinking-exp:free"),
+)
+```
+
+#### Multiple Images
+
+```go
+// Send multiple images in a single request
+messages := []openrouter.Message{
+    openrouter.CreateUserMessageWithImages(
+        "Compare these images. What are the similarities?",
+        "https://example.com/image1.jpg",
+        "https://example.com/image2.jpg",
+        "https://example.com/image3.jpg",
+    ),
+}
+
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("google/gemini-2.0-flash-thinking-exp:free"),
+)
+```
+
+#### Image with Detail Level
+
+Some models support detail level parameters for controlling image analysis quality:
+
+```go
+// Request high-detail analysis (more expensive, more detailed)
+messages := []openrouter.Message{
+    openrouter.CreateUserMessageWithImageDetail(
+        "Describe this image in detail.",
+        "https://example.com/image.jpg",
+        "high", // Options: "low", "high", or "auto"
+    ),
+}
+
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("google/gemini-2.0-flash-thinking-exp:free"),
+)
+```
+
+Detail level options:
+- `"low"` - Faster and cheaper, suitable for general understanding
+- `"high"` - More detailed analysis at higher cost
+- `"auto"` - Let the model decide based on image size (default)
+
+#### Base64-Encoded Images
+
+For local files or private images:
+
+```go
+// Automatically encode and send a local image
+message, err := openrouter.CreateUserMessageWithBase64Image(
+    "What's in this image?",
+    "path/to/image.jpg",
+)
+if err != nil {
+    log.Fatal(err)
+}
+
+messages := []openrouter.Message{message}
+
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("google/gemini-2.0-flash-thinking-exp:free"),
+)
+```
+
+Multiple local images:
+
+```go
+message, err := openrouter.CreateUserMessageWithBase64Images(
+    "Compare these images",
+    "path/to/image1.jpg",
+    "path/to/image2.png",
+)
+```
+
+Manual base64 encoding:
+
+```go
+// Encode image file to base64 data URL
+dataURL, err := openrouter.EncodeImageToBase64("path/to/image.jpg")
+if err != nil {
+    log.Fatal(err)
+}
+
+// Or encode bytes directly
+imageBytes := []byte{...}
+dataURL := openrouter.EncodeImageBytesToBase64(imageBytes, "image/jpeg")
+```
+
+#### Content Builder for Complex Messages
+
+For messages with interleaved text and images:
+
+```go
+content := openrouter.NewContentBuilder().
+    AddText("Here's the first image:").
+    AddImage("https://example.com/image1.jpg").
+    AddText("And here's the second with high detail:").
+    AddImageWithDetail("https://example.com/image2.jpg", "high").
+    AddText("What are the differences?")
+
+messages := []openrouter.Message{
+    content.BuildMessage("user"),
+}
+
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("google/gemini-2.0-flash-thinking-exp:free"),
+)
+```
+
+#### Supported Image Formats
+
+- PNG (image/png)
+- JPEG (image/jpeg)
+- WebP (image/webp)
+- GIF (image/gif)
+
+#### Model Support
+
+Most modern vision models support image inputs, including:
+- Google Gemini models (gemini-2.0-flash-thinking-exp, etc.)
+- OpenAI GPT-4 Vision models
+- Anthropic Claude 3 models
+- And many others
+
+Check the [OpenRouter models page](https://openrouter.ai/models) for the latest list of vision-capable models.
+
+#### Best Practices
+
+- Use URLs when possible - they're more efficient than base64 encoding
+- Image URLs must be publicly accessible
+- The number of images per request varies by model and provider
+- Some providers may have size limits on images
+- Pricing may vary based on image size and detail level
+- For production use, consider the OpenRouter documentation's recommendations about image placement in messages
+
+See the [image-inputs example](examples/image-inputs) for more comprehensive examples.
 
 ### Structured Outputs
 
