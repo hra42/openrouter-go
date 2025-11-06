@@ -167,3 +167,92 @@ func CreateMultiModalMessage(role string, text string, imageURL string) Message 
 		},
 	}
 }
+
+// CreateUserMessageWithImage creates a user message with text and a single image.
+func CreateUserMessageWithImage(text string, imageURL string) Message {
+	return CreateMultiModalMessage("user", text, imageURL)
+}
+
+// CreateUserMessageWithImages creates a user message with text and multiple images.
+func CreateUserMessageWithImages(text string, imageURLs ...string) Message {
+	parts := []ContentPart{
+		{Type: "text", Text: text},
+	}
+	for _, url := range imageURLs {
+		parts = append(parts, ContentPart{
+			Type:     "image_url",
+			ImageURL: &ImageURL{URL: url},
+		})
+	}
+	return Message{
+		Role:    "user",
+		Content: parts,
+	}
+}
+
+// CreateUserMessageWithImageDetail creates a user message with an image and detail level.
+// The detail parameter can be "auto", "low", or "high".
+// - "low" is faster and cheaper, suitable for understanding general content
+// - "high" provides more detailed analysis at higher cost
+// - "auto" lets the model decide based on image size (default)
+func CreateUserMessageWithImageDetail(text string, imageURL string, detail string) Message {
+	return Message{
+		Role: "user",
+		Content: []ContentPart{
+			{Type: "text", Text: text},
+			{Type: "image_url", ImageURL: &ImageURL{URL: imageURL, Detail: detail}},
+		},
+	}
+}
+
+// CreateContentParts is a helper to build custom content part arrays.
+type ContentBuilder struct {
+	parts []ContentPart
+}
+
+// NewContentBuilder creates a new content builder.
+func NewContentBuilder() *ContentBuilder {
+	return &ContentBuilder{
+		parts: []ContentPart{},
+	}
+}
+
+// AddText adds a text content part.
+func (cb *ContentBuilder) AddText(text string) *ContentBuilder {
+	cb.parts = append(cb.parts, ContentPart{
+		Type: "text",
+		Text: text,
+	})
+	return cb
+}
+
+// AddImage adds an image content part.
+func (cb *ContentBuilder) AddImage(imageURL string) *ContentBuilder {
+	cb.parts = append(cb.parts, ContentPart{
+		Type:     "image_url",
+		ImageURL: &ImageURL{URL: imageURL},
+	})
+	return cb
+}
+
+// AddImageWithDetail adds an image content part with a detail level.
+func (cb *ContentBuilder) AddImageWithDetail(imageURL string, detail string) *ContentBuilder {
+	cb.parts = append(cb.parts, ContentPart{
+		Type:     "image_url",
+		ImageURL: &ImageURL{URL: imageURL, Detail: detail},
+	})
+	return cb
+}
+
+// Build returns the content parts array.
+func (cb *ContentBuilder) Build() []ContentPart {
+	return cb.parts
+}
+
+// BuildMessage creates a message with the builder's content.
+func (cb *ContentBuilder) BuildMessage(role string) Message {
+	return Message{
+		Role:    role,
+		Content: cb.parts,
+	}
+}
