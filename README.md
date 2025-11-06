@@ -23,6 +23,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Message transforms for automatic context window management
 - ✅ Web Search plugin for real-time web data integration
 - ✅ Image inputs (multimodal) with URL and base64 support
+- ✅ PDF inputs with configurable parsing engines and file annotation reuse
 - ✅ Model listing and discovery with category filtering
 - ✅ Model endpoint inspection with pricing and uptime details
 - ✅ Provider listing with policy information
@@ -1116,6 +1117,183 @@ Check the [OpenRouter models page](https://openrouter.ai/models) for the latest 
 - For production use, consider the OpenRouter documentation's recommendations about image placement in messages
 
 See the [image-inputs example](examples/image-inputs) for more comprehensive examples.
+
+### PDF Inputs (File Support)
+
+The library provides comprehensive support for sending PDF files to models through the OpenRouter API. PDF files can be sent via URLs or base64-encoded data. This feature works with **any model** on OpenRouter, with automatic fallback to PDF parsing when models don't have native file support.
+
+#### Basic PDF from URL
+
+```go
+// Send a PDF via URL
+messages := []openrouter.Message{
+    openrouter.CreateUserMessageWithPDF(
+        "What are the main points in this document?",
+        "https://bitcoin.org/bitcoin.pdf",
+        "bitcoin.pdf",
+    ),
+}
+
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("anthropic/claude-sonnet-4"),
+)
+```
+
+#### Local PDF Files
+
+```go
+// Automatically encode and send a local PDF
+message, err := openrouter.CreateUserMessageWithBase64PDF(
+    "Summarize this document",
+    "path/to/document.pdf",
+    "document.pdf",
+)
+if err != nil {
+    log.Fatal(err)
+}
+
+response, err := client.ChatComplete(ctx, []openrouter.Message{message},
+    openrouter.WithModel("google/gemma-3-27b-it"),
+)
+```
+
+#### PDF Parsing Engines
+
+OpenRouter provides three PDF processing engines with different cost/quality tradeoffs:
+
+```go
+message := openrouter.CreateUserMessageWithPDF(
+    "Extract key concepts from this document",
+    "https://example.com/document.pdf",
+    "document.pdf",
+)
+
+// Configure the PDF parsing engine
+plugin := openrouter.CreateFileParserPlugin("pdf-text")
+
+response, err := client.ChatComplete(ctx, []openrouter.Message{message},
+    openrouter.WithModel("google/gemma-3-27b-it"),
+    openrouter.WithPlugins(plugin),
+)
+```
+
+Available engines:
+- `"pdf-text"` - Free, best for well-structured PDFs with clear text content
+- `"mistral-ocr"` - $0.0004 per 1K pages, best for scanned documents with images/OCR needs
+- `"native"` - Uses model's native file support (charged as input tokens)
+- `""` (empty) - Auto-selects native support first, then defaults to `pdf-text`
+
+#### Reusing File Annotations
+
+File annotations allow you to avoid re-parsing the same PDF in follow-up requests, saving processing time and costs:
+
+```go
+// First request with PDF
+firstMessage := openrouter.CreateUserMessageWithPDF(
+    "What are the main concepts in this paper?",
+    "https://example.com/document.pdf",
+    "document.pdf",
+)
+
+resp1, err := client.ChatComplete(ctx, []openrouter.Message{firstMessage},
+    openrouter.WithModel("google/gemma-3-27b-it"),
+)
+
+// Follow-up request - include the assistant's response with annotations
+followUpMessages := []openrouter.Message{
+    firstMessage,
+    resp1.Choices[0].Message, // Contains file annotations
+    openrouter.CreateUserMessage("Can you elaborate on the first point?"),
+}
+
+resp2, err := client.ChatComplete(ctx, followUpMessages,
+    openrouter.WithModel("google/gemma-3-27b-it"),
+)
+// PDF is NOT re-parsed - saves processing time and costs!
+```
+
+#### Multiple Files
+
+You can send multiple files (PDFs, images, etc.) in a single request:
+
+```go
+files := []openrouter.File{
+    {
+        Filename: "document1.pdf",
+        FileData: "https://example.com/doc1.pdf",
+    },
+    {
+        Filename: "document2.pdf",
+        FileData: "https://example.com/doc2.pdf",
+    },
+    {
+        Filename: "chart.png",
+        FileData: "https://example.com/chart.png",
+    },
+}
+
+message := openrouter.CreateUserMessageWithFiles(
+    "Compare these documents and analyze the chart",
+    files,
+)
+
+response, err := client.ChatComplete(ctx, []openrouter.Message{message},
+    openrouter.WithModel("anthropic/claude-sonnet-4"),
+)
+```
+
+#### Content Builder with PDFs
+
+For complex messages with PDFs, images, and text:
+
+```go
+content := openrouter.NewContentBuilder().
+    AddText("Analyze this document:").
+    AddPDF("https://example.com/document.pdf", "document.pdf").
+    AddText("And compare with this image:").
+    AddImage("https://example.com/chart.png").
+    Build()
+
+message := openrouter.Message{
+    Role:    "user",
+    Content: content,
+}
+
+response, err := client.ChatComplete(ctx, []openrouter.Message{message},
+    openrouter.WithModel("anthropic/claude-sonnet-4"),
+)
+```
+
+#### Manual Base64 Encoding
+
+```go
+// Encode PDF file to base64 data URL
+dataURL, err := openrouter.EncodePDFToBase64("path/to/document.pdf")
+if err != nil {
+    log.Fatal(err)
+}
+
+// Or encode bytes directly
+pdfBytes := []byte{...}
+dataURL := openrouter.EncodePDFBytesToBase64(pdfBytes)
+```
+
+#### Best Practices
+
+- **Use URLs when possible** - More efficient than base64 encoding
+- **Use `pdf-text` for digital PDFs** - It's free and works well for most documents
+- **Reuse file annotations** - Include the assistant's response with annotations in follow-up requests
+- **Use `mistral-ocr` only for scanned documents** - More expensive but necessary for image-based PDFs
+- **Check model support** - Some models have native file support which may be more cost-effective
+
+#### Supported File Types
+
+While this section focuses on PDFs, the file input API supports:
+- PDFs (application/pdf)
+- Images (image/png, image/jpeg, etc.)
+- And potentially other file types as OpenRouter expands support
+
+See the [pdf-inputs example](examples/pdf-inputs) for more comprehensive examples.
 
 ### Structured Outputs
 
