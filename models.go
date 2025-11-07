@@ -84,12 +84,13 @@ type Message struct {
 // MessageContent can be either a string or an array of content parts.
 type MessageContent interface{}
 
-// ContentPart represents a part of message content (text, image, or file).
+// ContentPart represents a part of message content (text, image, file, or audio).
 type ContentPart struct {
-	Type     string    `json:"type"`
-	Text     string    `json:"text,omitempty"`
-	ImageURL *ImageURL `json:"image_url,omitempty"`
-	File     *File     `json:"file,omitempty"`
+	Type       string      `json:"type"`
+	Text       string      `json:"text,omitempty"`
+	ImageURL   *ImageURL   `json:"image_url,omitempty"`
+	File       *File       `json:"file,omitempty"`
+	InputAudio *InputAudio `json:"input_audio,omitempty"`
 }
 
 // ImageURL represents an image URL in the message content.
@@ -105,6 +106,15 @@ type File struct {
 	Filename string `json:"filename"`
 	// FileData can be either a URL or a base64-encoded data URL
 	FileData string `json:"file_data"`
+}
+
+// InputAudio represents an audio input in the message content.
+// Audio files must be base64-encoded - direct URLs are not supported.
+type InputAudio struct {
+	// Data is the base64-encoded audio data
+	Data string `json:"data"`
+	// Format specifies the audio format (e.g., "wav", "mp3")
+	Format string `json:"format"`
 }
 
 // ResponseFormat specifies the format of the response.
