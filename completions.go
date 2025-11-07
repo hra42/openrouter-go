@@ -24,6 +24,13 @@ func (c *Client) Complete(ctx context.Context, prompt string, opts ...Completion
 		opt(req)
 	}
 
+	// Validate response format if present
+	if req.ResponseFormat != nil {
+		if err := validateResponseFormat(req.ResponseFormat); err != nil {
+			return nil, err
+		}
+	}
+
 	// Handle model suffixes
 	req.Model = processModelSuffix(req.Model, req)
 
@@ -60,6 +67,13 @@ func (c *Client) CompleteStream(ctx context.Context, prompt string, opts ...Comp
 	// Apply options
 	for _, opt := range opts {
 		opt(req)
+	}
+
+	// Validate response format if present
+	if req.ResponseFormat != nil {
+		if err := validateResponseFormat(req.ResponseFormat); err != nil {
+			return nil, err
+		}
 	}
 
 	// Handle model suffixes
