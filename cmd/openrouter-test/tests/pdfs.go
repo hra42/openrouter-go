@@ -3,7 +3,6 @@ package tests
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -14,14 +13,14 @@ import (
 func RunPDFURLTest(ctx context.Context, client *openrouter.Client, model string, maxTokens int, verbose bool) bool {
 	fmt.Printf("🔄 Test: PDF Input (URL)\n")
 
-	// Use the Bitcoin whitepaper as a publicly accessible PDF
-	pdfURL := "https://bitcoin.org/bitcoin.pdf"
+	// Use the test PDF hosted on hra42.com
+	pdfURL := "https://hra42.com/test-pdf.pdf"
 
 	messages := []openrouter.Message{
 		openrouter.CreateUserMessageWithPDF(
 			"What is the main topic of this document? Keep your response brief.",
 			pdfURL,
-			"bitcoin.pdf",
+			"test-pdf.pdf",
 		),
 	}
 
@@ -71,14 +70,14 @@ func RunPDFURLTest(ctx context.Context, client *openrouter.Client, model string,
 func RunPDFWithEngineTest(ctx context.Context, client *openrouter.Client, model string, maxTokens int, verbose bool) bool {
 	fmt.Printf("🔄 Test: PDF with Parser Engine\n")
 
-	// Use the Bitcoin whitepaper
-	pdfURL := "https://bitcoin.org/bitcoin.pdf"
+	// Use the test PDF hosted on hra42.com
+	pdfURL := "https://hra42.com/test-pdf.pdf"
 
 	messages := []openrouter.Message{
 		openrouter.CreateUserMessageWithPDF(
 			"What is the main topic of this document? Keep your response brief.",
 			pdfURL,
-			"bitcoin.pdf",
+			"test-pdf.pdf",
 		),
 	}
 
@@ -131,13 +130,13 @@ func RunPDFWithEngineTest(ctx context.Context, client *openrouter.Client, model 
 func RunPDFWithAnnotationsTest(ctx context.Context, client *openrouter.Client, model string, maxTokens int, verbose bool) bool {
 	fmt.Printf("🔄 Test: PDF with File Annotations\n")
 
-	// Use the Bitcoin whitepaper
-	pdfURL := "https://bitcoin.org/bitcoin.pdf"
+	// Use the test PDF hosted on hra42.com
+	pdfURL := "https://hra42.com/test-pdf.pdf"
 
 	firstMessage := openrouter.CreateUserMessageWithPDF(
 		"What is the main topic of this document? Keep your response brief.",
 		pdfURL,
-		"bitcoin.pdf",
+		"test-pdf.pdf",
 	)
 
 	// First request
@@ -231,12 +230,12 @@ func RunMultipleFilesTest(ctx context.Context, client *openrouter.Client, model 
 	// Use a PDF and an image
 	files := []openrouter.File{
 		{
-			Filename: "bitcoin.pdf",
-			FileData: "https://bitcoin.org/bitcoin.pdf",
+			Filename: "test-pdf.pdf",
+			FileData: "https://hra42.com/test-pdf.pdf",
 		},
 		{
-			Filename: "bitcoin-logo.png",
-			FileData: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/400px-Bitcoin.svg.png",
+			Filename: "test-image.png",
+			FileData: "https://hra42.com/test-image.png",
 		},
 	}
 
@@ -296,7 +295,7 @@ func RunPDFContentBuilderTest(ctx context.Context, client *openrouter.Client, mo
 	// Build a message with ContentBuilder
 	builder := openrouter.NewContentBuilder()
 	builder.AddText("What is the main topic of this document?")
-	builder.AddPDF("https://bitcoin.org/bitcoin.pdf", "bitcoin.pdf")
+	builder.AddPDF("https://hra42.com/test-pdf.pdf", "test-pdf.pdf")
 	builder.AddText("Keep your response brief.")
 
 	messages := []openrouter.Message{
@@ -351,17 +350,30 @@ func RunPDFContentBuilderTest(ctx context.Context, client *openrouter.Client, mo
 func RunBase64PDFTest(ctx context.Context, client *openrouter.Client, model string, maxTokens int, verbose bool) bool {
 	fmt.Printf("🔄 Test: Base64 Encoded PDF\n")
 
-	// Use the test PDF in the cmd/openrouter-test directory
-	pdfPath := filepath.Join("..", "..", "cmd", "openrouter-test", "test-pdf.pdf")
+	// Try multiple possible paths for the test PDF
+	pdfPaths := []string{
+		"test-pdf.pdf",                     // Run from cmd/openrouter-test
+		"cmd/openrouter-test/test-pdf.pdf", // Run from repo root
+		"../../test-pdf.pdf",               // Run from nested directory
+	}
 
-	// Create message with base64-encoded PDF
-	message, err := openrouter.CreateUserMessageWithBase64PDF(
-		"What is the main topic of this document? Keep your response brief.",
-		pdfPath,
-		"test-pdf.pdf",
-	)
+	var err error
+	var message openrouter.Message
+
+	// Try each path until we find the PDF
+	for _, path := range pdfPaths {
+		message, err = openrouter.CreateUserMessageWithBase64PDF(
+			"What is the main topic of this document? Keep your response brief.",
+			path,
+			"test-pdf.pdf",
+		)
+		if err == nil {
+			break
+		}
+	}
+
 	if err != nil {
-		printError("Failed to encode PDF", err)
+		printError("Failed to encode PDF (tried: test-pdf.pdf, cmd/openrouter-test/test-pdf.pdf)", err)
 		return false
 	}
 
@@ -440,14 +452,28 @@ func RunPDFComparisonTest(ctx context.Context, client *openrouter.Client, model 
 	}
 
 	// Test with base64
-	pdfPath := filepath.Join("..", "..", "cmd", "openrouter-test", "test-pdf.pdf")
-	base64Message, err := openrouter.CreateUserMessageWithBase64PDF(
-		"What is the main topic of this document? Keep your response to one sentence.",
-		pdfPath,
-		"test-pdf.pdf",
-	)
+	// Try multiple possible paths for the test PDF
+	pdfPaths := []string{
+		"test-pdf.pdf",                     // Run from cmd/openrouter-test
+		"cmd/openrouter-test/test-pdf.pdf", // Run from repo root
+		"../../test-pdf.pdf",               // Run from nested directory
+	}
+
+	var base64Message openrouter.Message
+	// Try each path until we find the PDF
+	for _, path := range pdfPaths {
+		base64Message, err = openrouter.CreateUserMessageWithBase64PDF(
+			"What is the main topic of this document? Keep your response to one sentence.",
+			path,
+			"test-pdf.pdf",
+		)
+		if err == nil {
+			break
+		}
+	}
+
 	if err != nil {
-		printError("Failed to encode PDF", err)
+		printError("Failed to encode PDF (tried: test-pdf.pdf, cmd/openrouter-test/test-pdf.pdf)", err)
 		return false
 	}
 
