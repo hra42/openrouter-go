@@ -52,6 +52,9 @@ go run examples/tool-calling/main.go
 go run examples/web_search/main.go
 go run examples/transforms/main.go
 go run examples/app-attribution/main.go
+go run examples/image-inputs/main.go
+go run examples/audio-inputs/main.go
+go run examples/pdf-inputs/main.go
 ```
 
 ### Running E2E Tests
@@ -66,6 +69,15 @@ go run cmd/openrouter-test/main.go -test all
 go run cmd/openrouter-test/main.go -test models
 go run cmd/openrouter-test/main.go -test chat
 go run cmd/openrouter-test/main.go -test streaming
+go run cmd/openrouter-test/main.go -test image
+go run cmd/openrouter-test/main.go -test audio
+go run cmd/openrouter-test/main.go -test audiobuilder
+go run cmd/openrouter-test/main.go -test audioformats
+go run cmd/openrouter-test/main.go -test pdf
+go run cmd/openrouter-test/main.go -test pdfengine
+go run cmd/openrouter-test/main.go -test pdfannotations
+go run cmd/openrouter-test/main.go -test base64pdf
+go run cmd/openrouter-test/main.go -test pdfcomparison
 
 # Run with verbose output
 go run cmd/openrouter-test/main.go -test models -v

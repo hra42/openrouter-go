@@ -22,6 +22,9 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Tool/Function calling support with streaming
 - ✅ Message transforms for automatic context window management
 - ✅ Web Search plugin for real-time web data integration
+- ✅ Image inputs (multimodal) with URL and base64 support
+- ✅ Audio inputs with base64 encoding support (WAV, MP3)
+- ✅ PDF inputs with configurable parsing engines and file annotation reuse
 - ✅ Model listing and discovery with category filtering
 - ✅ Model endpoint inspection with pricing and uptime details
 - ✅ Provider listing with policy information
@@ -959,6 +962,339 @@ response, err := client.ChatComplete(ctx, messages,
 ```
 
 Note: The request-level `zdr` parameter operates as an "OR" with your account-wide ZDR setting. If either is enabled, ZDR enforcement will be applied.
+
+### Image Inputs (Multimodal)
+
+The library provides comprehensive support for sending images to vision models through the OpenRouter API. You can send images via URLs or base64-encoded data.
+
+#### Single Image with URL
+
+```go
+// Send a single image with text
+messages := []openrouter.Message{
+    openrouter.CreateUserMessageWithImage(
+        "What's in this image?",
+        "https://example.com/image.jpg",
+    ),
+}
+
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("google/gemini-2.0-flash-thinking-exp:free"),
+)
+```
+
+#### Multiple Images
+
+```go
+// Send multiple images in a single request
+messages := []openrouter.Message{
+    openrouter.CreateUserMessageWithImages(
+        "Compare these images. What are the similarities?",
+        "https://example.com/image1.jpg",
+        "https://example.com/image2.jpg",
+        "https://example.com/image3.jpg",
+    ),
+}
+
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("google/gemini-2.0-flash-thinking-exp:free"),
+)
+```
+
+#### Image with Detail Level
+
+Some models support detail level parameters for controlling image analysis quality:
+
+```go
+// Request high-detail analysis (more expensive, more detailed)
+messages := []openrouter.Message{
+    openrouter.CreateUserMessageWithImageDetail(
+        "Describe this image in detail.",
+        "https://example.com/image.jpg",
+        "high", // Options: "low", "high", or "auto"
+    ),
+}
+
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("google/gemini-2.0-flash-thinking-exp:free"),
+)
+```
+
+Detail level options:
+- `"low"` - Faster and cheaper, suitable for general understanding
+- `"high"` - More detailed analysis at higher cost
+- `"auto"` - Let the model decide based on image size (default)
+
+#### Base64-Encoded Images
+
+For local files or private images:
+
+```go
+// Automatically encode and send a local image
+message, err := openrouter.CreateUserMessageWithBase64Image(
+    "What's in this image?",
+    "path/to/image.jpg",
+)
+if err != nil {
+    log.Fatal(err)
+}
+
+messages := []openrouter.Message{message}
+
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("google/gemini-2.0-flash-thinking-exp:free"),
+)
+```
+
+Multiple local images:
+
+```go
+message, err := openrouter.CreateUserMessageWithBase64Images(
+    "Compare these images",
+    "path/to/image1.jpg",
+    "path/to/image2.png",
+)
+```
+
+Manual base64 encoding:
+
+```go
+// Encode image file to base64 data URL
+dataURL, err := openrouter.EncodeImageToBase64("path/to/image.jpg")
+if err != nil {
+    log.Fatal(err)
+}
+
+// Or encode bytes directly
+imageBytes := []byte{...}
+dataURL := openrouter.EncodeImageBytesToBase64(imageBytes, "image/jpeg")
+```
+
+#### Content Builder for Complex Messages
+
+For messages with interleaved text and images:
+
+```go
+content := openrouter.NewContentBuilder().
+    AddText("Here's the first image:").
+    AddImage("https://example.com/image1.jpg").
+    AddText("And here's the second with high detail:").
+    AddImageWithDetail("https://example.com/image2.jpg", "high").
+    AddText("What are the differences?")
+
+messages := []openrouter.Message{
+    content.BuildMessage("user"),
+}
+
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("google/gemini-2.0-flash-thinking-exp:free"),
+)
+```
+
+#### Supported Image Formats
+
+- PNG (image/png)
+- JPEG (image/jpeg)
+- WebP (image/webp)
+- GIF (image/gif)
+
+#### Model Support
+
+Most modern vision models support image inputs, including:
+- Google Gemini models (gemini-2.0-flash-thinking-exp, etc.)
+- OpenAI GPT-4 Vision models
+- Anthropic Claude 3 models
+- And many others
+
+Check the [OpenRouter models page](https://openrouter.ai/models) for the latest list of vision-capable models.
+
+#### Best Practices
+
+- Use URLs when possible - they're more efficient than base64 encoding
+- Image URLs must be publicly accessible
+- The number of images per request varies by model and provider
+- Some providers may have size limits on images
+- Pricing may vary based on image size and detail level
+- For production use, consider the OpenRouter documentation's recommendations about image placement in messages
+
+See the [image-inputs example](examples/image-inputs) for more comprehensive examples.
+
+### PDF Inputs (File Support)
+
+The library provides comprehensive support for sending PDF files to models through the OpenRouter API. PDF files can be sent via URLs or base64-encoded data. This feature works with **any model** on OpenRouter, with automatic fallback to PDF parsing when models don't have native file support.
+
+#### Basic PDF from URL
+
+```go
+// Send a PDF via URL
+messages := []openrouter.Message{
+    openrouter.CreateUserMessageWithPDF(
+        "What are the main points in this document?",
+        "https://bitcoin.org/bitcoin.pdf",
+        "bitcoin.pdf",
+    ),
+}
+
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("anthropic/claude-sonnet-4"),
+)
+```
+
+#### Local PDF Files
+
+```go
+// Automatically encode and send a local PDF
+message, err := openrouter.CreateUserMessageWithBase64PDF(
+    "Summarize this document",
+    "path/to/document.pdf",
+    "document.pdf",
+)
+if err != nil {
+    log.Fatal(err)
+}
+
+response, err := client.ChatComplete(ctx, []openrouter.Message{message},
+    openrouter.WithModel("google/gemma-3-27b-it"),
+)
+```
+
+#### PDF Parsing Engines
+
+OpenRouter provides three PDF processing engines with different cost/quality tradeoffs:
+
+```go
+message := openrouter.CreateUserMessageWithPDF(
+    "Extract key concepts from this document",
+    "https://example.com/document.pdf",
+    "document.pdf",
+)
+
+// Configure the PDF parsing engine
+plugin := openrouter.CreateFileParserPlugin("pdf-text")
+
+response, err := client.ChatComplete(ctx, []openrouter.Message{message},
+    openrouter.WithModel("google/gemma-3-27b-it"),
+    openrouter.WithPlugins(plugin),
+)
+```
+
+Available engines:
+- `"pdf-text"` - Free, best for well-structured PDFs with clear text content
+- `"mistral-ocr"` - $0.0004 per 1K pages, best for scanned documents with images/OCR needs
+- `"native"` - Uses model's native file support (charged as input tokens)
+- `""` (empty) - Auto-selects native support first, then defaults to `pdf-text`
+
+#### Reusing File Annotations
+
+File annotations allow you to avoid re-parsing the same PDF in follow-up requests, saving processing time and costs:
+
+```go
+// First request with PDF
+firstMessage := openrouter.CreateUserMessageWithPDF(
+    "What are the main concepts in this paper?",
+    "https://example.com/document.pdf",
+    "document.pdf",
+)
+
+resp1, err := client.ChatComplete(ctx, []openrouter.Message{firstMessage},
+    openrouter.WithModel("google/gemma-3-27b-it"),
+)
+
+// Follow-up request - include the assistant's response with annotations
+followUpMessages := []openrouter.Message{
+    firstMessage,
+    resp1.Choices[0].Message, // Contains file annotations
+    openrouter.CreateUserMessage("Can you elaborate on the first point?"),
+}
+
+resp2, err := client.ChatComplete(ctx, followUpMessages,
+    openrouter.WithModel("google/gemma-3-27b-it"),
+)
+// PDF is NOT re-parsed - saves processing time and costs!
+```
+
+#### Multiple Files
+
+You can send multiple files (PDFs, images, etc.) in a single request:
+
+```go
+files := []openrouter.File{
+    {
+        Filename: "document1.pdf",
+        FileData: "https://example.com/doc1.pdf",
+    },
+    {
+        Filename: "document2.pdf",
+        FileData: "https://example.com/doc2.pdf",
+    },
+    {
+        Filename: "chart.png",
+        FileData: "https://example.com/chart.png",
+    },
+}
+
+message := openrouter.CreateUserMessageWithFiles(
+    "Compare these documents and analyze the chart",
+    files,
+)
+
+response, err := client.ChatComplete(ctx, []openrouter.Message{message},
+    openrouter.WithModel("anthropic/claude-sonnet-4"),
+)
+```
+
+#### Content Builder with PDFs
+
+For complex messages with PDFs, images, and text:
+
+```go
+content := openrouter.NewContentBuilder().
+    AddText("Analyze this document:").
+    AddPDF("https://example.com/document.pdf", "document.pdf").
+    AddText("And compare with this image:").
+    AddImage("https://example.com/chart.png").
+    Build()
+
+message := openrouter.Message{
+    Role:    "user",
+    Content: content,
+}
+
+response, err := client.ChatComplete(ctx, []openrouter.Message{message},
+    openrouter.WithModel("anthropic/claude-sonnet-4"),
+)
+```
+
+#### Manual Base64 Encoding
+
+```go
+// Encode PDF file to base64 data URL
+dataURL, err := openrouter.EncodePDFToBase64("path/to/document.pdf")
+if err != nil {
+    log.Fatal(err)
+}
+
+// Or encode bytes directly
+pdfBytes := []byte{...}
+dataURL := openrouter.EncodePDFBytesToBase64(pdfBytes)
+```
+
+#### Best Practices
+
+- **Use URLs when possible** - More efficient than base64 encoding
+- **Use `pdf-text` for digital PDFs** - It's free and works well for most documents
+- **Reuse file annotations** - Include the assistant's response with annotations in follow-up requests
+- **Use `mistral-ocr` only for scanned documents** - More expensive but necessary for image-based PDFs
+- **Check model support** - Some models have native file support which may be more cost-effective
+
+#### Supported File Types
+
+While this section focuses on PDFs, the file input API supports:
+- PDFs (application/pdf)
+- Images (image/png, image/jpeg, etc.)
+- And potentially other file types as OpenRouter expands support
+
+See the [pdf-inputs example](examples/pdf-inputs) for more comprehensive examples.
 
 ### Structured Outputs
 
