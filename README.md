@@ -23,6 +23,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Message transforms for automatic context window management
 - ✅ Web Search plugin for real-time web data integration
 - ✅ Image inputs (multimodal) with URL and base64 support
+- ✅ Audio inputs with base64 encoding support (WAV, MP3)
 - ✅ PDF inputs with configurable parsing engines and file annotation reuse
 - ✅ Model listing and discovery with category filtering
 - ✅ Model endpoint inspection with pricing and uptime details
