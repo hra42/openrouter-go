@@ -260,6 +260,24 @@ func TestCreateEmbeddingValidation(t *testing.T) {
 		t.Errorf("expected validation error for input field, got %v", err)
 	}
 
+	// Test empty string input
+	_, err = client.CreateEmbedding(context.Background(), "", "openai/text-embedding-3-small")
+	if err == nil {
+		t.Error("expected error for empty string input")
+	}
+	if validErr, ok := err.(*ValidationError); !ok || validErr.Field != "input" {
+		t.Errorf("expected validation error for input field, got %v", err)
+	}
+
+	// Test empty slice input
+	_, err = client.CreateEmbedding(context.Background(), []string{}, "openai/text-embedding-3-small")
+	if err == nil {
+		t.Error("expected error for empty slice input")
+	}
+	if validErr, ok := err.(*ValidationError); !ok || validErr.Field != "input" {
+		t.Errorf("expected validation error for input field, got %v", err)
+	}
+
 	// Test missing model
 	_, err = client.CreateEmbedding(context.Background(), "test", "")
 	if err == nil {
@@ -393,6 +411,24 @@ func TestGetEmbeddingVector(t *testing.T) {
 	vec4 := data4.GetEmbeddingVector()
 	if vec4 != nil {
 		t.Errorf("expected nil for base64 string, got %v", vec4)
+	}
+
+	// Test with mixed types in []interface{}
+	data5 := &EmbeddingData{
+		Embedding: []interface{}{0.1, "string", 0.3},
+	}
+	vec5 := data5.GetEmbeddingVector()
+	if vec5 != nil {
+		t.Errorf("expected nil for mixed type array, got %v", vec5)
+	}
+
+	// Test with integers in []interface{}
+	data6 := &EmbeddingData{
+		Embedding: []interface{}{1, 2, 3},
+	}
+	vec6 := data6.GetEmbeddingVector()
+	if vec6 != nil {
+		t.Errorf("expected nil for integer array, got %v", vec6)
 	}
 }
 

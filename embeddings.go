@@ -22,6 +22,22 @@ func (c *Client) CreateEmbedding(ctx context.Context, input interface{}, model s
 		}
 	}
 
+	// Validate empty string input
+	if str, ok := input.(string); ok && str == "" {
+		return nil, &ValidationError{
+			Field:   "input",
+			Message: "input cannot be empty",
+		}
+	}
+
+	// Validate empty slice input
+	if arr, ok := input.([]string); ok && len(arr) == 0 {
+		return nil, &ValidationError{
+			Field:   "input",
+			Message: "input cannot be empty",
+		}
+	}
+
 	if model == "" {
 		return nil, ErrNoModel
 	}
