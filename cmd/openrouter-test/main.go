@@ -18,7 +18,13 @@ func main() {
 		apiKey         = flag.String("key", os.Getenv("OPENROUTER_API_KEY"), "OpenRouter API key (or set OPENROUTER_API_KEY env var)")
 		model          = flag.String("model", "openai/gpt-3.5-turbo", "Model to use")
 		embeddingModel = flag.String("embedding-model", "openai/text-embedding-3-small", "Embedding model to use")
-		test           = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, image, multiimage, imagedetail, contentbuilder, base64image, audio, audiobuilder, audioformats, pdf, pdfengine, pdfannotations, multiplefiles, pdfbuilder, base64pdf, pdfcomparison, models, endpoints, providers, credits, activity, key, listkeys, createkey, updatekey, deletekey, embedding, batchembedding, embeddingwithoptions, embeddingmodels")
+		test           = flag.String("test", "all", `Test to run:
+  all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools,
+  transforms, websearch, image, multiimage, imagedetail, contentbuilder, base64image,
+  audio, audiobuilder, audioformats, pdf, pdfengine, pdfannotations, multiplefiles,
+  pdfbuilder, base64pdf, pdfcomparison, models, endpoints, providers, credits, activity,
+  key, listkeys, createkey, updatekey, deletekey, embedding, batchembedding,
+  embeddingwithoptions, embeddingmodels`)
 		verbose        = flag.Bool("v", false, "Verbose output")
 		timeout        = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens      = flag.Int("max-tokens", 100, "Maximum tokens for response")
