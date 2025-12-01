@@ -15,12 +15,13 @@ import (
 func main() {
 	// Command-line flags
 	var (
-		apiKey    = flag.String("key", os.Getenv("OPENROUTER_API_KEY"), "OpenRouter API key (or set OPENROUTER_API_KEY env var)")
-		model     = flag.String("model", "openai/gpt-3.5-turbo", "Model to use")
-		test      = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, image, multiimage, imagedetail, contentbuilder, base64image, audio, audiobuilder, audioformats, pdf, pdfengine, pdfannotations, multiplefiles, pdfbuilder, base64pdf, pdfcomparison, models, endpoints, providers, credits, activity, key, listkeys, createkey, updatekey, deletekey")
-		verbose   = flag.Bool("v", false, "Verbose output")
-		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
-		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
+		apiKey         = flag.String("key", os.Getenv("OPENROUTER_API_KEY"), "OpenRouter API key (or set OPENROUTER_API_KEY env var)")
+		model          = flag.String("model", "openai/gpt-3.5-turbo", "Model to use")
+		embeddingModel = flag.String("embedding-model", "openai/text-embedding-3-small", "Embedding model to use")
+		test           = flag.String("test", "all", "Test to run: all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools, transforms, websearch, image, multiimage, imagedetail, contentbuilder, base64image, audio, audiobuilder, audioformats, pdf, pdfengine, pdfannotations, multiplefiles, pdfbuilder, base64pdf, pdfcomparison, models, endpoints, providers, credits, activity, key, listkeys, createkey, updatekey, deletekey, embedding, batchembedding, embeddingwithoptions, embeddingmodels")
+		verbose        = flag.Bool("v", false, "Verbose output")
+		timeout        = flag.Duration("timeout", 30*time.Second, "Request timeout")
+		maxTokens      = flag.Int("max-tokens", 100, "Maximum tokens for response")
 	)
 
 	flag.Usage = func() {
@@ -55,6 +56,7 @@ func main() {
 	fmt.Printf("🚀 OpenRouter Go Client - Live API Test\n")
 	fmt.Printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
 	fmt.Printf("Model: %s\n", *model)
+	fmt.Printf("Embedding Model: %s\n", *embeddingModel)
 	fmt.Printf("Test: %s\n", *test)
 	fmt.Printf("Max Tokens: %d\n", *maxTokens)
 	fmt.Printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n")
@@ -65,7 +67,7 @@ func main() {
 	// Run tests based on selection
 	switch strings.ToLower(*test) {
 	case "all":
-		success, failed = runAllTests(ctx, client, *model, *maxTokens, *verbose)
+		success, failed = runAllTests(ctx, client, *model, *embeddingModel, *maxTokens, *verbose)
 	case "chat":
 		if tests.RunChatTest(ctx, client, *model, *maxTokens, *verbose) {
 			success = 1
@@ -288,6 +290,30 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "embedding":
+		if tests.RunEmbeddingTest(ctx, client, *embeddingModel, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "batchembedding":
+		if tests.RunBatchEmbeddingTest(ctx, client, *embeddingModel, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "embeddingwithoptions":
+		if tests.RunEmbeddingWithOptionsTest(ctx, client, *embeddingModel, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "embeddingmodels":
+		if tests.RunListEmbeddingsModelsTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -307,7 +333,7 @@ func main() {
 	fmt.Printf("\n🎉 All tests passed!\n")
 }
 
-func runAllTests(ctx context.Context, client *openrouter.Client, model string, maxTokens int, verbose bool) (success, failed int) {
+func runAllTests(ctx context.Context, client *openrouter.Client, model string, embeddingModel string, maxTokens int, verbose bool) (success, failed int) {
 	testCases := []struct {
 		name string
 		fn   func() bool
@@ -348,6 +374,10 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, m
 		{"Create API Key", func() bool { return tests.RunCreateKeyTest(ctx, client, verbose) }},
 		{"Update API Key", func() bool { return tests.RunUpdateKeyTest(ctx, client, verbose) }},
 		{"Delete API Key", func() bool { return tests.RunDeleteKeyTest(ctx, client, verbose) }},
+		{"Single Embedding", func() bool { return tests.RunEmbeddingTest(ctx, client, embeddingModel, verbose) }},
+		{"Batch Embeddings", func() bool { return tests.RunBatchEmbeddingTest(ctx, client, embeddingModel, verbose) }},
+		{"Embedding with Options", func() bool { return tests.RunEmbeddingWithOptionsTest(ctx, client, embeddingModel, verbose) }},
+		{"List Embeddings Models", func() bool { return tests.RunListEmbeddingsModelsTest(ctx, client, verbose) }},
 	}
 
 	for _, tc := range testCases {
