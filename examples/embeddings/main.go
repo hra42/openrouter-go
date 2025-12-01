@@ -61,8 +61,12 @@ func singleEmbedding(client *openrouter.Client) {
 		vec := resp.Data[0].GetEmbeddingVector()
 		if vec != nil {
 			fmt.Printf("Embedding dimensions: %d\n", len(vec))
-			fmt.Printf("First 5 values: [%.4f, %.4f, %.4f, %.4f, %.4f...]\n",
-				vec[0], vec[1], vec[2], vec[3], vec[4])
+			if len(vec) >= 5 {
+				fmt.Printf("First 5 values: [%.4f, %.4f, %.4f, %.4f, %.4f...]\n",
+					vec[0], vec[1], vec[2], vec[3], vec[4])
+			} else {
+				fmt.Printf("Vector values: %v\n", vec)
+			}
 		}
 	}
 
