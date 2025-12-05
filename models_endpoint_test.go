@@ -186,6 +186,79 @@ func TestListModelsWithCategory(t *testing.T) {
 	}
 }
 
+func TestListModelsWithSupportedParameters(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify request method and path
+		if r.Method != "GET" {
+			t.Errorf("expected GET request, got %s", r.Method)
+		}
+		if r.URL.Path != "/models" {
+			t.Errorf("expected path /models, got %s", r.URL.Path)
+		}
+
+		// Verify query parameter
+		supportedParams := r.URL.Query().Get("supported_parameters")
+		if supportedParams != "tools" {
+			t.Errorf("expected supported_parameters 'tools', got %q", supportedParams)
+		}
+
+		// Send empty response
+		response := ModelsResponse{Data: []Model{}}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	_, err := client.ListModels(context.Background(), &ListModelsOptions{
+		SupportedParameters: "tools",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestListModelsWithMultipleOptions(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify request method and path
+		if r.Method != "GET" {
+			t.Errorf("expected GET request, got %s", r.Method)
+		}
+
+		// Verify query parameters
+		query := r.URL.Query()
+		if query.Get("category") != "programming" {
+			t.Errorf("expected category 'programming', got %q", query.Get("category"))
+		}
+		if query.Get("supported_parameters") != "tools" {
+			t.Errorf("expected supported_parameters 'tools', got %q", query.Get("supported_parameters"))
+		}
+
+		// Send empty response
+		response := ModelsResponse{Data: []Model{}}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	_, err := client.ListModels(context.Background(), &ListModelsOptions{
+		Category:            "programming",
+		SupportedParameters: "tools",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func stringPtr(s string) *string {
 	return &s
 }
