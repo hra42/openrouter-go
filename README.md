@@ -20,6 +20,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Per-request Zero Data Retention (ZDR) enforcement
 - ✅ Structured outputs with JSON schema validation
 - ✅ Tool/Function calling support with streaming
+- ✅ MCP (Model Context Protocol) tool conversion utilities
 - ✅ Message transforms for automatic context window management
 - ✅ Web Search plugin for real-time web data integration
 - ✅ Image inputs (multimodal) with URL and base64 support
@@ -644,11 +645,13 @@ openrouter-go/
 ├── stream.go            # SSE streaming with generic Stream[T] implementation
 ├── errors.go            # Custom error types
 ├── retry.go             # Retry and backoff logic with named constants
+├── mcp.go               # MCP tool conversion utilities
 ├── examples/
 │   ├── basic/             # Basic usage examples
 │   ├── streaming/         # Streaming examples
 │   ├── structured-output/ # Structured outputs with JSON schema
 │   ├── tool-calling/      # Tool/function calling examples
+│   ├── mcp-tools/         # MCP tool conversion examples
 │   ├── web_search/        # Web search plugin examples
 │   ├── list-models/       # Model listing examples
 │   ├── model-endpoints/   # Model endpoints inspection examples
@@ -1596,6 +1599,107 @@ Popular models with tool support include:
 - **Context Preservation**: Maintain full conversation history including tool calls
 - **Streaming**: Handle tool calls appropriately when streaming responses
 - **Testing**: Test tool interactions with different models as behavior may vary
+
+### MCP Tool Conversion
+
+The library provides utilities for converting MCP (Model Context Protocol) tool definitions to OpenRouter's OpenAI-compatible format. This enables seamless integration with MCP servers and clients.
+
+#### Converting MCP Tools
+
+```go
+// Define MCP tools (as received from an MCP server)
+mcpTools := []openrouter.MCPTool{
+    {
+        Name:        "read_file",
+        Description: "Read the contents of a file from the filesystem",
+        InputSchema: &openrouter.MCPInputSchema{
+            Type: "object",
+            Properties: map[string]interface{}{
+                "path": map[string]interface{}{
+                    "type":        "string",
+                    "description": "The path to the file to read",
+                },
+            },
+            Required: []string{"path"},
+        },
+    },
+}
+
+// Convert to OpenRouter format
+tools := openrouter.ConvertMCPTools(mcpTools)
+
+// Use with chat completion
+response, err := client.ChatComplete(ctx, messages,
+    openrouter.WithModel("openai/gpt-4o"),
+    openrouter.WithTools(tools...),
+)
+```
+
+#### Parsing MCP Tools from JSON
+
+```go
+// Parse MCP tools from JSON (as received from an MCP server)
+mcpToolsJSON := []byte(`[
+    {
+        "name": "get_weather",
+        "description": "Get the current weather for a location",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "location": {"type": "string", "description": "City name"}
+            },
+            "required": ["location"]
+        }
+    }
+]`)
+
+mcpTools, err := openrouter.ParseMCPToolsFromJSON(mcpToolsJSON)
+if err != nil {
+    log.Fatal(err)
+}
+
+// Convert and use
+tools := openrouter.ConvertMCPTools(mcpTools)
+```
+
+#### Handling MCP Tool Results
+
+```go
+// Convert MCP tool result to string for tool response
+mcpResult := openrouter.MCPToolResult{
+    Content: []openrouter.MCPContent{
+        {Type: "text", Text: "File contents: Hello, World!"},
+    },
+}
+
+resultStr := openrouter.ConvertToolResultToMCP(mcpResult)
+
+// Use in tool response message
+messages = append(messages, openrouter.Message{
+    Role:       "tool",
+    Content:    resultStr,
+    ToolCallID: toolCall.ID,
+})
+```
+
+#### MCP Types
+
+The library provides the following MCP types:
+
+- **MCPTool**: Represents an MCP tool definition (name, description, inputSchema)
+- **MCPInputSchema**: JSON Schema for tool parameters (type, properties, required)
+- **MCPToolResult**: Result from tool execution (content array, isError)
+- **MCPContent**: Content item in responses (type, text, data, mimeType)
+
+#### Functions
+
+- `ConvertMCPTool(mcpTool MCPTool) Tool` - Convert single MCP tool
+- `ConvertMCPTools(mcpTools []MCPTool) []Tool` - Convert multiple tools
+- `ConvertToolResultToMCP(result MCPToolResult) string` - Convert result to string
+- `ParseMCPToolFromJSON(data []byte) (MCPTool, error)` - Parse single tool from JSON
+- `ParseMCPToolsFromJSON(data []byte) ([]MCPTool, error)` - Parse multiple tools from JSON
+
+See the [mcp-tools example](examples/mcp-tools) for complete usage examples.
 
 ### Web Search
 
