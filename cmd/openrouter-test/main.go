@@ -20,14 +20,14 @@ func main() {
 		embeddingModel = flag.String("embedding-model", "openai/text-embedding-3-small", "Embedding model to use")
 		test           = flag.String("test", "all", `Test to run:
   all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools,
-  transforms, websearch, image, multiimage, imagedetail, contentbuilder, base64image,
+  transforms, websearch, mcp, image, multiimage, imagedetail, contentbuilder, base64image,
   audio, audiobuilder, audioformats, pdf, pdfengine, pdfannotations, multiplefiles,
   pdfbuilder, base64pdf, pdfcomparison, models, endpoints, providers, credits, activity,
   key, listkeys, createkey, updatekey, deletekey, embedding, batchembedding,
   embeddingwithoptions, embeddingmodels`)
-		verbose        = flag.Bool("v", false, "Verbose output")
-		timeout        = flag.Duration("timeout", 30*time.Second, "Request timeout")
-		maxTokens      = flag.Int("max-tokens", 100, "Maximum tokens for response")
+		verbose   = flag.Bool("v", false, "Verbose output")
+		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
+		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
 	)
 
 	flag.Usage = func() {
@@ -142,6 +142,12 @@ func main() {
 		}
 	case "websearch":
 		if tests.RunWebSearchTest(ctx, client, *model, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "mcp":
+		if tests.RunMCPToolConversionTest(ctx, client, *model, *verbose) {
 			success = 1
 		} else {
 			failed = 1
@@ -355,6 +361,7 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, e
 		{"Structured Output", func() bool { return tests.RunStructuredOutputTest(ctx, client, model, verbose) }},
 		{"Tool Calling", func() bool { return tests.RunToolCallingTest(ctx, client, model, verbose) }},
 		{"Message Transforms", func() bool { return tests.RunTransformsTest(ctx, client, model, verbose) }},
+		{"MCP Tool Conversion", func() bool { return tests.RunMCPToolConversionTest(ctx, client, model, verbose) }},
 		{"Image Input (URL)", func() bool { return tests.RunImageURLTest(ctx, client, model, maxTokens, verbose) }},
 		{"Multiple Images", func() bool { return tests.RunMultipleImagesTest(ctx, client, model, maxTokens, verbose) }},
 		{"Image with Detail", func() bool { return tests.RunImageDetailTest(ctx, client, model, maxTokens, verbose) }},
