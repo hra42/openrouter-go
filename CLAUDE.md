@@ -55,6 +55,7 @@ go run examples/app-attribution/main.go
 go run examples/image-inputs/main.go
 go run examples/audio-inputs/main.go
 go run examples/pdf-inputs/main.go
+go run examples/mcp-tools/main.go
 ```
 
 ### Running E2E Tests
@@ -78,6 +79,7 @@ go run cmd/openrouter-test/main.go -test pdfengine
 go run cmd/openrouter-test/main.go -test pdfannotations
 go run cmd/openrouter-test/main.go -test base64pdf
 go run cmd/openrouter-test/main.go -test pdfcomparison
+go run cmd/openrouter-test/main.go -test mcp
 
 # Run with verbose output
 go run cmd/openrouter-test/main.go -test models -v
@@ -110,6 +112,8 @@ This is a zero-dependency Go client library for the OpenRouter API that follows 
 **Models Listing (`models_endpoint.go`)**: Retrieve available models with filtering by category and detailed model information.
 
 **Web Search (`web_search.go`)**: Integration with OpenRouter's web search plugin for augmented responses.
+
+**MCP Tool Conversion (`mcp.go`)**: Utilities for converting MCP (Model Context Protocol) tool definitions to OpenAI-compatible format for use with OpenRouter.
 
 ### Key Design Patterns
 
