@@ -661,6 +661,61 @@ func TestCompletionJSONModeOptions(t *testing.T) {
 	}
 }
 
+func TestUserTrackingOption(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req ChatCompletionRequest
+		json.NewDecoder(r.Body).Decode(&req)
+
+		// Verify WithUser
+		if req.User != "user_12345" {
+			t.Errorf("User not set correctly, got: %s", req.User)
+		}
+
+		w.WriteHeader(200)
+		json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
+	messages := []Message{CreateUserMessage("Test")}
+
+	_, err := client.ChatComplete(context.Background(), messages,
+		WithModel("test-model"),
+		WithUser("user_12345"),
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestCompletionUserTrackingOption(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req CompletionRequest
+		json.NewDecoder(r.Body).Decode(&req)
+
+		// Verify WithCompletionUser
+		if req.User != "customer_abc123" {
+			t.Errorf("User not set correctly, got: %s", req.User)
+		}
+
+		w.WriteHeader(200)
+		json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
+
+	_, err := client.Complete(context.Background(), "Test prompt",
+		WithCompletionModel("test-model"),
+		WithCompletionUser("customer_abc123"),
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func TestTopKAndRepetitionPenalty(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req ChatCompletionRequest

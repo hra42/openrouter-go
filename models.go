@@ -35,6 +35,7 @@ type ChatCompletionRequest struct {
 	Route             string                 `json:"route,omitempty"`
 	Plugins           []Plugin               `json:"plugins,omitempty"`
 	WebSearchOptions  *WebSearchOptions      `json:"web_search_options,omitempty"`
+	User              string                 `json:"user,omitempty"`
 	Metadata          map[string]interface{} `json:"-"` // Used for headers
 }
 
@@ -68,6 +69,7 @@ type CompletionRequest struct {
 	Route             string                 `json:"route,omitempty"`
 	Plugins           []Plugin               `json:"plugins,omitempty"`
 	WebSearchOptions  *WebSearchOptions      `json:"web_search_options,omitempty"`
+	User              string                 `json:"user,omitempty"`
 	Metadata          map[string]interface{} `json:"-"` // Used for headers
 }
 

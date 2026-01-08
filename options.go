@@ -368,6 +368,16 @@ func setWebSearchOptions[T RequestConfig](r T, options *WebSearchOptions) {
 	}
 }
 
+// setUser is a generic helper to set the user identifier.
+func setUser[T RequestConfig](r T, user string) {
+	switch req := any(r).(type) {
+	case *ChatCompletionRequest:
+		req.User = user
+	case *CompletionRequest:
+		req.User = user
+	}
+}
+
 // ensureProvider is a generic helper to ensure provider is initialized.
 func ensureProvider[T RequestConfig](r T) *Provider {
 	switch req := any(r).(type) {
@@ -743,5 +753,23 @@ func WithWebSearchOptions(options *WebSearchOptions) ChatCompletionOption {
 func WithCompletionWebSearchOptions(options *WebSearchOptions) CompletionOption {
 	return func(r *CompletionRequest) {
 		setWebSearchOptions(r, options)
+	}
+}
+
+// WithUser sets a unique identifier for the end-user.
+// This helps OpenRouter track users for analytics, improve caching by making it
+// sticky to individual users, and provides user-level reporting in the activity feed.
+func WithUser(user string) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		setUser(r, user)
+	}
+}
+
+// WithCompletionUser sets a unique identifier for the end-user in completion requests.
+// This helps OpenRouter track users for analytics, improve caching by making it
+// sticky to individual users, and provides user-level reporting in the activity feed.
+func WithCompletionUser(user string) CompletionOption {
+	return func(r *CompletionRequest) {
+		setUser(r, user)
 	}
 }
