@@ -1883,23 +1883,22 @@ Reasoning effort levels: `ReasoningEffortMinimal`, `ReasoningEffortLow`, `Reason
 #### Tool Calling
 
 ```go
-// Define tools
-weatherTool := openrouter.Tool{
-    Type: "function",
-    Function: openrouter.Function{
-        Name:        "get_weather",
-        Description: "Get weather for a location",
-        Parameters: map[string]interface{}{
-            "type": "object",
-            "properties": map[string]interface{}{
-                "location": map[string]interface{}{
-                    "type": "string",
-                },
+// Define tools using the flat ResponsesTool structure
+// Note: Responses API uses a different tool format than Chat Completions API
+weatherTool := openrouter.CreateResponsesTool(
+    "get_weather",
+    "Get weather for a location",
+    map[string]any{
+        "type": "object",
+        "properties": map[string]any{
+            "location": map[string]any{
+                "type":        "string",
+                "description": "The city and state, e.g. San Francisco, CA",
             },
-            "required": []string{"location"},
         },
+        "required": []string{"location"},
     },
-}
+)
 
 resp, err := client.CreateResponse(ctx, "What's the weather in Tokyo?",
     openrouter.WithResponsesModel("openai/gpt-4o-mini"),

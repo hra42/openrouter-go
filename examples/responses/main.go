@@ -186,28 +186,26 @@ func withReasoning(ctx context.Context, client *openrouter.Client) {
 
 func toolCalling(ctx context.Context, client *openrouter.Client) {
 	// Define a tool that the model can call
-	weatherTool := openrouter.Tool{
-		Type: "function",
-		Function: openrouter.Function{
-			Name:        "get_weather",
-			Description: "Get the current weather in a given location",
-			Parameters: map[string]interface{}{
-				"type": "object",
-				"properties": map[string]interface{}{
-					"location": map[string]interface{}{
-						"type":        "string",
-						"description": "The city and state, e.g. San Francisco, CA",
-					},
-					"unit": map[string]interface{}{
-						"type":        "string",
-						"enum":        []string{"celsius", "fahrenheit"},
-						"description": "The temperature unit",
-					},
+	// Responses API uses a flat tool structure (name, description, parameters at top level)
+	weatherTool := openrouter.CreateResponsesTool(
+		"get_weather",
+		"Get the current weather in a given location",
+		map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"location": map[string]any{
+					"type":        "string",
+					"description": "The city and state, e.g. San Francisco, CA",
 				},
-				"required": []string{"location"},
+				"unit": map[string]any{
+					"type":        "string",
+					"enum":        []string{"celsius", "fahrenheit"},
+					"description": "The temperature unit",
+				},
 			},
+			"required": []string{"location"},
 		},
-	}
+	)
 
 	resp, err := client.CreateResponse(
 		ctx,
