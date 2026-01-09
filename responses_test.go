@@ -247,12 +247,12 @@ func TestCreateResponse_WithTools(t *testing.T) {
 			t.Fatalf("failed to decode request: %v", err)
 		}
 
-		// Verify tools are set
+		// Verify tools are set (ResponsesTool has flat structure with Name at top level)
 		if len(req.Tools) != 1 {
 			t.Errorf("expected 1 tool, got %d", len(req.Tools))
 		} else {
-			if req.Tools[0].Function.Name != "get_weather" {
-				t.Errorf("expected tool name 'get_weather', got %q", req.Tools[0].Function.Name)
+			if req.Tools[0].Name != "get_weather" {
+				t.Errorf("expected tool name 'get_weather', got %q", req.Tools[0].Name)
 			}
 		}
 
@@ -284,23 +284,21 @@ func TestCreateResponse_WithTools(t *testing.T) {
 
 	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
 
-	weatherTool := Tool{
-		Type: "function",
-		Function: Function{
-			Name:        "get_weather",
-			Description: "Get weather for a location",
-			Parameters: map[string]interface{}{
-				"type": "object",
-				"properties": map[string]interface{}{
-					"location": map[string]interface{}{
-						"type":        "string",
-						"description": "The city name",
-					},
+	// Responses API uses a flat tool structure (name, description, parameters at top level)
+	weatherTool := CreateResponsesTool(
+		"get_weather",
+		"Get weather for a location",
+		map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"location": map[string]any{
+					"type":        "string",
+					"description": "The city name",
 				},
-				"required": []string{"location"},
 			},
+			"required": []string{"location"},
 		},
-	}
+	)
 
 	resp, err := client.CreateResponse(context.Background(), "What's the weather in San Francisco?",
 		WithResponsesModel("openai/o4-mini"),

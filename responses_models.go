@@ -37,7 +37,8 @@ type ResponsesRequest struct {
 	Reasoning *ResponsesReasoning `json:"reasoning,omitempty"`
 
 	// Tools defines available functions the model can call.
-	Tools []Tool `json:"tools,omitempty"`
+	// Uses ResponsesTool which has a flat structure (name, description, parameters at top level).
+	Tools []ResponsesTool `json:"tools,omitempty"`
 
 	// ToolChoice controls tool invocation behavior.
 	// Can be "auto", "none", or a specific tool specification.
@@ -304,4 +305,54 @@ func (r *ResponsesResponse) GetReasoningSummary() []string {
 		}
 	}
 	return nil
+}
+
+// ResponsesTool represents a tool definition for the Responses API.
+// This has a flat structure unlike the Chat Completions API which nests under "function".
+type ResponsesTool struct {
+	// Type specifies the tool type, always "function".
+	Type string `json:"type"`
+
+	// Name is the function name.
+	Name string `json:"name"`
+
+	// Description explains what the function does.
+	Description string `json:"description,omitempty"`
+
+	// Strict enables strict schema validation (set to null/nil for default behavior).
+	Strict *bool `json:"strict"`
+
+	// Parameters is the JSON Schema for the function parameters.
+	Parameters map[string]any `json:"parameters,omitempty"`
+}
+
+// CreateResponsesTool creates a ResponsesTool with the given parameters.
+func CreateResponsesTool(name, description string, parameters map[string]any) ResponsesTool {
+	return ResponsesTool{
+		Type:        "function",
+		Name:        name,
+		Description: description,
+		Strict:      nil,
+		Parameters:  parameters,
+	}
+}
+
+// ConvertToolToResponsesTool converts a Chat Completions Tool to a Responses API tool.
+func ConvertToolToResponsesTool(tool Tool) ResponsesTool {
+	return ResponsesTool{
+		Type:        tool.Type,
+		Name:        tool.Function.Name,
+		Description: tool.Function.Description,
+		Strict:      nil,
+		Parameters:  tool.Function.Parameters,
+	}
+}
+
+// ConvertToolsToResponsesTools converts multiple Chat Completions Tools to Responses API tools.
+func ConvertToolsToResponsesTools(tools []Tool) []ResponsesTool {
+	result := make([]ResponsesTool, len(tools))
+	for i, tool := range tools {
+		result[i] = ConvertToolToResponsesTool(tool)
+	}
+	return result
 }

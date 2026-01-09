@@ -66,7 +66,8 @@ func WithResponsesReasoningEffort(effort string) ResponsesOption {
 }
 
 // WithResponsesTools sets the available tools/functions for the request.
-func WithResponsesTools(tools ...Tool) ResponsesOption {
+// Uses ResponsesTool which has a flat structure expected by the Responses API.
+func WithResponsesTools(tools ...ResponsesTool) ResponsesOption {
 	return func(r *ResponsesRequest) {
 		r.Tools = tools
 	}
