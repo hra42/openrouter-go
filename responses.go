@@ -219,10 +219,10 @@ func (c *Client) validateResponsesRequest(req *ResponsesRequest) error {
 				Message: "tool type is required",
 			}
 		}
-		if tool.Function.Name == "" {
+		if tool.Name == "" {
 			return &ValidationError{
-				Field:   fmt.Sprintf("tools[%d].function.name", i),
-				Message: "function name is required",
+				Field:   fmt.Sprintf("tools[%d].name", i),
+				Message: "tool name is required",
 			}
 		}
 	}
