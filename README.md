@@ -1945,9 +1945,14 @@ if err != nil {
 }
 defer stream.Close()
 
+var lastContent string
 for event := range stream.Events() {
     content := event.GetTextContent()
-    fmt.Print(content)
+    // Only print the new delta (GetTextContent returns cumulative content)
+    if len(content) > len(lastContent) {
+        fmt.Print(content[len(lastContent):])
+        lastContent = content
+    }
 }
 
 if err := stream.Err(); err != nil {
