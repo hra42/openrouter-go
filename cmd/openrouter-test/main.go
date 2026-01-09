@@ -24,7 +24,8 @@ func main() {
   audio, audiobuilder, audioformats, pdf, pdfengine, pdfannotations, multiplefiles,
   pdfbuilder, base64pdf, pdfcomparison, models, endpoints, providers, credits, activity,
   key, listkeys, createkey, updatekey, deletekey, embedding, batchembedding,
-  embeddingwithoptions, embeddingmodels`)
+  embeddingwithoptions, embeddingmodels, responses, responses-reasoning, responses-tools,
+  responses-websearch, responses-stream`)
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -326,6 +327,36 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "responses":
+		if tests.RunResponsesBasicTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "responses-reasoning":
+		if tests.RunResponsesReasoningTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "responses-tools":
+		if tests.RunResponsesToolsTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "responses-websearch":
+		if tests.RunResponsesWebSearchTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "responses-stream":
+		if tests.RunResponsesStreamTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -391,6 +422,11 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, e
 		{"Batch Embeddings", func() bool { return tests.RunBatchEmbeddingTest(ctx, client, embeddingModel, verbose) }},
 		{"Embedding with Options", func() bool { return tests.RunEmbeddingWithOptionsTest(ctx, client, embeddingModel, verbose) }},
 		{"List Embeddings Models", func() bool { return tests.RunListEmbeddingsModelsTest(ctx, client, verbose) }},
+		{"Responses API Basic", func() bool { return tests.RunResponsesBasicTest(ctx, client, model, maxTokens, verbose) }},
+		{"Responses API Reasoning", func() bool { return tests.RunResponsesReasoningTest(ctx, client, model, maxTokens, verbose) }},
+		{"Responses API Tools", func() bool { return tests.RunResponsesToolsTest(ctx, client, model, maxTokens, verbose) }},
+		{"Responses API Web Search", func() bool { return tests.RunResponsesWebSearchTest(ctx, client, model, maxTokens, verbose) }},
+		{"Responses API Streaming", func() bool { return tests.RunResponsesStreamTest(ctx, client, model, maxTokens, verbose) }},
 	}
 
 	for _, tc := range testCases {

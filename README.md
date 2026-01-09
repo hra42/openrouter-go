@@ -33,6 +33,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Activity analytics for usage monitoring and cost tracking
 - ✅ API key information retrieval with usage and rate limit details
 - ✅ API key management with listing, filtering, and creation capabilities
+- ⚠️ **[BETA]** Responses API with reasoning, tool calling, web search, and streaming
 
 ## Installation
 
@@ -646,6 +647,9 @@ openrouter-go/
 ├── errors.go            # Custom error types
 ├── retry.go             # Retry and backoff logic with named constants
 ├── mcp.go               # MCP tool conversion utilities
+├── responses.go         # [BETA] Responses API endpoint methods
+├── responses_models.go  # [BETA] Responses API type definitions
+├── responses_options.go # [BETA] Responses API functional options
 ├── examples/
 │   ├── basic/             # Basic usage examples
 │   ├── streaming/         # Streaming examples
@@ -661,6 +665,7 @@ openrouter-go/
 │   ├── key/               # API key information examples
 │   ├── list-keys/         # API key listing examples
 │   ├── create-key/        # API key creation examples
+│   ├── responses/         # [BETA] Responses API examples
 │   └── advanced/          # Advanced configuration examples
 └── internal/
     └── sse/               # Internal SSE parser implementation
@@ -1816,6 +1821,157 @@ for _, citation := range citations {
 - Parse annotations to display sources and improve transparency
 - Use higher search context for research tasks, lower for quick facts
 
+### Responses API [BETA]
+
+> ⚠️ **WARNING: BETA API - EXPECT BREAKING CHANGES**
+>
+> The Responses API is in beta and may have breaking changes at any time. Do not rely on this API for production workloads. The API structure, parameters, and behavior may change without notice as OpenRouter continues to develop this feature.
+>
+> For stable production use, consider using the Chat Completions API instead.
+
+The library supports OpenRouter's new Responses API, which provides an OpenAI-compatible stateless API with enhanced capabilities including reasoning, tool calling, web search integration, and streaming.
+
+#### Basic Usage
+
+```go
+// Simple string input
+resp, err := client.CreateResponse(ctx, "What is 2+2?",
+    openrouter.WithResponsesModel("openai/gpt-4o-mini"),
+    openrouter.WithResponsesMaxOutputTokens(100),
+)
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println(resp.GetTextContent())
+```
+
+#### Structured Input
+
+```go
+// Use structured input for multi-turn conversations
+input := []openrouter.ResponsesInputItem{
+    openrouter.CreateResponsesSystemMessage("You are a helpful assistant."),
+    openrouter.CreateResponsesUserMessage("What is the capital of France?"),
+}
+
+resp, err := client.CreateResponse(ctx, input,
+    openrouter.WithResponsesModel("openai/gpt-4o-mini"),
+    openrouter.WithResponsesMaxOutputTokens(200),
+)
+```
+
+#### Reasoning
+
+```go
+// Enable reasoning for complex problems
+resp, err := client.CreateResponse(ctx, "Solve this step by step: 15 * 17",
+    openrouter.WithResponsesModel("openai/o4-mini"),
+    openrouter.WithResponsesMaxOutputTokens(500),
+    openrouter.WithResponsesReasoningEffort(openrouter.ReasoningEffortMedium),
+)
+
+// Check for reasoning summary
+if summary := resp.GetReasoningSummary(); len(summary) > 0 {
+    for i, step := range summary {
+        fmt.Printf("%d. %s\n", i+1, step)
+    }
+}
+```
+
+Reasoning effort levels: `ReasoningEffortMinimal`, `ReasoningEffortLow`, `ReasoningEffortMedium`, `ReasoningEffortHigh`
+
+#### Tool Calling
+
+```go
+// Define tools
+weatherTool := openrouter.Tool{
+    Type: "function",
+    Function: openrouter.Function{
+        Name:        "get_weather",
+        Description: "Get weather for a location",
+        Parameters: map[string]interface{}{
+            "type": "object",
+            "properties": map[string]interface{}{
+                "location": map[string]interface{}{
+                    "type": "string",
+                },
+            },
+            "required": []string{"location"},
+        },
+    },
+}
+
+resp, err := client.CreateResponse(ctx, "What's the weather in Tokyo?",
+    openrouter.WithResponsesModel("openai/gpt-4o-mini"),
+    openrouter.WithResponsesTools(weatherTool),
+)
+
+// Check for function calls
+calls := resp.GetFunctionCalls()
+if len(calls) > 0 {
+    for _, call := range calls {
+        fmt.Printf("Function: %s, Args: %s\n", call.Name, call.Arguments)
+    }
+}
+```
+
+#### Web Search
+
+```go
+// Enable web search for real-time information
+resp, err := client.CreateResponse(ctx, "What are the latest AI news?",
+    openrouter.WithResponsesModel("openai/gpt-4o-mini"),
+    openrouter.WithResponsesWebSearch(3), // Get up to 3 search results
+)
+
+// Check for citations
+annotations := resp.GetAnnotations()
+for _, ann := range annotations {
+    if ann.Type == "url_citation" {
+        fmt.Printf("Source: %s\n", ann.URL)
+    }
+}
+```
+
+#### Streaming
+
+```go
+stream, err := client.CreateResponseStream(ctx, "Write a haiku about programming.",
+    openrouter.WithResponsesModel("openai/gpt-4o-mini"),
+    openrouter.WithResponsesMaxOutputTokens(100),
+)
+if err != nil {
+    log.Fatal(err)
+}
+defer stream.Close()
+
+var lastContent string
+for event := range stream.Events() {
+    content := event.GetTextContent()
+    // Only print the new delta (GetTextContent returns cumulative content)
+    if len(content) > len(lastContent) {
+        fmt.Print(content[len(lastContent):])
+        lastContent = content
+    }
+}
+
+if err := stream.Err(); err != nil {
+    log.Fatal(err)
+}
+```
+
+#### Key Differences from Chat API
+
+| Feature | Chat Completions | Responses API |
+|---------|-----------------|---------------|
+| Endpoint | `/chat/completions` | `/responses` |
+| Input | Array of messages | String or structured array |
+| Response | `choices` array | `output` array with typed items |
+| Reasoning | Not available | Configurable effort levels |
+| Web Search | Via `:online` suffix | Via `plugins` parameter |
+
+See the [responses example](examples/responses) for complete usage examples.
+
 ## Examples
 
 The `examples/` directory contains comprehensive examples:
@@ -1829,6 +1985,7 @@ The `examples/` directory contains comprehensive examples:
 - **tool-calling/** - Complete tool/function calling examples with streaming
 - **transforms/** - Message transforms for context window management
 - **web_search/** - Web search plugin examples with various configurations
+- **responses/** - **[BETA]** Responses API examples with reasoning, tools, and streaming
 - **advanced/** - Advanced features like rate limiting and custom configuration
 
 To run an example:
@@ -1869,6 +2026,9 @@ go run examples/transforms/main.go
 
 # Run web search examples
 go run examples/web_search/main.go
+
+# Run responses API examples [BETA]
+go run examples/responses/main.go
 ```
 
 ## Documentation
