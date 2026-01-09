@@ -120,16 +120,13 @@ func (c *Client) CreateResponseStream(ctx context.Context, input interface{}, op
 }
 
 // validateResponsesInput validates the input parameter for Responses API requests.
-func (c *Client) validateResponsesInput(input interface{}) error {
+func (c *Client) validateResponsesInput(input any) error {
 	if c.apiKey == "" {
 		return ErrNoAPIKey
 	}
 
 	if input == nil {
-		return &ValidationError{
-			Field:   "input",
-			Message: "input is required",
-		}
+		return ErrNoResponsesInput
 	}
 
 	switch v := input.(type) {

@@ -1,8 +1,11 @@
 // Package openrouter provides Go bindings for the OpenRouter API.
 package openrouter
 
+// RequestOption is a generic functional option type for configuring requests.
+type RequestOption[T any] func(T)
+
 // ResponsesOption is a functional option for configuring ResponsesRequest.
-type ResponsesOption func(*ResponsesRequest)
+type ResponsesOption = RequestOption[*ResponsesRequest]
 
 // WithResponsesModel sets the model for the Responses API request.
 func WithResponsesModel(model string) ResponsesOption {
@@ -13,7 +16,7 @@ func WithResponsesModel(model string) ResponsesOption {
 
 // WithResponsesInput sets the input for the Responses API request.
 // Input can be a string for simple text, or []ResponsesInputItem for structured messages.
-func WithResponsesInput(input interface{}) ResponsesOption {
+func WithResponsesInput(input any) ResponsesOption {
 	return func(r *ResponsesRequest) {
 		r.Input = input
 	}
@@ -41,9 +44,16 @@ func WithResponsesTopP(topP float64) ResponsesOption {
 }
 
 // WithResponsesReasoning sets the reasoning configuration.
-func WithResponsesReasoning(reasoning ResponsesReasoning) ResponsesOption {
+// If ptr is nil, r.Reasoning is left nil. Otherwise, a defensive copy is made.
+func WithResponsesReasoning(ptr *ResponsesReasoning) ResponsesOption {
 	return func(r *ResponsesRequest) {
-		r.Reasoning = &reasoning
+		if ptr == nil {
+			r.Reasoning = nil
+			return
+		}
+		newReasoning := &ResponsesReasoning{}
+		*newReasoning = *ptr
+		r.Reasoning = newReasoning
 	}
 }
 
@@ -62,18 +72,23 @@ func WithResponsesTools(tools ...Tool) ResponsesOption {
 	}
 }
 
-// WithResponsesToolChoice sets the tool choice strategy.
-// Can be "auto", "none", or a specific tool: map[string]interface{}{"type": "function", "name": "functionName"}
-func WithResponsesToolChoice(toolChoice interface{}) ResponsesOption {
+// WithResponsesToolChoice sets the tool choice strategy for ResponsesRequest.ToolChoice.
+// Can be:
+//   - "auto" - let the model decide whether to call tools
+//   - "none" - disable tool calling
+//   - A specific tool: map[string]any{"type": "function", "function": map[string]any{"name": "functionName"}}
+func WithResponsesToolChoice(toolChoice any) ResponsesOption {
 	return func(r *ResponsesRequest) {
 		r.ToolChoice = toolChoice
 	}
 }
 
-// WithResponsesPlugins sets the plugins for the request.
+// WithResponsesPlugins appends plugins to the request.
+// This appends to any existing plugins to avoid overwriting plugins added by
+// other options like WithResponsesWebSearch.
 func WithResponsesPlugins(plugins ...Plugin) ResponsesOption {
 	return func(r *ResponsesRequest) {
-		r.Plugins = plugins
+		r.Plugins = append(r.Plugins, plugins...)
 	}
 }
 
@@ -96,10 +111,14 @@ func WithResponsesMetadata(metadata map[string]interface{}) ResponsesOption {
 	}
 }
 
-// Reasoning effort level constants
+// Reasoning effort level constants for the Responses API.
 const (
+	// ReasoningEffortMinimal indicates minimal reasoning effort for simple queries.
 	ReasoningEffortMinimal = "minimal"
-	ReasoningEffortLow     = "low"
-	ReasoningEffortMedium  = "medium"
-	ReasoningEffortHigh    = "high"
+	// ReasoningEffortLow indicates low reasoning effort for straightforward tasks.
+	ReasoningEffortLow = "low"
+	// ReasoningEffortMedium indicates medium reasoning effort for moderate complexity.
+	ReasoningEffortMedium = "medium"
+	// ReasoningEffortHigh indicates high reasoning effort for complex problems.
+	ReasoningEffortHigh = "high"
 )

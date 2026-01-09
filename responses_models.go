@@ -19,7 +19,7 @@ type ResponsesRequest struct {
 
 	// Input is the input to the model (required).
 	// Can be a string for simple text input, or []ResponsesInputItem for structured messages.
-	Input interface{} `json:"input"`
+	Input any `json:"input"`
 
 	// Stream enables streaming responses via Server-Sent Events.
 	Stream bool `json:"stream,omitempty"`
@@ -41,7 +41,7 @@ type ResponsesRequest struct {
 
 	// ToolChoice controls tool invocation behavior.
 	// Can be "auto", "none", or a specific tool specification.
-	ToolChoice interface{} `json:"tool_choice,omitempty"`
+	ToolChoice any `json:"tool_choice,omitempty"`
 
 	// Plugins configures plugins like web search.
 	Plugins []Plugin `json:"plugins,omitempty"`
