@@ -258,6 +258,51 @@ func (cb *ContentBuilder) AddImageWithDetail(imageURL string, detail string) *Co
 	return cb
 }
 
+// AddTextFile reads a text file and adds its content to the message.
+// The content is formatted with a filename header for context.
+func (cb *ContentBuilder) AddTextFile(filePath string) (*ContentBuilder, error) {
+	content, filename, err := ReadTextFileWithFilename(filePath)
+	if err != nil {
+		return cb, err
+	}
+
+	cb.parts = append(cb.parts, ContentPart{
+		Type: "text",
+		Text: fmt.Sprintf("=== %s ===\n%s", filename, content),
+	})
+	return cb, nil
+}
+
+// AddTextFileWithLabel reads a text file and adds its content with a custom label.
+func (cb *ContentBuilder) AddTextFileWithLabel(filePath string, label string) (*ContentBuilder, error) {
+	content, err := ReadTextFile(filePath)
+	if err != nil {
+		return cb, err
+	}
+
+	cb.parts = append(cb.parts, ContentPart{
+		Type: "text",
+		Text: fmt.Sprintf("=== %s ===\n%s", label, content),
+	})
+	return cb, nil
+}
+
+// AddTextContent adds raw text content with an optional label.
+func (cb *ContentBuilder) AddTextContent(content string, label string) *ContentBuilder {
+	var text string
+	if label != "" {
+		text = fmt.Sprintf("=== %s ===\n%s", label, content)
+	} else {
+		text = content
+	}
+
+	cb.parts = append(cb.parts, ContentPart{
+		Type: "text",
+		Text: text,
+	})
+	return cb
+}
+
 // Build returns the content parts array.
 func (cb *ContentBuilder) Build() []ContentPart {
 	return cb.parts

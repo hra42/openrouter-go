@@ -1304,6 +1304,129 @@ While this section focuses on PDFs, the file input API supports:
 
 See the [pdf-inputs example](examples/pdf-inputs) for more comprehensive examples.
 
+### Text File Inputs
+
+Send text-based files (code, configuration, documentation) to models using inline content. Text files are sent directly as UTF-8 text, not base64-encoded, for efficiency and token optimization.
+
+#### Single Text File
+
+```go
+// Send a code file for review
+message, err := openrouter.CreateUserMessageWithTextFile(
+    "Review this code for bugs:",
+    "/path/to/code.py",
+)
+if err != nil {
+    log.Fatal(err)
+}
+
+response, err := client.ChatComplete(ctx, []openrouter.Message{message},
+    openrouter.WithModel("anthropic/claude-sonnet-4"),
+)
+```
+
+#### Multiple Text Files
+
+```go
+// Compare or analyze multiple files
+message, err := openrouter.CreateUserMessageWithTextFiles(
+    "Compare these configuration files and identify differences:",
+    "/path/to/config1.yaml",
+    "/path/to/config2.yaml",
+)
+if err != nil {
+    log.Fatal(err)
+}
+
+response, err := client.ChatComplete(ctx, []openrouter.Message{message},
+    openrouter.WithModel("openai/gpt-4"),
+)
+```
+
+#### Content Builder with Text Files
+
+```go
+// Build complex messages with multiple text files
+builder := openrouter.NewContentBuilder()
+builder.AddText("I have several files to review:")
+
+builder, err := builder.AddTextFile("/path/to/main.go")
+if err != nil {
+    log.Fatal(err)
+}
+
+builder.AddText("And here's the test file:")
+builder, err = builder.AddTextFile("/path/to/main_test.go")
+if err != nil {
+    log.Fatal(err)
+}
+
+builder.AddText("Do these files work together correctly?")
+
+message := builder.BuildMessage("user")
+response, err := client.ChatComplete(ctx, []openrouter.Message{message},
+    openrouter.WithModel("anthropic/claude-sonnet-4"),
+)
+```
+
+#### Direct Text Content (Without File I/O)
+
+```go
+// Send text content directly without reading from a file
+message := openrouter.CreateUserMessageWithTextContent(
+    "Analyze this JSON structure:",
+    `{
+  "name": "example",
+  "version": "1.0.0",
+  "dependencies": {}
+}`,
+    "package.json",
+)
+
+response, err := client.ChatComplete(ctx, []openrouter.Message{message},
+    openrouter.WithModel("openai/gpt-4o-mini"),
+)
+```
+
+#### Supported File Formats
+
+**Common text formats**
+- `.txt` - Plain text
+- `.md` - Markdown
+- `.json` - JSON files
+- `.csv` - CSV files
+
+**Code files**
+- `.js`, `.jsx` - JavaScript
+- `.ts`, `.tsx` - TypeScript
+- `.py` - Python
+- `.go` - Go
+- `.java` - Java
+- `.rs` - Rust
+- `.c`, `.cpp`, `.h` - C/C++
+- `.rb` - Ruby
+- `.php` - PHP
+- `.swift` - Swift
+- `.kt` - Kotlin
+
+**Configuration files**
+- `.yaml`, `.yml` - YAML
+- `.toml` - TOML
+- `.xml` - XML
+- `.ini` - INI
+- `.env` - Environment files
+
+And many more! See [text-file-inputs example](examples/text-file-inputs) for complete details.
+
+#### Key Features
+
+- **Inline delivery** - Text sent directly (not base64), optimizing tokens
+- **UTF-8 validation** - All files must contain valid UTF-8 text
+- **Filename context** - Files are sent with filename headers for context
+- **All models supported** - Works with any text-capable model on OpenRouter
+- **Format validation** - Unsupported formats rejected with clear errors
+- **Builder integration** - Seamlessly mix text files with other content types
+
 ### Structured Outputs
 
 The library supports structured outputs for compatible models, ensuring responses follow a specific JSON Schema format. This feature is useful when you need consistent, well-formatted responses that can be reliably parsed by your application.

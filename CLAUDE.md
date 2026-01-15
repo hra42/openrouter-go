@@ -55,6 +55,7 @@ go run examples/app-attribution/main.go
 go run examples/image-inputs/main.go
 go run examples/audio-inputs/main.go
 go run examples/pdf-inputs/main.go
+go run examples/text-file-inputs/main.go
 go run examples/mcp-tools/main.go
 go run examples/responses/main.go
 ```
@@ -80,6 +81,10 @@ go run cmd/openrouter-test/main.go -test pdfengine
 go run cmd/openrouter-test/main.go -test pdfannotations
 go run cmd/openrouter-test/main.go -test base64pdf
 go run cmd/openrouter-test/main.go -test pdfcomparison
+go run cmd/openrouter-test/main.go -test textfile
+go run cmd/openrouter-test/main.go -test multipletextfiles
+go run cmd/openrouter-test/main.go -test textbuilder
+go run cmd/openrouter-test/main.go -test textformats
 go run cmd/openrouter-test/main.go -test mcp
 go run cmd/openrouter-test/main.go -test responses
 go run cmd/openrouter-test/main.go -test responses-reasoning
