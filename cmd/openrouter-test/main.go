@@ -22,10 +22,10 @@ func main() {
   all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools,
   transforms, websearch, mcp, image, multiimage, imagedetail, contentbuilder, base64image,
   audio, audiobuilder, audioformats, pdf, pdfengine, pdfannotations, multiplefiles,
-  pdfbuilder, base64pdf, pdfcomparison, models, endpoints, providers, credits, activity,
-  key, listkeys, createkey, updatekey, deletekey, embedding, batchembedding,
-  embeddingwithoptions, embeddingmodels, responses, responses-reasoning, responses-tools,
-  responses-websearch, responses-stream`)
+  pdfbuilder, base64pdf, pdfcomparison, textfile, multipletextfiles, textbuilder, textformats,
+  models, endpoints, providers, credits, activity, key, listkeys, createkey, updatekey, deletekey,
+  embedding, batchembedding, embeddingwithoptions, embeddingmodels, responses, responses-reasoning,
+  responses-tools, responses-websearch, responses-stream`)
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -357,6 +357,30 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "textfile":
+		if tests.RunTextFileTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "multipletextfiles":
+		if tests.RunMultipleTextFilesTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "textbuilder":
+		if tests.RunTextContentBuilderTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "textformats":
+		if tests.RunTextFormatValidationTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -408,6 +432,10 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, e
 		{"ContentBuilder with PDF", func() bool { return tests.RunPDFContentBuilderTest(ctx, client, model, maxTokens, verbose) }},
 		{"Base64 Encoded PDF", func() bool { return tests.RunBase64PDFTest(ctx, client, model, maxTokens, verbose) }},
 		{"PDF URL vs Base64 Comparison", func() bool { return tests.RunPDFComparisonTest(ctx, client, model, maxTokens, verbose) }},
+		{"Text File Input", func() bool { return tests.RunTextFileTest(ctx, client, model, maxTokens, verbose) }},
+		{"Multiple Text Files", func() bool { return tests.RunMultipleTextFilesTest(ctx, client, model, maxTokens, verbose) }},
+		{"ContentBuilder with Text Files", func() bool { return tests.RunTextContentBuilderTest(ctx, client, model, maxTokens, verbose) }},
+		{"Text Format Validation", func() bool { return tests.RunTextFormatValidationTest(ctx, client, model, maxTokens, verbose) }},
 		{"List Models", func() bool { return tests.RunModelsTest(ctx, client, verbose) }},
 		{"Model Endpoints", func() bool { return tests.RunModelEndpointsTest(ctx, client, verbose) }},
 		{"List Providers", func() bool { return tests.RunProvidersTest(ctx, client, verbose) }},
