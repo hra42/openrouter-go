@@ -24,8 +24,8 @@ func main() {
   audio, audiobuilder, audioformats, pdf, pdfengine, pdfannotations, multiplefiles,
   pdfbuilder, base64pdf, pdfcomparison, textfile, multipletextfiles, textbuilder, textformats,
   models, endpoints, providers, credits, activity, key, listkeys, createkey, updatekey, deletekey,
-  embedding, batchembedding, embeddingwithoptions, embeddingmodels, responses, responses-reasoning,
-  responses-tools, responses-websearch, responses-stream`)
+  embedding, batchembedding, embeddingwithoptions, embeddingmodels, chunking, chunkedembedding,
+  responses, responses-reasoning, responses-tools, responses-websearch, responses-stream`)
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -327,6 +327,18 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "chunking":
+		if tests.RunChunkingTest(ctx, client, *embeddingModel, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "chunkedembedding":
+		if tests.RunChunkedEmbeddingTest(ctx, client, *embeddingModel, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	case "responses":
 		if tests.RunResponsesBasicTest(ctx, client, *model, *maxTokens, *verbose) {
 			success = 1
@@ -450,6 +462,8 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, e
 		{"Batch Embeddings", func() bool { return tests.RunBatchEmbeddingTest(ctx, client, embeddingModel, verbose) }},
 		{"Embedding with Options", func() bool { return tests.RunEmbeddingWithOptionsTest(ctx, client, embeddingModel, verbose) }},
 		{"List Embeddings Models", func() bool { return tests.RunListEmbeddingsModelsTest(ctx, client, verbose) }},
+		{"Text Chunking", func() bool { return tests.RunChunkingTest(ctx, client, embeddingModel, verbose) }},
+		{"Chunked Embeddings", func() bool { return tests.RunChunkedEmbeddingTest(ctx, client, embeddingModel, verbose) }},
 		{"Responses API Basic", func() bool { return tests.RunResponsesBasicTest(ctx, client, model, maxTokens, verbose) }},
 		{"Responses API Reasoning", func() bool { return tests.RunResponsesReasoningTest(ctx, client, model, maxTokens, verbose) }},
 		{"Responses API Tools", func() bool { return tests.RunResponsesToolsTest(ctx, client, model, maxTokens, verbose) }},

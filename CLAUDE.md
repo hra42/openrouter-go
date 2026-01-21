@@ -58,6 +58,7 @@ go run examples/pdf-inputs/main.go
 go run examples/text-file-inputs/main.go
 go run examples/mcp-tools/main.go
 go run examples/responses/main.go
+go run examples/embedding-chunking/main.go
 ```
 
 ### Running E2E Tests
@@ -91,6 +92,8 @@ go run cmd/openrouter-test/main.go -test responses-reasoning
 go run cmd/openrouter-test/main.go -test responses-tools
 go run cmd/openrouter-test/main.go -test responses-websearch
 go run cmd/openrouter-test/main.go -test responses-stream
+go run cmd/openrouter-test/main.go -test chunking
+go run cmd/openrouter-test/main.go -test chunkedembedding
 
 # Run with verbose output
 go run cmd/openrouter-test/main.go -test models -v
