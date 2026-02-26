@@ -20,8 +20,8 @@ func RunMCPToolConversionTest(ctx context.Context, client *openrouter.Client, mo
 		Description: "Perform a mathematical calculation",
 		InputSchema: &openrouter.MCPInputSchema{
 			Type: "object",
-			Properties: map[string]interface{}{
-				"expression": map[string]interface{}{
+			Properties: map[string]any{
+				"expression": map[string]any{
 					"type":        "string",
 					"description": "Mathematical expression to evaluate",
 				},
@@ -136,16 +136,16 @@ func RunMCPToolConversionTest(ctx context.Context, client *openrouter.Client, mo
 		Description: "Search for files in a directory",
 		InputSchema: &openrouter.MCPInputSchema{
 			Type: "object",
-			Properties: map[string]interface{}{
-				"path": map[string]interface{}{
+			Properties: map[string]any{
+				"path": map[string]any{
 					"type":        "string",
 					"description": "Directory path to search",
 				},
-				"pattern": map[string]interface{}{
+				"pattern": map[string]any{
 					"type":        "string",
 					"description": "Search pattern",
 				},
-				"recursive": map[string]interface{}{
+				"recursive": map[string]any{
 					"type":        "boolean",
 					"description": "Whether to search recursively",
 				},
@@ -163,7 +163,7 @@ func RunMCPToolConversionTest(ctx context.Context, client *openrouter.Client, mo
 		return false
 	}
 
-	props, ok := params["properties"].(map[string]interface{})
+	props, ok := params["properties"].(map[string]any)
 	if !ok {
 		printError("Expected properties to be a map", nil)
 		return false

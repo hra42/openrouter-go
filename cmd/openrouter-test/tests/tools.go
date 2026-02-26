@@ -25,19 +25,19 @@ func RunToolCallingTest(ctx context.Context, client *openrouter.Client, model st
 			Function: openrouter.Function{
 				Name:        "calculate",
 				Description: "Perform basic mathematical calculations",
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"type": "object",
-					"properties": map[string]interface{}{
-						"operation": map[string]interface{}{
+					"properties": map[string]any{
+						"operation": map[string]any{
 							"type":        "string",
 							"enum":        []string{"add", "subtract", "multiply", "divide"},
 							"description": "Mathematical operation to perform",
 						},
-						"a": map[string]interface{}{
+						"a": map[string]any{
 							"type":        "number",
 							"description": "First operand",
 						},
-						"b": map[string]interface{}{
+						"b": map[string]any{
 							"type":        "number",
 							"description": "Second operand",
 						},
@@ -145,10 +145,10 @@ func RunToolCallingTest(ctx context.Context, client *openrouter.Client, model st
 			Function: openrouter.Function{
 				Name:        "get_weather",
 				Description: "Get current weather for a location",
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"type": "object",
-					"properties": map[string]interface{}{
-						"location": map[string]interface{}{
+					"properties": map[string]any{
+						"location": map[string]any{
 							"type": "string",
 						},
 					},
@@ -161,10 +161,10 @@ func RunToolCallingTest(ctx context.Context, client *openrouter.Client, model st
 			Function: openrouter.Function{
 				Name:        "get_time",
 				Description: "Get current time for a timezone",
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"type": "object",
-					"properties": map[string]interface{}{
-						"timezone": map[string]interface{}{
+					"properties": map[string]any{
+						"timezone": map[string]any{
 							"type": "string",
 						},
 					},

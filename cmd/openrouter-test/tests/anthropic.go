@@ -126,10 +126,10 @@ func RunAnthropicWithToolsTest(ctx context.Context, client *openrouter.Client, m
 	tool := openrouter.CreateAnthropicCustomTool(
 		"get_weather",
 		"Get the current weather in a given location",
-		map[string]interface{}{
+		map[string]any{
 			"type": "object",
-			"properties": map[string]interface{}{
-				"location": map[string]interface{}{
+			"properties": map[string]any{
+				"location": map[string]any{
 					"type":        "string",
 					"description": "The city and state, e.g. San Francisco, CA",
 				},
@@ -185,10 +185,7 @@ func RunAnthropicWithThinkingTest(ctx context.Context, client *openrouter.Client
 	}
 
 	// Use a higher max_tokens to accommodate thinking
-	thinkingMaxTokens := maxTokens
-	if thinkingMaxTokens < 4096 {
-		thinkingMaxTokens = 4096
-	}
+	thinkingMaxTokens := max(maxTokens, 4096)
 
 	resp, err := client.CreateAnthropicMessage(ctx, messages,
 		openrouter.WithAnthropicModel(model),
