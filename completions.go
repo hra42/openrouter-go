@@ -141,11 +141,11 @@ func (c *Client) CompleteWithExamples(ctx context.Context, instruction string, e
 	if len(examples) > 0 {
 		fullPrompt.WriteString("\n\nExamples:\n")
 		for i, example := range examples {
-			fullPrompt.WriteString(fmt.Sprintf("%d. %s\n", i+1, example))
+			fmt.Fprintf(&fullPrompt, "%d. %s\n", i+1, example)
 		}
 	}
 
-	fullPrompt.WriteString(fmt.Sprintf("\n\nNow: %s", prompt))
+	fmt.Fprintf(&fullPrompt, "\n\nNow: %s", prompt)
 
 	return c.Complete(ctx, fullPrompt.String(), opts...)
 }
