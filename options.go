@@ -144,6 +144,20 @@ func WithRepetitionPenalty(penalty float64) ChatCompletionOption {
 	}
 }
 
+// WithMinP sets the min_p parameter for nucleus sampling.
+func WithMinP(minP float64) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.MinP = &minP
+	}
+}
+
+// WithTopA sets the top_a parameter for top-a sampling.
+func WithTopA(topA float64) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.TopA = &topA
+	}
+}
+
 // WithSeed sets the random seed.
 func WithSeed(seed int) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
@@ -462,6 +476,55 @@ func WithCompletionBestOf(bestOf int) CompletionOption {
 func WithCompletionSuffix(suffix string) CompletionOption {
 	return func(r *CompletionRequest) {
 		r.Suffix = &suffix
+	}
+}
+
+// WithCompletionMinP sets the min_p parameter for completion.
+func WithCompletionMinP(minP float64) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.MinP = &minP
+	}
+}
+
+// WithCompletionTopA sets the top_a parameter for completion.
+func WithCompletionTopA(topA float64) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.TopA = &topA
+	}
+}
+
+// WithCompletionRepetitionPenalty sets the repetition penalty for completion.
+func WithCompletionRepetitionPenalty(penalty float64) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.RepetitionPenalty = &penalty
+	}
+}
+
+// WithCompletionTopK sets the top_k parameter for completion.
+func WithCompletionTopK(topK int) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.TopK = &topK
+	}
+}
+
+// WithCompletionFrequencyPenalty sets the frequency penalty for completion.
+func WithCompletionFrequencyPenalty(penalty float64) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.FrequencyPenalty = &penalty
+	}
+}
+
+// WithCompletionPresencePenalty sets the presence penalty for completion.
+func WithCompletionPresencePenalty(penalty float64) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.PresencePenalty = &penalty
+	}
+}
+
+// WithCompletionSeed sets the random seed for completion.
+func WithCompletionSeed(seed int) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.Seed = &seed
 	}
 }
 
