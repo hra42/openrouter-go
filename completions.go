@@ -3,6 +3,7 @@ package openrouter
 import (
 	"context"
 	"fmt"
+	"strings"
 )
 
 // Complete sends a legacy completion request to the OpenRouter API.
@@ -134,16 +135,17 @@ func (c *Client) CompleteWithContext(ctx context.Context, contextPrompt, userPro
 
 // CompleteWithExamples is a convenience method for few-shot prompting.
 func (c *Client) CompleteWithExamples(ctx context.Context, instruction string, examples []string, prompt string, opts ...CompletionOption) (*CompletionResponse, error) {
-	fullPrompt := instruction
+	var fullPrompt strings.Builder
+	fullPrompt.WriteString(instruction)
 
 	if len(examples) > 0 {
-		fullPrompt += "\n\nExamples:\n"
+		fullPrompt.WriteString("\n\nExamples:\n")
 		for i, example := range examples {
-			fullPrompt += fmt.Sprintf("%d. %s\n", i+1, example)
+			fullPrompt.WriteString(fmt.Sprintf("%d. %s\n", i+1, example))
 		}
 	}
 
-	fullPrompt += fmt.Sprintf("\n\nNow: %s", prompt)
+	fullPrompt.WriteString(fmt.Sprintf("\n\nNow: %s", prompt))
 
-	return c.Complete(ctx, fullPrompt, opts...)
+	return c.Complete(ctx, fullPrompt.String(), opts...)
 }

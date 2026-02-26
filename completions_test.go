@@ -195,7 +195,7 @@ func TestCompletionOptions(t *testing.T) {
 		WithCompletionN(3),
 		WithCompletionBestOf(5),
 		WithCompletionSuffix(" The end."),
-		WithCompletionMetadata(map[string]interface{}{
+		WithCompletionMetadata(map[string]any{
 			"custom-field": "custom-value",
 		}),
 	)
