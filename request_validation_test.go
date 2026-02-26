@@ -4,8 +4,11 @@ import (
 	"testing"
 )
 
-func floatPtr(f float64) *float64 { return &f }
-func intPtr(i int) *int           { return &i }
+//go:fix inline
+func floatPtr(f float64) *float64 { return new(f) }
+
+//go:fix inline
+func intPtr(i int) *int { return new(i) }
 
 // boolPtr is declared in broadcast_test.go
 
@@ -35,23 +38,23 @@ func TestValidateChatCompletionParams(t *testing.T) {
 		},
 		{
 			name:      "parallel_tool_calls without tools",
-			req:       &ChatCompletionRequest{ParallelToolCalls: boolPtr(true)},
+			req:       &ChatCompletionRequest{ParallelToolCalls: new(true)},
 			wantErr:   true,
 			wantField: "parallel_tool_calls",
 		},
 		{
 			name:      "top_logprobs without logprobs enabled",
-			req:       &ChatCompletionRequest{TopLogProbs: intPtr(5)},
+			req:       &ChatCompletionRequest{TopLogProbs: new(5)},
 			wantErr:   true,
 			wantField: "top_logprobs",
 		},
 		{
 			name: "top_logprobs with logprobs enabled",
-			req:  &ChatCompletionRequest{TopLogProbs: intPtr(5), LogProbs: boolPtr(true)},
+			req:  &ChatCompletionRequest{TopLogProbs: new(5), LogProbs: new(true)},
 		},
 		{
 			name:      "negative temperature",
-			req:       &ChatCompletionRequest{Temperature: floatPtr(-0.1)},
+			req:       &ChatCompletionRequest{Temperature: new(-0.1)},
 			wantErr:   true,
 			wantField: "temperature",
 		},
@@ -61,83 +64,83 @@ func TestValidateChatCompletionParams(t *testing.T) {
 		},
 		{
 			name:      "top_p above 1",
-			req:       &ChatCompletionRequest{TopP: floatPtr(1.5)},
+			req:       &ChatCompletionRequest{TopP: new(1.5)},
 			wantErr:   true,
 			wantField: "top_p",
 		},
 		{
 			name:      "top_p below 0",
-			req:       &ChatCompletionRequest{TopP: floatPtr(-0.1)},
+			req:       &ChatCompletionRequest{TopP: new(-0.1)},
 			wantErr:   true,
 			wantField: "top_p",
 		},
 		{
 			name: "top_p at boundary",
-			req:  &ChatCompletionRequest{TopP: floatPtr(1.0)},
+			req:  &ChatCompletionRequest{TopP: new(1.0)},
 		},
 		{
 			name:      "min_p above 1",
-			req:       &ChatCompletionRequest{MinP: floatPtr(1.1)},
+			req:       &ChatCompletionRequest{MinP: new(1.1)},
 			wantErr:   true,
 			wantField: "min_p",
 		},
 		{
 			name:      "negative top_k",
-			req:       &ChatCompletionRequest{TopK: intPtr(-1)},
+			req:       &ChatCompletionRequest{TopK: new(-1)},
 			wantErr:   true,
 			wantField: "top_k",
 		},
 		{
 			name: "zero top_k is valid",
-			req:  &ChatCompletionRequest{TopK: intPtr(0)},
+			req:  &ChatCompletionRequest{TopK: new(0)},
 		},
 		{
 			name:      "zero max_tokens",
-			req:       &ChatCompletionRequest{MaxTokens: intPtr(0)},
+			req:       &ChatCompletionRequest{MaxTokens: new(0)},
 			wantErr:   true,
 			wantField: "max_tokens",
 		},
 		{
 			name:      "negative max_tokens",
-			req:       &ChatCompletionRequest{MaxTokens: intPtr(-5)},
+			req:       &ChatCompletionRequest{MaxTokens: new(-5)},
 			wantErr:   true,
 			wantField: "max_tokens",
 		},
 		{
 			name: "positive max_tokens",
-			req:  &ChatCompletionRequest{MaxTokens: intPtr(100)},
+			req:  &ChatCompletionRequest{MaxTokens: new(100)},
 		},
 		{
 			name:      "frequency_penalty too high",
-			req:       &ChatCompletionRequest{FrequencyPenalty: floatPtr(2.5)},
+			req:       &ChatCompletionRequest{FrequencyPenalty: new(2.5)},
 			wantErr:   true,
 			wantField: "frequency_penalty",
 		},
 		{
 			name:      "frequency_penalty too low",
-			req:       &ChatCompletionRequest{FrequencyPenalty: floatPtr(-2.5)},
+			req:       &ChatCompletionRequest{FrequencyPenalty: new(-2.5)},
 			wantErr:   true,
 			wantField: "frequency_penalty",
 		},
 		{
 			name: "frequency_penalty at boundary",
-			req:  &ChatCompletionRequest{FrequencyPenalty: floatPtr(2.0)},
+			req:  &ChatCompletionRequest{FrequencyPenalty: new(2.0)},
 		},
 		{
 			name:      "presence_penalty too high",
-			req:       &ChatCompletionRequest{PresencePenalty: floatPtr(3.0)},
+			req:       &ChatCompletionRequest{PresencePenalty: new(3.0)},
 			wantErr:   true,
 			wantField: "presence_penalty",
 		},
 		{
 			name:      "top_logprobs too high",
-			req:       &ChatCompletionRequest{TopLogProbs: intPtr(25), LogProbs: boolPtr(true)},
+			req:       &ChatCompletionRequest{TopLogProbs: new(25), LogProbs: new(true)},
 			wantErr:   true,
 			wantField: "top_logprobs",
 		},
 		{
 			name:      "top_logprobs negative",
-			req:       &ChatCompletionRequest{TopLogProbs: intPtr(-1), LogProbs: boolPtr(true)},
+			req:       &ChatCompletionRequest{TopLogProbs: new(-1), LogProbs: new(true)},
 			wantErr:   true,
 			wantField: "top_logprobs",
 		},
@@ -205,53 +208,53 @@ func TestValidateCompletionParams(t *testing.T) {
 		},
 		{
 			name:      "top_p out of range",
-			req:       &CompletionRequest{TopP: floatPtr(2.0)},
+			req:       &CompletionRequest{TopP: new(2.0)},
 			wantErr:   true,
 			wantField: "top_p",
 		},
 		{
 			name:      "min_p out of range",
-			req:       &CompletionRequest{MinP: floatPtr(-0.5)},
+			req:       &CompletionRequest{MinP: new(-0.5)},
 			wantErr:   true,
 			wantField: "min_p",
 		},
 		{
 			name:      "negative top_k",
-			req:       &CompletionRequest{TopK: intPtr(-1)},
+			req:       &CompletionRequest{TopK: new(-1)},
 			wantErr:   true,
 			wantField: "top_k",
 		},
 		{
 			name:      "zero max_tokens",
-			req:       &CompletionRequest{MaxTokens: intPtr(0)},
+			req:       &CompletionRequest{MaxTokens: new(0)},
 			wantErr:   true,
 			wantField: "max_tokens",
 		},
 		{
 			name:      "frequency_penalty out of range",
-			req:       &CompletionRequest{FrequencyPenalty: floatPtr(3.0)},
+			req:       &CompletionRequest{FrequencyPenalty: new(3.0)},
 			wantErr:   true,
 			wantField: "frequency_penalty",
 		},
 		{
 			name:      "presence_penalty out of range",
-			req:       &CompletionRequest{PresencePenalty: floatPtr(-3.0)},
+			req:       &CompletionRequest{PresencePenalty: new(-3.0)},
 			wantErr:   true,
 			wantField: "presence_penalty",
 		},
 		{
 			name:      "best_of less than n",
-			req:       &CompletionRequest{BestOf: intPtr(2), N: intPtr(5)},
+			req:       &CompletionRequest{BestOf: new(2), N: new(5)},
 			wantErr:   true,
 			wantField: "best_of",
 		},
 		{
 			name: "best_of equal to n",
-			req:  &CompletionRequest{BestOf: intPtr(3), N: intPtr(3)},
+			req:  &CompletionRequest{BestOf: new(3), N: new(3)},
 		},
 		{
 			name: "best_of greater than n",
-			req:  &CompletionRequest{BestOf: intPtr(5), N: intPtr(2)},
+			req:  &CompletionRequest{BestOf: new(5), N: new(2)},
 		},
 		{
 			name:      "invalid provider sort",
