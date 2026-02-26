@@ -26,6 +26,7 @@ func main() {
   models, endpoints, providers, credits, activity, key, listkeys, createkey, updatekey, deletekey,
   embedding, batchembedding, embeddingwithoptions, embeddingmodels, chunking, chunkedembedding,
   responses, responses-reasoning, responses-tools, responses-websearch, responses-stream,
+  zdr-endpoints, models-user,
   anthropic, anthropic-tools, anthropic-thinking, anthropic-system, anthropic-stream,
   guardrails`)
 		verbose   = flag.Bool("v", false, "Verbose output")
@@ -371,6 +372,18 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "zdr-endpoints":
+		if tests.RunZDREndpointsTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "models-user":
+		if tests.RunModelsUserTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	case "textfile":
 		if tests.RunTextFileTest(ctx, client, *model, *maxTokens, *verbose) {
 			success = 1
@@ -507,6 +520,8 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, e
 		{"Responses API Tools", func() bool { return tests.RunResponsesToolsTest(ctx, client, model, maxTokens, verbose) }},
 		{"Responses API Web Search", func() bool { return tests.RunResponsesWebSearchTest(ctx, client, model, maxTokens, verbose) }},
 		{"Responses API Streaming", func() bool { return tests.RunResponsesStreamTest(ctx, client, model, maxTokens, verbose) }},
+		{"ZDR Endpoints", func() bool { return tests.RunZDREndpointsTest(ctx, client, verbose) }},
+		{"User Models", func() bool { return tests.RunModelsUserTest(ctx, client, verbose) }},
 		{"Anthropic Messages Basic", func() bool { return tests.RunAnthropicBasicTest(ctx, client, model, maxTokens, verbose) }},
 		{"Anthropic Messages Tools", func() bool { return tests.RunAnthropicWithToolsTest(ctx, client, model, maxTokens, verbose) }},
 		{"Anthropic Messages Thinking", func() bool { return tests.RunAnthropicWithThinkingTest(ctx, client, model, maxTokens, verbose) }},

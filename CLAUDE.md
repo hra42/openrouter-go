@@ -93,6 +93,8 @@ go run cmd/openrouter-test/main.go -test responses-reasoning
 go run cmd/openrouter-test/main.go -test responses-tools
 go run cmd/openrouter-test/main.go -test responses-websearch
 go run cmd/openrouter-test/main.go -test responses-stream
+go run cmd/openrouter-test/main.go -test zdr-endpoints
+go run cmd/openrouter-test/main.go -test models-user
 go run cmd/openrouter-test/main.go -test chunking
 go run cmd/openrouter-test/main.go -test chunkedembedding
 go run cmd/openrouter-test/main.go -test guardrails
