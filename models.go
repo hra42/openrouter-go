@@ -656,6 +656,64 @@ type UpdateKeyResponse struct {
 	Data APIKey `json:"data"`
 }
 
+// CodeChallengeMethod represents the PKCE code challenge method.
+type CodeChallengeMethod string
+
+const (
+	// CodeChallengeMethodS256 uses SHA-256 hashing per RFC 7636.
+	CodeChallengeMethodS256 CodeChallengeMethod = "S256"
+	// CodeChallengeMethodPlain uses the plain verifier as the challenge.
+	CodeChallengeMethodPlain CodeChallengeMethod = "plain"
+)
+
+// UsageLimitType represents the usage limit interval for an API key.
+type UsageLimitType string
+
+const (
+	// UsageLimitDaily limits usage on a daily basis.
+	UsageLimitDaily UsageLimitType = "daily"
+	// UsageLimitWeekly limits usage on a weekly basis.
+	UsageLimitWeekly UsageLimitType = "weekly"
+	// UsageLimitMonthly limits usage on a monthly basis.
+	UsageLimitMonthly UsageLimitType = "monthly"
+)
+
+// ExchangeAuthCodeRequest represents a request to exchange an authorization code for an API key.
+type ExchangeAuthCodeRequest struct {
+	Code                string              `json:"code"`
+	CodeVerifier        *string             `json:"code_verifier,omitempty"`
+	CodeChallengeMethod CodeChallengeMethod `json:"code_challenge_method,omitempty"`
+}
+
+// ExchangeAuthCodeResponse represents the response from exchanging an authorization code.
+type ExchangeAuthCodeResponse struct {
+	Key    string  `json:"key"`
+	UserID *string `json:"user_id"`
+}
+
+// CreateAuthCodeRequest represents a request to create an authorization code for the PKCE flow.
+type CreateAuthCodeRequest struct {
+	CallbackURL         string              `json:"callback_url"`
+	CodeChallenge       *string             `json:"code_challenge,omitempty"`
+	CodeChallengeMethod CodeChallengeMethod `json:"code_challenge_method,omitempty"`
+	Limit               *float64            `json:"limit,omitempty"`
+	ExpiresAt           *string             `json:"expires_at,omitempty"`
+	KeyLabel            *string             `json:"key_label,omitempty"`
+	UsageLimitType      UsageLimitType      `json:"usage_limit_type,omitempty"`
+}
+
+// CreateAuthCodeData contains the data from a created authorization code.
+type CreateAuthCodeData struct {
+	ID        string  `json:"id"`
+	AppID     float64 `json:"app_id"`
+	CreatedAt string  `json:"created_at"`
+}
+
+// CreateAuthCodeResponse represents the response from creating an authorization code.
+type CreateAuthCodeResponse struct {
+	Data CreateAuthCodeData `json:"data"`
+}
+
 // ResetInterval represents the reset interval for a guardrail budget.
 type ResetInterval string
 

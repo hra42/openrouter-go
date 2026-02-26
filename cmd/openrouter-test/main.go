@@ -28,7 +28,7 @@ func main() {
   responses, responses-reasoning, responses-tools, responses-websearch, responses-stream,
   zdr-endpoints, models-user,
   anthropic, anthropic-tools, anthropic-thinking, anthropic-system, anthropic-stream,
-  guardrails`)
+  guardrails, oauth`)
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -444,6 +444,12 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "oauth":
+		if tests.RunOAuthPKCETest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -528,6 +534,7 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, e
 		{"Anthropic Messages System", func() bool { return tests.RunAnthropicWithSystemTest(ctx, client, model, maxTokens, verbose) }},
 		{"Anthropic Messages Streaming", func() bool { return tests.RunAnthropicStreamTest(ctx, client, model, maxTokens, verbose) }},
 		{"Guardrails API", func() bool { return tests.RunGuardrailsTest(ctx, client, verbose) }},
+		{"OAuth PKCE", func() bool { return tests.RunOAuthPKCETest(ctx, client, verbose) }},
 	}
 
 	for _, tc := range testCases {
