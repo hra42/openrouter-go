@@ -549,10 +549,7 @@ func mergeUnitsToSize(units []string, positions []int, config ChunkConfig) []Tex
 
 			// Start new chunk, potentially with overlap
 			if config.Overlap > 0 && len(currentTexts) > 0 {
-				overlapStart := len(currentTexts) - config.Overlap
-				if overlapStart < 0 {
-					overlapStart = 0
-				}
+				overlapStart := max(len(currentTexts)-config.Overlap, 0)
 				currentTexts = currentTexts[overlapStart:]
 				currentTokens = 0
 				for _, t := range currentTexts {
@@ -605,10 +602,7 @@ func chunkByTokens(text string, config ChunkConfig) []TextChunk {
 	pos := 0
 
 	for pos < len(text) {
-		end := pos + charsPerChunk
-		if end > len(text) {
-			end = len(text)
-		}
+		end := min(pos+charsPerChunk, len(text))
 
 		chunk := text[pos:end]
 		chunks = append(chunks, TextChunk{
@@ -635,10 +629,7 @@ func chunkByTokensPreserveWords(text string, config ChunkConfig) []TextChunk {
 	}
 
 	// Estimate tokens per word (~1.3)
-	wordsPerChunk := int(float64(config.ChunkSize) / 1.3)
-	if wordsPerChunk < 1 {
-		wordsPerChunk = 1
-	}
+	wordsPerChunk := max(int(float64(config.ChunkSize)/1.3), 1)
 
 	overlapWords := int(float64(config.Overlap) / 1.3)
 
@@ -647,10 +638,7 @@ func chunkByTokensPreserveWords(text string, config ChunkConfig) []TextChunk {
 	textPos := 0
 
 	for pos < len(words) {
-		end := pos + wordsPerChunk
-		if end > len(words) {
-			end = len(words)
-		}
+		end := min(pos+wordsPerChunk, len(words))
 
 		chunkWords := words[pos:end]
 		chunkText := strings.Join(chunkWords, " ")
@@ -672,10 +660,7 @@ func chunkByTokensPreserveWords(text string, config ChunkConfig) []TextChunk {
 		})
 
 		// Update textPos safely
-		textPos = startPos + len(chunkText)
-		if textPos > len(text) {
-			textPos = len(text)
-		}
+		textPos = min(startPos+len(chunkText), len(text))
 
 		// Calculate next position with overlap
 		nextPos := end - overlapWords
@@ -701,10 +686,7 @@ func chunkByCharacters(text string, config ChunkConfig) []TextChunk {
 	pos := 0
 
 	for pos < len(text) {
-		end := pos + chunkSize
-		if end > len(text) {
-			end = len(text)
-		}
+		end := min(pos+chunkSize, len(text))
 
 		chunks = append(chunks, TextChunk{
 			Text:     text[pos:end],
@@ -731,10 +713,7 @@ func chunkByCharactersPreserveWords(text string, config ChunkConfig) []TextChunk
 	pos := 0
 
 	for pos < len(text) {
-		end := pos + chunkSize
-		if end > len(text) {
-			end = len(text)
-		}
+		end := min(pos+chunkSize, len(text))
 
 		// Find last word boundary before end
 		if end < len(text) {
@@ -743,10 +722,7 @@ func chunkByCharactersPreserveWords(text string, config ChunkConfig) []TextChunk
 			}
 			// If no space found, just use the original end
 			if end == pos {
-				end = pos + chunkSize
-				if end > len(text) {
-					end = len(text)
-				}
+				end = min(pos+chunkSize, len(text))
 			}
 		}
 

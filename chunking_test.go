@@ -23,7 +23,7 @@ func BenchmarkChunkByCharacters(b *testing.B) {
 
 func BenchmarkChunkByParagraphs(b *testing.B) {
 	var buf strings.Builder
-	for i := 0; i < 50; i++ {
+	for range 50 {
 		buf.WriteString("This is paragraph number ")
 		buf.WriteString(strings.Repeat("content ", 20))
 		buf.WriteString("\n\n")
@@ -345,8 +345,8 @@ func TestPreserveWords(t *testing.T) {
 
 	// No chunk should contain a word split in the middle
 	for _, chunk := range chunks {
-		words := strings.Fields(chunk.Text)
-		for _, word := range words {
+		words := strings.FieldsSeq(chunk.Text)
+		for word := range words {
 			if word != "hello" && word != "world" && word != "testing" && word != "chunking" {
 				t.Errorf("unexpected partial word in chunk: %q", word)
 			}
@@ -573,7 +573,7 @@ func TestCreateChunkedEmbedding(t *testing.T) {
 		// Get number of inputs
 		var inputCount int
 		switch input := reqBody.Input.(type) {
-		case []interface{}:
+		case []any:
 			inputCount = len(input)
 		case string:
 			inputCount = 1
@@ -584,7 +584,7 @@ func TestCreateChunkedEmbedding(t *testing.T) {
 		for i := 0; i < inputCount; i++ {
 			data[i] = EmbeddingData{
 				Object:    "embedding",
-				Embedding: []interface{}{0.1, 0.2, 0.3, 0.4, 0.5},
+				Embedding: []any{0.1, 0.2, 0.3, 0.4, 0.5},
 				Index:     i,
 			}
 		}
