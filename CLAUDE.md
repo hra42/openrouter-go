@@ -95,6 +95,7 @@ go run cmd/openrouter-test/main.go -test responses-websearch
 go run cmd/openrouter-test/main.go -test responses-stream
 go run cmd/openrouter-test/main.go -test chunking
 go run cmd/openrouter-test/main.go -test chunkedembedding
+go run cmd/openrouter-test/main.go -test guardrails
 
 # Run with verbose output
 go run cmd/openrouter-test/main.go -test models -v
