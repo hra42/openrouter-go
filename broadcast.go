@@ -69,8 +69,8 @@ func ExtractBroadcastTraces(payload *OTLPExportTraceRequest) []BroadcastTrace {
 					case "session.id":
 						t.SessionID = val
 					default:
-						if strings.HasPrefix(attr.Key, "trace.metadata.") {
-							t.Metadata[strings.TrimPrefix(attr.Key, "trace.metadata.")] = val
+						if after, ok := strings.CutPrefix(attr.Key, "trace.metadata."); ok {
+							t.Metadata[after] = val
 						} else {
 							t.RawAttributes[attr.Key] = val
 						}
