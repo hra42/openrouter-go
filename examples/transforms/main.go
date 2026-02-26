@@ -118,7 +118,7 @@ func demonstrateStreamingTransforms(ctx context.Context, client *openrouter.Clie
 		log.Printf("Error creating stream with transforms: %v", err)
 		return
 	}
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	fmt.Print("Streaming response: ")
 	var fullResponse strings.Builder

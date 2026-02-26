@@ -56,7 +56,7 @@ func basicStreaming(client *openrouter.Client) {
 		log.Printf("Error creating stream: %v", err)
 		return
 	}
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	fmt.Println("Streaming response:")
 	fmt.Println("---")
@@ -99,7 +99,7 @@ func streamingWithCancellation(client *openrouter.Client) {
 		log.Printf("Error creating stream: %v", err)
 		return
 	}
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	fmt.Println("Streaming (will cancel after 2 seconds):")
 	fmt.Println("---")
@@ -139,7 +139,7 @@ func legacyStreaming(client *openrouter.Client) {
 		log.Printf("Error creating stream: %v", err)
 		return
 	}
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	fmt.Printf("Prompt: %s\n", prompt)
 	fmt.Println("Streaming completion:")
@@ -172,7 +172,7 @@ func collectingResponses(client *openrouter.Client) {
 		log.Printf("Error creating stream: %v", err)
 		return
 	}
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	// Collect all responses
 	var responses []openrouter.ChatCompletionResponse
@@ -231,7 +231,7 @@ func streamingErrorHandling(client *openrouter.Client) {
 		}
 		return
 	}
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	fmt.Println("Streaming with token limit:")
 	fmt.Println("---")

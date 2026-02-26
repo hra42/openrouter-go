@@ -35,11 +35,6 @@ func main() {
 	fmt.Println("\n=== Example 4: Using ContentBuilder ===")
 	contentBuilder(client)
 
-	// Example 5: Base64-encoded image from local file
-	// Note: This example requires a local image file to work
-	// Uncomment to test with your own image
-	// fmt.Println("\n=== Example 5: Base64-encoded Image ===")
-	// base64EncodedImage(client)
 }
 
 func singleImageURL(client *openrouter.Client) {
@@ -127,43 +122,6 @@ func contentBuilder(client *openrouter.Client) {
 	messages := []openrouter.Message{
 		content.BuildMessage("user"),
 	}
-
-	resp, err := client.ChatComplete(
-		context.Background(),
-		messages,
-		openrouter.WithModel("google/gemini-2.0-flash-thinking-exp:free"),
-	)
-	if err != nil {
-		log.Printf("Error: %v", err)
-		return
-	}
-
-	fmt.Printf("Response: %s\n", resp.Choices[0].Message.Content)
-}
-
-func base64EncodedImage(client *openrouter.Client) {
-	// Example with a local image file
-	// Replace "path/to/your/image.jpg" with an actual image path
-	imagePath := "path/to/your/image.jpg"
-
-	// Check if file exists
-	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
-		log.Printf("Image file not found: %s", imagePath)
-		log.Println("Please update the imagePath variable with a valid image file path")
-		return
-	}
-
-	// Create a message with a base64-encoded image
-	message, err := openrouter.CreateUserMessageWithBase64Image(
-		"What's in this image?",
-		imagePath,
-	)
-	if err != nil {
-		log.Printf("Error encoding image: %v", err)
-		return
-	}
-
-	messages := []openrouter.Message{message}
 
 	resp, err := client.ChatComplete(
 		context.Background(),

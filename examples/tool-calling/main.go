@@ -252,7 +252,7 @@ func runWeatherExample(ctx context.Context, client *openrouter.Client) {
 				Location string `json:"location"`
 				Unit     string `json:"unit"`
 			}
-			json.Unmarshal([]byte(toolCall.Function.Arguments), &args)
+			_ = json.Unmarshal([]byte(toolCall.Function.Arguments), &args)
 
 			result, _ := getCurrentWeather(args.Location, args.Unit)
 
@@ -351,14 +351,14 @@ func runMultipleToolsExample(ctx context.Context, client *openrouter.Client) {
 				var args struct {
 					SearchTerms []string `json:"search_terms"`
 				}
-				json.Unmarshal([]byte(toolCall.Function.Arguments), &args)
+				_ = json.Unmarshal([]byte(toolCall.Function.Arguments), &args)
 				result, _ = searchGutenbergBooks(args.SearchTerms)
 
 			case "get_current_weather":
 				var args struct {
 					Location string `json:"location"`
 				}
-				json.Unmarshal([]byte(toolCall.Function.Arguments), &args)
+				_ = json.Unmarshal([]byte(toolCall.Function.Arguments), &args)
 				result, _ = getCurrentWeather(args.Location, "celsius")
 			}
 
@@ -438,7 +438,7 @@ func runForcedToolChoiceExample(ctx context.Context, client *openrouter.Client) 
 			var args struct {
 				Location string `json:"location"`
 			}
-			json.Unmarshal([]byte(toolCall.Function.Arguments), &args)
+			_ = json.Unmarshal([]byte(toolCall.Function.Arguments), &args)
 
 			result, _ := getCurrentWeather(args.Location, "celsius")
 
