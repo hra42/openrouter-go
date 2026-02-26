@@ -13,14 +13,14 @@ func makeModelEndpoints() []ModelEndpoint {
 			Pricing:             ModelEndpointPricing{Prompt: "0.001", Completion: "0.002"},
 			SupportedParameters: []string{"tools", "stream", "temperature"},
 			Status:              1.0,
-			Quantization:        strPtr("fp16"),
+			Quantization:        new("fp16"),
 		},
 		{
 			ProviderName:        "provider-b",
 			Pricing:             ModelEndpointPricing{Prompt: "0.005", Completion: "0.010"},
 			SupportedParameters: []string{"stream", "temperature"},
 			Status:              0.8,
-			Quantization:        strPtr("int8"),
+			Quantization:        new("int8"),
 		},
 		{
 			ProviderName:        "provider-a",
@@ -39,14 +39,14 @@ func makeZDREndpoints() []PublicEndpoint {
 			Pricing:             PublicEndpointPricing{Prompt: "0.002", Completion: "0.004"},
 			SupportedParameters: []string{"tools", "stream"},
 			Status:              1.0,
-			Quantization:        strPtr("fp16"),
+			Quantization:        new("fp16"),
 		},
 		{
 			ProviderName:        "provider-y",
 			Pricing:             PublicEndpointPricing{Prompt: "0.001", Completion: "0.002"},
 			SupportedParameters: []string{"stream"},
 			Status:              0.9,
-			Quantization:        strPtr("int4"),
+			Quantization:        new("int4"),
 		},
 	}
 }
