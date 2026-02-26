@@ -106,8 +106,12 @@ func HandleRequest() {
 }
 `
 
-	if err := os.WriteFile(file1, []byte(yaml), 0644); err != nil { panic(err) }
-	if err := os.WriteFile(file2, []byte(goCode), 0644); err != nil { panic(err) }
+	if err := os.WriteFile(file1, []byte(yaml), 0644); err != nil {
+		panic(err)
+	}
+	if err := os.WriteFile(file2, []byte(goCode), 0644); err != nil {
+		panic(err)
+	}
 	defer func() { _ = os.Remove(file1) }()
 	defer func() { _ = os.Remove(file2) }()
 
@@ -173,7 +177,9 @@ This is a sample project.
 - Feature 2
 `
 
-	if err := os.WriteFile(tmpFile, []byte(markdown), 0644); err != nil { panic(err) }
+	if err := os.WriteFile(tmpFile, []byte(markdown), 0644); err != nil {
+		panic(err)
+	}
 	defer func() { _ = os.Remove(tmpFile) }()
 
 	builder := openrouter.NewContentBuilder()
@@ -234,7 +240,9 @@ func RunTextFormatValidationTest(ctx context.Context, client *openrouter.Client,
 
 	for _, ext := range supportedFormats {
 		tmpFile := filepath.Join(tmpDir, "test"+ext)
-		if err := os.WriteFile(tmpFile, []byte("test content"), 0644); err != nil { panic(err) }
+		if err := os.WriteFile(tmpFile, []byte("test content"), 0644); err != nil {
+			panic(err)
+		}
 
 		_, err := openrouter.ReadTextFile(tmpFile)
 		_ = os.Remove(tmpFile)
@@ -247,7 +255,9 @@ func RunTextFormatValidationTest(ctx context.Context, client *openrouter.Client,
 
 	// Test unsupported format
 	tmpFile := filepath.Join(tmpDir, "test.exe")
-	if err := os.WriteFile(tmpFile, []byte("binary"), 0644); err != nil { panic(err) }
+	if err := os.WriteFile(tmpFile, []byte("binary"), 0644); err != nil {
+		panic(err)
+	}
 	_, err := openrouter.ReadTextFile(tmpFile)
 	_ = os.Remove(tmpFile)
 

@@ -148,7 +148,7 @@ func TestProviderRoutingOptions(t *testing.T) {
 			// Create a new test server for each test to capture request
 			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				var req ChatCompletionRequest
-			_ = json.NewDecoder(r.Body).Decode(&req)
+				_ = json.NewDecoder(r.Body).Decode(&req)
 				tt.verify(t, req)
 				w.WriteHeader(200)
 				_ = json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
