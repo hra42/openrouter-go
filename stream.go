@@ -28,7 +28,7 @@ type eventStream struct {
 	reconnect bool
 	client    *Client
 	endpoint  string
-	body      interface{}
+	body      any
 	config    *StreamConfig
 }
 
@@ -55,7 +55,7 @@ func (c *Client) setStreamHeaders(req *http.Request) {
 }
 
 // createStream creates a new SSE stream for the given endpoint and request.
-func (c *Client) createStream(ctx context.Context, endpoint string, body interface{}) (*eventStream, error) {
+func (c *Client) createStream(ctx context.Context, endpoint string, body any) (*eventStream, error) {
 	url := c.baseURL + endpoint
 
 	jsonData, err := json.Marshal(body)
@@ -245,10 +245,7 @@ func (es *eventStream) attemptReconnect(attempt int) bool {
 	}
 
 	// Calculate backoff using stream config
-	backoff := time.Duration(attempt) * es.config.InitialBackoff
-	if backoff > es.config.MaxBackoff {
-		backoff = es.config.MaxBackoff
-	}
+	backoff := min(time.Duration(attempt)*es.config.InitialBackoff, es.config.MaxBackoff)
 
 	// Wait before reconnecting
 	select {
@@ -303,7 +300,7 @@ func (es *eventStream) attemptReconnect(attempt int) bool {
 }
 
 // parseSSEData parses the SSE data field into the given value.
-func parseSSEData(data string, v interface{}) error {
+func parseSSEData(data string, v any) error {
 	if data == "" {
 		return nil
 	}
