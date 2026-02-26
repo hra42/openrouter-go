@@ -1,33 +1,20 @@
 package openrouter
 
+import "slices"
+
 // hasParameter checks if a model supports a specific parameter.
 func hasParameter(params []string, param string) bool {
-	for _, p := range params {
-		if p == param {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(params, param)
 }
 
 // hasInputModality checks if a model supports a specific input modality.
 func hasInputModality(modalities []string, modality string) bool {
-	for _, m := range modalities {
-		if m == modality {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(modalities, modality)
 }
 
 // hasOutputModality checks if a model supports a specific output modality.
 func hasOutputModality(modalities []string, modality string) bool {
-	for _, m := range modalities {
-		if m == modality {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(modalities, modality)
 }
 
 // SupportsTools returns true if the model supports tool calling.

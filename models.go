@@ -11,32 +11,32 @@ type ChatCompletionRequest struct {
 	Messages []Message `json:"messages"`
 
 	// Optional parameters
-	Temperature       *float64               `json:"temperature,omitempty"`
-	TopP              *float64               `json:"top_p,omitempty"`
-	TopK              *int                   `json:"top_k,omitempty"`
-	FrequencyPenalty  *float64               `json:"frequency_penalty,omitempty"`
-	PresencePenalty   *float64               `json:"presence_penalty,omitempty"`
-	RepetitionPenalty *float64               `json:"repetition_penalty,omitempty"`
-	MaxTokens         *int                   `json:"max_tokens,omitempty"`
-	MinP              *float64               `json:"min_p,omitempty"`
-	TopA              *float64               `json:"top_a,omitempty"`
-	Seed              *int                   `json:"seed,omitempty"`
-	Stop              []string               `json:"stop,omitempty"`
-	Stream            bool                   `json:"stream,omitempty"`
-	LogProbs          *bool                  `json:"logprobs,omitempty"`
-	TopLogProbs       *int                   `json:"top_logprobs,omitempty"`
-	ResponseFormat    *ResponseFormat        `json:"response_format,omitempty"`
-	Tools             []Tool                 `json:"tools,omitempty"`
-	ToolChoice        interface{}            `json:"tool_choice,omitempty"`
-	ParallelToolCalls *bool                  `json:"parallel_tool_calls,omitempty"`
-	Provider          *Provider              `json:"provider,omitempty"`
-	Transforms        []string               `json:"transforms,omitempty"`
-	Models            []string               `json:"models,omitempty"`
-	Route             string                 `json:"route,omitempty"`
-	Plugins           []Plugin               `json:"plugins,omitempty"`
-	WebSearchOptions  *WebSearchOptions      `json:"web_search_options,omitempty"`
-	User              string                 `json:"user,omitempty"`
-	Metadata          map[string]interface{} `json:"-"` // Used for headers
+	Temperature       *float64          `json:"temperature,omitempty"`
+	TopP              *float64          `json:"top_p,omitempty"`
+	TopK              *int              `json:"top_k,omitempty"`
+	FrequencyPenalty  *float64          `json:"frequency_penalty,omitempty"`
+	PresencePenalty   *float64          `json:"presence_penalty,omitempty"`
+	RepetitionPenalty *float64          `json:"repetition_penalty,omitempty"`
+	MaxTokens         *int              `json:"max_tokens,omitempty"`
+	MinP              *float64          `json:"min_p,omitempty"`
+	TopA              *float64          `json:"top_a,omitempty"`
+	Seed              *int              `json:"seed,omitempty"`
+	Stop              []string          `json:"stop,omitempty"`
+	Stream            bool              `json:"stream,omitempty"`
+	LogProbs          *bool             `json:"logprobs,omitempty"`
+	TopLogProbs       *int              `json:"top_logprobs,omitempty"`
+	ResponseFormat    *ResponseFormat   `json:"response_format,omitempty"`
+	Tools             []Tool            `json:"tools,omitempty"`
+	ToolChoice        any               `json:"tool_choice,omitempty"`
+	ParallelToolCalls *bool             `json:"parallel_tool_calls,omitempty"`
+	Provider          *Provider         `json:"provider,omitempty"`
+	Transforms        []string          `json:"transforms,omitempty"`
+	Models            []string          `json:"models,omitempty"`
+	Route             string            `json:"route,omitempty"`
+	Plugins           []Plugin          `json:"plugins,omitempty"`
+	WebSearchOptions  *WebSearchOptions `json:"web_search_options,omitempty"`
+	User              string            `json:"user,omitempty"`
+	Metadata          map[string]any    `json:"-"` // Used for headers
 
 	// Transport overrides (unexported, not serialized)
 	requestTimeout *time.Duration `json:"-"`
@@ -50,32 +50,32 @@ type CompletionRequest struct {
 	Prompt string `json:"prompt"`
 
 	// Optional parameters
-	Temperature       *float64               `json:"temperature,omitempty"`
-	TopP              *float64               `json:"top_p,omitempty"`
-	TopK              *int                   `json:"top_k,omitempty"`
-	FrequencyPenalty  *float64               `json:"frequency_penalty,omitempty"`
-	PresencePenalty   *float64               `json:"presence_penalty,omitempty"`
-	RepetitionPenalty *float64               `json:"repetition_penalty,omitempty"`
-	MaxTokens         *int                   `json:"max_tokens,omitempty"`
-	MinP              *float64               `json:"min_p,omitempty"`
-	TopA              *float64               `json:"top_a,omitempty"`
-	Seed              *int                   `json:"seed,omitempty"`
-	Stop              []string               `json:"stop,omitempty"`
-	Stream            bool                   `json:"stream,omitempty"`
-	LogProbs          *int                   `json:"logprobs,omitempty"`
-	Echo              *bool                  `json:"echo,omitempty"`
-	N                 *int                   `json:"n,omitempty"`
-	BestOf            *int                   `json:"best_of,omitempty"`
-	Suffix            *string                `json:"suffix,omitempty"`
-	ResponseFormat    *ResponseFormat        `json:"response_format,omitempty"`
-	Provider          *Provider              `json:"provider,omitempty"`
-	Transforms        []string               `json:"transforms,omitempty"`
-	Models            []string               `json:"models,omitempty"`
-	Route             string                 `json:"route,omitempty"`
-	Plugins           []Plugin               `json:"plugins,omitempty"`
-	WebSearchOptions  *WebSearchOptions      `json:"web_search_options,omitempty"`
-	User              string                 `json:"user,omitempty"`
-	Metadata          map[string]interface{} `json:"-"` // Used for headers
+	Temperature       *float64          `json:"temperature,omitempty"`
+	TopP              *float64          `json:"top_p,omitempty"`
+	TopK              *int              `json:"top_k,omitempty"`
+	FrequencyPenalty  *float64          `json:"frequency_penalty,omitempty"`
+	PresencePenalty   *float64          `json:"presence_penalty,omitempty"`
+	RepetitionPenalty *float64          `json:"repetition_penalty,omitempty"`
+	MaxTokens         *int              `json:"max_tokens,omitempty"`
+	MinP              *float64          `json:"min_p,omitempty"`
+	TopA              *float64          `json:"top_a,omitempty"`
+	Seed              *int              `json:"seed,omitempty"`
+	Stop              []string          `json:"stop,omitempty"`
+	Stream            bool              `json:"stream,omitempty"`
+	LogProbs          *int              `json:"logprobs,omitempty"`
+	Echo              *bool             `json:"echo,omitempty"`
+	N                 *int              `json:"n,omitempty"`
+	BestOf            *int              `json:"best_of,omitempty"`
+	Suffix            *string           `json:"suffix,omitempty"`
+	ResponseFormat    *ResponseFormat   `json:"response_format,omitempty"`
+	Provider          *Provider         `json:"provider,omitempty"`
+	Transforms        []string          `json:"transforms,omitempty"`
+	Models            []string          `json:"models,omitempty"`
+	Route             string            `json:"route,omitempty"`
+	Plugins           []Plugin          `json:"plugins,omitempty"`
+	WebSearchOptions  *WebSearchOptions `json:"web_search_options,omitempty"`
+	User              string            `json:"user,omitempty"`
+	Metadata          map[string]any    `json:"-"` // Used for headers
 
 	// Transport overrides (unexported, not serialized)
 	requestTimeout *time.Duration `json:"-"`
@@ -94,7 +94,7 @@ type Message struct {
 }
 
 // MessageContent can be either a string or an array of content parts.
-type MessageContent interface{}
+type MessageContent any
 
 // ContentPart represents a part of message content (text, image, file, or audio).
 type ContentPart struct {
@@ -137,9 +137,9 @@ type ResponseFormat struct {
 
 // JSONSchema defines the structure for structured output format.
 type JSONSchema struct {
-	Name   string                 `json:"name"`
-	Strict bool                   `json:"strict"`
-	Schema map[string]interface{} `json:"schema"`
+	Name   string         `json:"name"`
+	Strict bool           `json:"strict"`
+	Schema map[string]any `json:"schema"`
 }
 
 // Tool represents a tool/function that can be called.
@@ -150,9 +150,9 @@ type Tool struct {
 
 // Function represents a callable function.
 type Function struct {
-	Name        string                 `json:"name"`
-	Description string                 `json:"description,omitempty"`
-	Parameters  map[string]interface{} `json:"parameters,omitempty"`
+	Name        string         `json:"name"`
+	Description string         `json:"description,omitempty"`
+	Parameters  map[string]any `json:"parameters,omitempty"`
 }
 
 // ToolCall represents a tool call made by the model.
@@ -192,7 +192,7 @@ type Provider struct {
 	MaxPrice *MaxPrice `json:"max_price,omitempty"`
 
 	// Internal provider parameters
-	ProviderParams map[string]interface{} `json:"-"`
+	ProviderParams map[string]any `json:"-"`
 }
 
 // ChatCompletionResponse represents a chat completion response from the OpenRouter API.

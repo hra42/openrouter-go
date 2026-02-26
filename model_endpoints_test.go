@@ -32,8 +32,8 @@ func TestListModelEndpoints(t *testing.T) {
 				Created:     1234567890.0,
 				Description: "GPT-4 model",
 				Architecture: ModelEndpointsArchitecture{
-					Tokenizer:        stringPtr("cl100k_base"),
-					InstructType:     stringPtr("chat"),
+					Tokenizer:        new("cl100k_base"),
+					InstructType:     new("chat"),
 					InputModalities:  []string{"text"},
 					OutputModalities: []string{"text"},
 				},
@@ -205,8 +205,8 @@ func TestListModelEndpointsMultipleEndpoints(t *testing.T) {
 				Created:     1234567890.0,
 				Description: "Claude 3.5 Sonnet model",
 				Architecture: ModelEndpointsArchitecture{
-					Tokenizer:        stringPtr("claude"),
-					InstructType:     stringPtr("chat"),
+					Tokenizer:        new("claude"),
+					InstructType:     new("chat"),
 					InputModalities:  []string{"text", "image"},
 					OutputModalities: []string{"text"},
 				},

@@ -29,7 +29,7 @@ func TestListModels(t *testing.T) {
 				{
 					ID:            "openai/gpt-4-turbo",
 					Name:          "GPT-4 Turbo",
-					CanonicalSlug: stringPtr("openai-gpt-4-turbo"),
+					CanonicalSlug: new("openai-gpt-4-turbo"),
 					Created:       1234567890.0,
 					Description:   "GPT-4 Turbo model",
 					ContextLength: &contextLength,
@@ -37,7 +37,7 @@ func TestListModels(t *testing.T) {
 						InputModalities:  []string{"text"},
 						OutputModalities: []string{"text"},
 						Tokenizer:        "cl100k_base",
-						InstructType:     stringPtr("chat"),
+						InstructType:     new("chat"),
 					},
 					TopProvider: ModelTopProvider{
 						ContextLength:       &contextLength,
@@ -123,7 +123,7 @@ func TestListModelsWithCategory(t *testing.T) {
 				{
 					ID:            "anthropic/claude-3.5-sonnet",
 					Name:          "Claude 3.5 Sonnet",
-					CanonicalSlug: stringPtr("anthropic-claude-3.5-sonnet"),
+					CanonicalSlug: new("anthropic-claude-3.5-sonnet"),
 					Created:       1234567890.0,
 					Description:   "Claude 3.5 Sonnet model",
 					ContextLength: &contextLength,
@@ -131,7 +131,7 @@ func TestListModelsWithCategory(t *testing.T) {
 						InputModalities:  []string{"text"},
 						OutputModalities: []string{"text"},
 						Tokenizer:        "claude",
-						InstructType:     stringPtr("chat"),
+						InstructType:     new("chat"),
 					},
 					TopProvider: ModelTopProvider{
 						ContextLength:       &contextLength,
@@ -289,7 +289,7 @@ func TestListModelsUser(t *testing.T) {
 				{
 					ID:            "openai/gpt-4o",
 					Name:          "GPT-4o",
-					CanonicalSlug: stringPtr("openai-gpt-4o"),
+					CanonicalSlug: new("openai-gpt-4o"),
 					Created:       1234567890.0,
 					Description:   "GPT-4o model",
 					ContextLength: &contextLength,
@@ -297,7 +297,7 @@ func TestListModelsUser(t *testing.T) {
 						InputModalities:  []string{"text", "image"},
 						OutputModalities: []string{"text"},
 						Tokenizer:        "GPT",
-						InstructType:     stringPtr("chatml"),
+						InstructType:     new("chatml"),
 						Modality:         &modality,
 					},
 					TopProvider: ModelTopProvider{
@@ -324,7 +324,7 @@ func TestListModelsUser(t *testing.T) {
 				{
 					ID:            "anthropic/claude-3.5-sonnet",
 					Name:          "Claude 3.5 Sonnet",
-					CanonicalSlug: stringPtr("anthropic-claude-3.5-sonnet"),
+					CanonicalSlug: new("anthropic-claude-3.5-sonnet"),
 					Created:       1234567890.0,
 					Description:   "Claude 3.5 Sonnet",
 					ContextLength: &contextLength,
@@ -459,6 +459,7 @@ func TestListModelsUserUnauthorized(t *testing.T) {
 	}
 }
 
+//go:fix inline
 func stringPtr(s string) *string {
-	return &s
+	return new(s)
 }
