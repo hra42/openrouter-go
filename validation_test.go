@@ -7,7 +7,7 @@ import (
 func TestValidateJSONSchema(t *testing.T) {
 	tests := []struct {
 		name        string
-		schema      map[string]interface{}
+		schema      map[string]any
 		expectError bool
 		errorField  string
 	}{
@@ -19,13 +19,13 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name:        "missing type field",
-			schema:      map[string]interface{}{},
+			schema:      map[string]any{},
 			expectError: true,
 			errorField:  "json_schema.schema.type",
 		},
 		{
 			name: "type is not a string",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": 123,
 			},
 			expectError: true,
@@ -33,7 +33,7 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "invalid type value",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "invalid_type",
 			},
 			expectError: true,
@@ -41,10 +41,10 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "valid simple object schema",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
 				},
@@ -53,13 +53,13 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "valid object with required fields",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
-					"age": map[string]interface{}{
+					"age": map[string]any{
 						"type": "integer",
 					},
 				},
@@ -69,10 +69,10 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "required field not in properties",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
 				},
@@ -83,7 +83,7 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "properties is not an object",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type":       "object",
 				"properties": "invalid",
 			},
@@ -92,10 +92,10 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "required is not an array",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
 				},
@@ -106,24 +106,24 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "required contains non-string",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
 				},
-				"required": []interface{}{123},
+				"required": []any{123},
 			},
 			expectError: true,
 			errorField:  "json_schema.schema.required[0]",
 		},
 		{
 			name: "additionalProperties as boolean",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
 				},
@@ -133,14 +133,14 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "additionalProperties as schema",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
 				},
-				"additionalProperties": map[string]interface{}{
+				"additionalProperties": map[string]any{
 					"type": "string",
 				},
 			},
@@ -148,10 +148,10 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "additionalProperties invalid",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
 				},
@@ -162,9 +162,9 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "valid array schema",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "array",
-				"items": map[string]interface{}{
+				"items": map[string]any{
 					"type": "string",
 				},
 			},
@@ -172,7 +172,7 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "array items is invalid",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type":  "array",
 				"items": "invalid",
 			},
@@ -181,13 +181,13 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "nested object schema",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"user": map[string]interface{}{
+				"properties": map[string]any{
+					"user": map[string]any{
 						"type": "object",
-						"properties": map[string]interface{}{
-							"name": map[string]interface{}{
+						"properties": map[string]any{
+							"name": map[string]any{
 								"type": "string",
 							},
 						},
@@ -199,13 +199,13 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "nested object invalid required",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"user": map[string]interface{}{
+				"properties": map[string]any{
+					"user": map[string]any{
 						"type": "object",
-						"properties": map[string]interface{}{
-							"name": map[string]interface{}{
+						"properties": map[string]any{
+							"name": map[string]any{
 								"type": "string",
 							},
 						},
@@ -218,16 +218,16 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "valid simple types",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "string",
 			},
 			expectError: false,
 		},
 		{
 			name: "property schema is not an object",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
+				"properties": map[string]any{
 					"name": "invalid",
 				},
 			},
@@ -236,13 +236,13 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "array with tuple validation",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "array",
-				"items": []interface{}{
-					map[string]interface{}{
+				"items": []any{
+					map[string]any{
 						"type": "string",
 					},
-					map[string]interface{}{
+					map[string]any{
 						"type": "number",
 					},
 				},
@@ -251,9 +251,9 @@ func TestValidateJSONSchema(t *testing.T) {
 		},
 		{
 			name: "array tuple item not an object",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "array",
-				"items": []interface{}{
+				"items": []any{
 					"invalid",
 				},
 			},
@@ -334,7 +334,7 @@ func TestValidateResponseFormat(t *testing.T) {
 			format: &ResponseFormat{
 				Type: "json_schema",
 				JSONSchema: &JSONSchema{
-					Schema: map[string]interface{}{
+					Schema: map[string]any{
 						"type": "object",
 					},
 				},
@@ -360,10 +360,10 @@ func TestValidateResponseFormat(t *testing.T) {
 				JSONSchema: &JSONSchema{
 					Name:   "test",
 					Strict: true,
-					Schema: map[string]interface{}{
+					Schema: map[string]any{
 						"type": "object",
-						"properties": map[string]interface{}{
-							"name": map[string]interface{}{
+						"properties": map[string]any{
+							"name": map[string]any{
 								"type": "string",
 							},
 						},
@@ -379,10 +379,10 @@ func TestValidateResponseFormat(t *testing.T) {
 				JSONSchema: &JSONSchema{
 					Name:   "test",
 					Strict: true,
-					Schema: map[string]interface{}{
+					Schema: map[string]any{
 						"type": "object",
-						"properties": map[string]interface{}{
-							"name": map[string]interface{}{
+						"properties": map[string]any{
+							"name": map[string]any{
 								"type": "string",
 							},
 						},
@@ -423,15 +423,15 @@ func TestValidateResponseFormat(t *testing.T) {
 func TestValidateObjectSchema(t *testing.T) {
 	tests := []struct {
 		name        string
-		schema      map[string]interface{}
+		schema      map[string]any
 		expectError bool
 	}{
 		{
 			name: "valid object with properties",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
 				},
@@ -440,7 +440,7 @@ func TestValidateObjectSchema(t *testing.T) {
 		},
 		{
 			name: "properties is not a map",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type":       "object",
 				"properties": []string{"name"},
 			},
@@ -448,10 +448,10 @@ func TestValidateObjectSchema(t *testing.T) {
 		},
 		{
 			name: "required field exists",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
 				},
@@ -461,10 +461,10 @@ func TestValidateObjectSchema(t *testing.T) {
 		},
 		{
 			name: "required field missing",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
 				},
@@ -490,14 +490,14 @@ func TestValidateObjectSchema(t *testing.T) {
 func TestValidateArraySchema(t *testing.T) {
 	tests := []struct {
 		name        string
-		schema      map[string]interface{}
+		schema      map[string]any
 		expectError bool
 	}{
 		{
 			name: "valid array with items",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "array",
-				"items": map[string]interface{}{
+				"items": map[string]any{
 					"type": "string",
 				},
 			},
@@ -505,14 +505,14 @@ func TestValidateArraySchema(t *testing.T) {
 		},
 		{
 			name: "array without items",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "array",
 			},
 			expectError: false,
 		},
 		{
 			name: "items is invalid type",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type":  "array",
 				"items": "invalid",
 			},
@@ -520,13 +520,13 @@ func TestValidateArraySchema(t *testing.T) {
 		},
 		{
 			name: "tuple validation",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "array",
-				"items": []interface{}{
-					map[string]interface{}{
+				"items": []any{
+					map[string]any{
 						"type": "string",
 					},
-					map[string]interface{}{
+					map[string]any{
 						"type": "number",
 					},
 				},

@@ -9,7 +9,7 @@ import (
 // 1. Required top-level fields (type)
 // 2. Schema structure (properties, items, etc. are correct types)
 // 3. Consistency checks (required fields exist in properties, etc.)
-func validateJSONSchema(schema map[string]interface{}) error {
+func validateJSONSchema(schema map[string]any) error {
 	if schema == nil {
 		return &ValidationError{
 			Field:   "json_schema.schema",
@@ -75,10 +75,10 @@ func validateJSONSchema(schema map[string]interface{}) error {
 }
 
 // validateObjectSchema validates object-specific schema fields.
-func validateObjectSchema(schema map[string]interface{}) error {
+func validateObjectSchema(schema map[string]any) error {
 	// Check 2: Validate properties structure if present
 	if properties, hasProps := schema["properties"]; hasProps {
-		propsMap, ok := properties.(map[string]interface{})
+		propsMap, ok := properties.(map[string]any)
 		if !ok {
 			return &ValidationError{
 				Field:   "json_schema.schema.properties",
@@ -88,7 +88,7 @@ func validateObjectSchema(schema map[string]interface{}) error {
 
 		// Check 3: Validate that required fields exist in properties
 		if required, hasRequired := schema["required"]; hasRequired {
-			requiredArr, ok := required.([]interface{})
+			requiredArr, ok := required.([]any)
 			if !ok {
 				// Try []string as well
 				requiredStrArr, ok := required.([]string)
@@ -99,7 +99,7 @@ func validateObjectSchema(schema map[string]interface{}) error {
 					}
 				}
 				// Convert to []interface{} for uniform handling
-				requiredArr = make([]interface{}, len(requiredStrArr))
+				requiredArr = make([]any, len(requiredStrArr))
 				for i, v := range requiredStrArr {
 					requiredArr[i] = v
 				}
@@ -130,7 +130,7 @@ func validateObjectSchema(schema map[string]interface{}) error {
 			switch v := additionalProps.(type) {
 			case bool:
 				// Valid
-			case map[string]interface{}:
+			case map[string]any:
 				// Valid - it's a schema
 				if err := validateJSONSchema(v); err != nil {
 					return &ValidationError{
@@ -151,7 +151,7 @@ func validateObjectSchema(schema map[string]interface{}) error {
 }
 
 // validateArraySchema validates array-specific schema fields.
-func validateArraySchema(schema map[string]interface{}) error {
+func validateArraySchema(schema map[string]any) error {
 	// Arrays should have an 'items' field
 	items, hasItems := schema["items"]
 	if !hasItems {
@@ -161,7 +161,7 @@ func validateArraySchema(schema map[string]interface{}) error {
 
 	// items can be a schema object or array of schemas
 	switch v := items.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		// Single schema for all items
 		if err := validateJSONSchema(v); err != nil {
 			return &ValidationError{
@@ -169,10 +169,10 @@ func validateArraySchema(schema map[string]interface{}) error {
 				Message: fmt.Sprintf("invalid schema: %v", err),
 			}
 		}
-	case []interface{}:
+	case []any:
 		// Tuple validation - array of schemas
 		for i, item := range v {
-			itemSchema, ok := item.(map[string]interface{})
+			itemSchema, ok := item.(map[string]any)
 			if !ok {
 				return &ValidationError{
 					Field:   fmt.Sprintf("json_schema.schema.items[%d]", i),
@@ -197,8 +197,8 @@ func validateArraySchema(schema map[string]interface{}) error {
 }
 
 // validateProperties validates all property schemas.
-func validateProperties(properties interface{}) error {
-	propsMap, ok := properties.(map[string]interface{})
+func validateProperties(properties any) error {
+	propsMap, ok := properties.(map[string]any)
 	if !ok {
 		return &ValidationError{
 			Field:   "json_schema.schema.properties",
@@ -208,7 +208,7 @@ func validateProperties(properties interface{}) error {
 
 	// Validate each property schema
 	for propName, propSchema := range propsMap {
-		propSchemaMap, ok := propSchema.(map[string]interface{})
+		propSchemaMap, ok := propSchema.(map[string]any)
 		if !ok {
 			return &ValidationError{
 				Field:   fmt.Sprintf("json_schema.schema.properties.%s", propName),
