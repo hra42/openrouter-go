@@ -519,6 +519,38 @@ func TestEmbeddingProviderOptions(t *testing.T) {
 	}
 }
 
+func BenchmarkCreateEmbeddingRoundTrip(b *testing.B) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		response := EmbeddingResponse{
+			ID:     "emb-bench",
+			Object: "list",
+			Data: []EmbeddingData{
+				{
+					Object:    "embedding",
+					Embedding: []interface{}{0.1, 0.2, 0.3, 0.4, 0.5},
+					Index:     0,
+				},
+			},
+			Model: "test-model",
+			Usage: &EmbeddingUsage{PromptTokens: 5, TotalTokens: 5},
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(
+		WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+	)
+
+	ctx := context.Background()
+	b.ResetTimer()
+	for b.Loop() {
+		_, _ = client.CreateEmbedding(ctx, "Hello, world!", "test-model")
+	}
+}
+
 func TestEmbeddingErrorResponse(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)

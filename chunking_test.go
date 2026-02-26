@@ -10,6 +10,85 @@ import (
 	"testing"
 )
 
+// Benchmarks
+
+func BenchmarkChunkByCharacters(b *testing.B) {
+	text := strings.Repeat("abcdefghij", 100) // 1000 chars
+	config := ChunkConfig{Strategy: ChunkByCharacters, ChunkSize: 100}
+	b.ResetTimer()
+	for b.Loop() {
+		_, _ = ChunkText(text, config)
+	}
+}
+
+func BenchmarkChunkByParagraphs(b *testing.B) {
+	var buf strings.Builder
+	for i := 0; i < 50; i++ {
+		buf.WriteString("This is paragraph number ")
+		buf.WriteString(strings.Repeat("content ", 20))
+		buf.WriteString("\n\n")
+	}
+	text := buf.String()
+	config := ChunkConfig{Strategy: ChunkByParagraphs, ChunkSize: 200, TrimWhitespace: true}
+	b.ResetTimer()
+	for b.Loop() {
+		_, _ = ChunkText(text, config)
+	}
+}
+
+func BenchmarkChunkBySentences(b *testing.B) {
+	text := strings.Repeat("This is a sentence. Another sentence here! A third one? ", 50)
+	config := ChunkConfig{Strategy: ChunkBySentences, ChunkSize: 100, TrimWhitespace: true}
+	b.ResetTimer()
+	for b.Loop() {
+		_, _ = ChunkText(text, config)
+	}
+}
+
+func BenchmarkChunkByTokens(b *testing.B) {
+	text := strings.Repeat("word ", 500) // ~500 words
+	config := ChunkConfig{Strategy: ChunkByTokens, ChunkSize: 100, PreserveWords: true}
+	b.ResetTimer()
+	for b.Loop() {
+		_, _ = ChunkText(text, config)
+	}
+}
+
+func BenchmarkEstimateTokens(b *testing.B) {
+	text := strings.Repeat("hello world testing benchmarks ", 100)
+	b.ResetTimer()
+	for b.Loop() {
+		EstimateTokens(text)
+	}
+}
+
+func BenchmarkCosineSimilarity(b *testing.B) {
+	a := make([]float64, 1536)
+	bb := make([]float64, 1536)
+	for i := range a {
+		a[i] = float64(i) * 0.001
+		bb[i] = float64(i) * 0.002
+	}
+	b.ResetTimer()
+	for b.Loop() {
+		CosineSimilarity(a, bb)
+	}
+}
+
+func BenchmarkAverageEmbeddings(b *testing.B) {
+	embeddings := make([][]float64, 10)
+	for i := range embeddings {
+		embeddings[i] = make([]float64, 1536)
+		for j := range embeddings[i] {
+			embeddings[i][j] = float64(j) * 0.001
+		}
+	}
+	b.ResetTimer()
+	for b.Loop() {
+		AverageEmbeddings(embeddings)
+	}
+}
+
 func TestChunkBySections(t *testing.T) {
 	text := `# Introduction
 This is the introduction section with some content.
