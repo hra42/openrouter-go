@@ -59,6 +59,7 @@ go run examples/text-file-inputs/main.go
 go run examples/mcp-tools/main.go
 go run examples/responses/main.go
 go run examples/embedding-chunking/main.go
+go run examples/broadcast-webhook/main.go
 ```
 
 ### Running E2E Tests
@@ -130,6 +131,8 @@ This is a zero-dependency Go client library for the OpenRouter API that follows 
 **MCP Tool Conversion (`mcp.go`)**: Utilities for converting MCP (Model Context Protocol) tool definitions to OpenAI-compatible format for use with OpenRouter.
 
 **Responses API (`responses.go`, `responses_models.go`, `responses_options.go`)**: **[BETA - UNSTABLE]** OpenAI-compatible Responses API with support for reasoning, tool calling, web search, and streaming. This is a stateless API where each request is independent. **WARNING: This API is in beta and may have breaking changes at any time. Do not use in production workloads.**
+
+**Broadcast Webhook (`broadcast.go`, `broadcast_models.go`)**: Utilities for parsing OTLP JSON trace payloads from OpenRouter's Broadcast webhook feature. Includes OTLP wire types, user-friendly trace extraction, and HTTP handler helpers. No Client dependency — standalone utilities like `mcp.go`.
 
 ### Key Design Patterns
 
