@@ -54,7 +54,7 @@ func NewClient(opts ...ClientOption) *Client {
 }
 
 // doRequestOnce performs a single HTTP request to the OpenRouter API without retry logic.
-func (c *Client) doRequestOnce(ctx context.Context, method, endpoint string, body interface{}, v interface{}) error {
+func (c *Client) doRequestOnce(ctx context.Context, method, endpoint string, body any, v any) error {
 	url := c.baseURL + endpoint
 
 	var reqBody io.Reader
@@ -89,7 +89,7 @@ func (c *Client) doRequestOnce(ctx context.Context, method, endpoint string, bod
 	}
 
 	// Add metadata headers if present
-	if reqStruct, ok := body.(interface{ GetMetadata() map[string]interface{} }); ok {
+	if reqStruct, ok := body.(interface{ GetMetadata() map[string]any }); ok {
 		if metadata := reqStruct.GetMetadata(); metadata != nil {
 			for key, value := range metadata {
 				headerKey := "X-" + key
@@ -141,11 +141,11 @@ func (c *Client) doRequestOnce(ctx context.Context, method, endpoint string, bod
 }
 
 // GetMetadata helper methods for request types
-func (r *ChatCompletionRequest) GetMetadata() map[string]interface{} {
+func (r *ChatCompletionRequest) GetMetadata() map[string]any {
 	return r.Metadata
 }
 
-func (r *CompletionRequest) GetMetadata() map[string]interface{} {
+func (r *CompletionRequest) GetMetadata() map[string]any {
 	return r.Metadata
 }
 
@@ -180,18 +180,18 @@ func setProviderField[T RequestWithProvider](req T, p *Provider) {
 // processModelSuffix processes model suffixes like :nitro and :floor
 // and applies the appropriate provider settings using generics.
 func processModelSuffix[T RequestWithProvider](model string, req T) string {
-	if strings.HasSuffix(model, ":nitro") {
+	if before, ok := strings.CutSuffix(model, ":nitro"); ok {
 		// Remove suffix and apply throughput sorting
-		model = strings.TrimSuffix(model, ":nitro")
+		model = before
 		provider := getProvider(req)
 		if provider == nil {
 			provider = &Provider{}
 		}
 		provider.Sort = "throughput"
 		setProviderField(req, provider)
-	} else if strings.HasSuffix(model, ":floor") {
+	} else if before, ok := strings.CutSuffix(model, ":floor"); ok {
 		// Remove suffix and apply price sorting
-		model = strings.TrimSuffix(model, ":floor")
+		model = before
 		provider := getProvider(req)
 		if provider == nil {
 			provider = &Provider{}
