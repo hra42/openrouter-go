@@ -107,10 +107,12 @@ func HandleRequest() {
 `
 
 	if err := os.WriteFile(file1, []byte(yaml), 0644); err != nil {
-		panic(err)
+		printError("Failed to create test config file", err)
+		return false
 	}
 	if err := os.WriteFile(file2, []byte(goCode), 0644); err != nil {
-		panic(err)
+		printError("Failed to create test handler file", err)
+		return false
 	}
 	defer func() { _ = os.Remove(file1) }()
 	defer func() { _ = os.Remove(file2) }()
@@ -178,7 +180,8 @@ This is a sample project.
 `
 
 	if err := os.WriteFile(tmpFile, []byte(markdown), 0644); err != nil {
-		panic(err)
+		printError("Failed to create temporary markdown file", err)
+		return false
 	}
 	defer func() { _ = os.Remove(tmpFile) }()
 
@@ -241,7 +244,8 @@ func RunTextFormatValidationTest(ctx context.Context, client *openrouter.Client,
 	for _, ext := range supportedFormats {
 		tmpFile := filepath.Join(tmpDir, "test"+ext)
 		if err := os.WriteFile(tmpFile, []byte("test content"), 0644); err != nil {
-			panic(err)
+			printError(fmt.Sprintf("Failed to create test file %s", ext), err)
+			return false
 		}
 
 		_, err := openrouter.ReadTextFile(tmpFile)
@@ -256,7 +260,8 @@ func RunTextFormatValidationTest(ctx context.Context, client *openrouter.Client,
 	// Test unsupported format
 	tmpFile := filepath.Join(tmpDir, "test.exe")
 	if err := os.WriteFile(tmpFile, []byte("binary"), 0644); err != nil {
-		panic(err)
+		printError("Failed to create test binary file", err)
+		return false
 	}
 	_, err := openrouter.ReadTextFile(tmpFile)
 	_ = os.Remove(tmpFile)

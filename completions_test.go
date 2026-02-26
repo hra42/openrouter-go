@@ -429,7 +429,9 @@ func TestCompleteStream(t *testing.T) {
 	eventCount := 0
 	for event := range stream.Events() {
 		eventCount++
-		_ = len(event.Choices) > 0 // Valid event received
+		if len(event.Choices) == 0 {
+			t.Errorf("event %d has no choices", eventCount)
+		}
 	}
 
 	if err := stream.Err(); err != nil {

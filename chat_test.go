@@ -461,7 +461,13 @@ func TestChatCompleteStream(t *testing.T) {
 	eventCount := 0
 	for event := range stream.Events() {
 		eventCount++
-		_ = len(event.Choices) > 0 && event.Choices[0].Delta != nil // Valid event received
+		if len(event.Choices) == 0 {
+			t.Errorf("expected at least one choice in stream event, got 0")
+			continue
+		}
+		if event.Choices[0].Delta == nil {
+			t.Errorf("expected non-nil delta in first choice of stream event")
+		}
 	}
 
 	if err := stream.Err(); err != nil {
