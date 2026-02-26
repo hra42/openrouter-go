@@ -35,7 +35,7 @@ func TestCreateEmbedding(t *testing.T) {
 			Data: []EmbeddingData{
 				{
 					Object:    "embedding",
-					Embedding: []interface{}{0.1, 0.2, 0.3, 0.4, 0.5},
+					Embedding: []any{0.1, 0.2, 0.3, 0.4, 0.5},
 					Index:     0,
 				},
 			},
@@ -90,7 +90,7 @@ func TestCreateEmbeddings(t *testing.T) {
 		}
 
 		// Verify input is an array
-		inputs, ok := reqBody.Input.([]interface{})
+		inputs, ok := reqBody.Input.([]any)
 		if !ok {
 			t.Errorf("expected input to be an array, got %T", reqBody.Input)
 		}
@@ -103,9 +103,9 @@ func TestCreateEmbeddings(t *testing.T) {
 			ID:     "emb-456",
 			Object: "list",
 			Data: []EmbeddingData{
-				{Object: "embedding", Embedding: []interface{}{0.1, 0.2}, Index: 0},
-				{Object: "embedding", Embedding: []interface{}{0.3, 0.4}, Index: 1},
-				{Object: "embedding", Embedding: []interface{}{0.5, 0.6}, Index: 2},
+				{Object: "embedding", Embedding: []any{0.1, 0.2}, Index: 0},
+				{Object: "embedding", Embedding: []any{0.3, 0.4}, Index: 1},
+				{Object: "embedding", Embedding: []any{0.5, 0.6}, Index: 2},
 			},
 			Model: "openai/text-embedding-3-small",
 			Usage: &EmbeddingUsage{
@@ -221,7 +221,7 @@ func TestCreateEmbeddingWithProvider(t *testing.T) {
 		response := EmbeddingResponse{
 			Object: "list",
 			Data: []EmbeddingData{
-				{Object: "embedding", Embedding: []interface{}{0.1}, Index: 0},
+				{Object: "embedding", Embedding: []any{0.1}, Index: 0},
 			},
 			Model: "openai/text-embedding-3-small",
 		}
@@ -388,7 +388,7 @@ func TestGetEmbeddingVector(t *testing.T) {
 
 	// Test with []interface{}
 	data2 := &EmbeddingData{
-		Embedding: []interface{}{0.4, 0.5, 0.6},
+		Embedding: []any{0.4, 0.5, 0.6},
 	}
 	vec2 := data2.GetEmbeddingVector()
 	if len(vec2) != 3 || vec2[0] != 0.4 {
@@ -415,7 +415,7 @@ func TestGetEmbeddingVector(t *testing.T) {
 
 	// Test with mixed types in []interface{}
 	data5 := &EmbeddingData{
-		Embedding: []interface{}{0.1, "string", 0.3},
+		Embedding: []any{0.1, "string", 0.3},
 	}
 	vec5 := data5.GetEmbeddingVector()
 	if vec5 != nil {
@@ -424,7 +424,7 @@ func TestGetEmbeddingVector(t *testing.T) {
 
 	// Test with integers in []interface{}
 	data6 := &EmbeddingData{
-		Embedding: []interface{}{1, 2, 3},
+		Embedding: []any{1, 2, 3},
 	}
 	vec6 := data6.GetEmbeddingVector()
 	if vec6 != nil {
@@ -527,7 +527,7 @@ func BenchmarkCreateEmbeddingRoundTrip(b *testing.B) {
 			Data: []EmbeddingData{
 				{
 					Object:    "embedding",
-					Embedding: []interface{}{0.1, 0.2, 0.3, 0.4, 0.5},
+					Embedding: []any{0.1, 0.2, 0.3, 0.4, 0.5},
 					Index:     0,
 				},
 			},

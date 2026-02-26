@@ -4,7 +4,7 @@ package openrouter
 type EmbeddingRequest struct {
 	// Input is the text or texts to embed. Can be a string, array of strings,
 	// array of integers, array of integer arrays, or array of multimodal content parts.
-	Input interface{} `json:"input"`
+	Input any `json:"input"`
 	// Model specifies the embedding model to use (required).
 	Model string `json:"model"`
 	// EncodingFormat specifies the format for the returned embeddings ("float" or "base64").
@@ -38,7 +38,7 @@ type EmbeddingData struct {
 	// Object is the object type, always "embedding".
 	Object string `json:"object"`
 	// Embedding is the embedding vector. Can be []float64 or base64 string depending on encoding_format.
-	Embedding interface{} `json:"embedding"`
+	Embedding any `json:"embedding"`
 	// Index is the index of this embedding in the input list.
 	Index int `json:"index"`
 }

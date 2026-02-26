@@ -9,7 +9,7 @@ type EmbeddingOption func(*EmbeddingRequest)
 
 // CreateEmbedding sends an embedding request to the OpenRouter API.
 // The input can be a string or []string for text embeddings.
-func (c *Client) CreateEmbedding(ctx context.Context, input interface{}, model string, opts ...EmbeddingOption) (*EmbeddingResponse, error) {
+func (c *Client) CreateEmbedding(ctx context.Context, input any, model string, opts ...EmbeddingOption) (*EmbeddingResponse, error) {
 	// Validate inputs
 	if c.apiKey == "" {
 		return nil, ErrNoAPIKey
@@ -192,7 +192,7 @@ func (e *EmbeddingData) GetEmbeddingVector() []float64 {
 	}
 
 	// Handle the case where JSON unmarshals as []interface{}
-	if arr, ok := e.Embedding.([]interface{}); ok {
+	if arr, ok := e.Embedding.([]any); ok {
 		result := make([]float64, len(arr))
 		for i, v := range arr {
 			if f, ok := v.(float64); ok {
