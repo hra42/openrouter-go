@@ -191,10 +191,6 @@ type Provider struct {
 	// MaxPrice specifies maximum pricing constraints for the request
 	MaxPrice *MaxPrice `json:"max_price,omitempty"`
 
-	// Deprecated: Use Ignore instead
-	IgnoreProviders []string `json:"-"`
-	// Deprecated: Use Quantizations instead
-	QuantizationFallback map[string]string `json:"-"`
 	// Internal provider parameters
 	ProviderParams map[string]interface{} `json:"-"`
 }
