@@ -26,7 +26,8 @@ func main() {
   models, endpoints, providers, credits, activity, key, listkeys, createkey, updatekey, deletekey,
   embedding, batchembedding, embeddingwithoptions, embeddingmodels, chunking, chunkedembedding,
   responses, responses-reasoning, responses-tools, responses-websearch, responses-stream,
-  anthropic, anthropic-tools, anthropic-thinking, anthropic-system, anthropic-stream`)
+  anthropic, anthropic-tools, anthropic-thinking, anthropic-system, anthropic-stream,
+  guardrails`)
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -424,6 +425,12 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "guardrails":
+		if tests.RunGuardrailsTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -505,6 +512,7 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, e
 		{"Anthropic Messages Thinking", func() bool { return tests.RunAnthropicWithThinkingTest(ctx, client, model, maxTokens, verbose) }},
 		{"Anthropic Messages System", func() bool { return tests.RunAnthropicWithSystemTest(ctx, client, model, maxTokens, verbose) }},
 		{"Anthropic Messages Streaming", func() bool { return tests.RunAnthropicStreamTest(ctx, client, model, maxTokens, verbose) }},
+		{"Guardrails API", func() bool { return tests.RunGuardrailsTest(ctx, client, verbose) }},
 	}
 
 	for _, tc := range testCases {
