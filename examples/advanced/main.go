@@ -122,14 +122,14 @@ func functionCalling(apiKey string) {
 			Function: openrouter.Function{
 				Name:        "get_weather",
 				Description: "Get the current weather in a given location",
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"type": "object",
-					"properties": map[string]interface{}{
-						"location": map[string]interface{}{
+					"properties": map[string]any{
+						"location": map[string]any{
 							"type":        "string",
 							"description": "The city and state, e.g. San Francisco, CA",
 						},
-						"unit": map[string]interface{}{
+						"unit": map[string]any{
 							"type": "string",
 							"enum": []string{"celsius", "fahrenheit"},
 						},
@@ -178,18 +178,18 @@ func jsonResponseFormat(apiKey string) {
 		JSONSchema: &openrouter.JSONSchema{
 			Name:   "person",
 			Strict: true,
-			Schema: map[string]interface{}{
+			Schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
-					"age": map[string]interface{}{
+					"age": map[string]any{
 						"type": "number",
 					},
-					"skills": map[string]interface{}{
+					"skills": map[string]any{
 						"type": "array",
-						"items": map[string]interface{}{
+						"items": map[string]any{
 							"type": "string",
 						},
 					},
@@ -216,7 +216,7 @@ func jsonResponseFormat(apiKey string) {
 	}
 
 	// Parse the JSON response
-	var profile map[string]interface{}
+	var profile map[string]any
 	if err := json.Unmarshal([]byte(resp.Choices[0].Message.Content.(string)), &profile); err != nil {
 		log.Printf("Error parsing JSON: %v", err)
 		return
@@ -279,7 +279,7 @@ func providerPreferences(apiKey string) {
 		messages,
 		openrouter.WithModel("openai/gpt-3.5-turbo"),
 		openrouter.WithProvider(provider),
-		openrouter.WithMetadata(map[string]interface{}{
+		openrouter.WithMetadata(map[string]any{
 			"request_id": "example-123",
 			"user_id":    "user-456",
 		}),
@@ -304,7 +304,7 @@ func rateLimiting(apiKey string) {
 	defer limiter.Close()
 
 	// Make multiple requests with rate limiting
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		// Wait for rate limiter
 		if err := limiter.Wait(context.Background()); err != nil {
 			log.Printf("Rate limiter error: %v", err)

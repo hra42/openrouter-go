@@ -118,7 +118,7 @@ func customHeadersExample(apiKey string) {
 		openrouter.WithModel("openai/gpt-3.5-turbo"),
 		openrouter.WithMaxTokens(50),
 		// You can also use metadata for request-specific tracking
-		openrouter.WithMetadata(map[string]interface{}{
+		openrouter.WithMetadata(map[string]any{
 			"department": "engineering",
 			"project":    "ai-integration",
 		}),

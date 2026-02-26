@@ -17,7 +17,7 @@ import (
 func searchGutenbergBooks(searchTerms []string) (string, error) {
 	// Simulated search results for demonstration
 	// In a real implementation, this would call the actual Gutenberg API
-	results := []map[string]interface{}{
+	results := []map[string]any{
 		{
 			"id":    4300,
 			"title": "Ulysses",
@@ -51,7 +51,7 @@ func searchGutenbergBooks(searchTerms []string) (string, error) {
 // getCurrentWeather simulates getting current weather for a location
 func getCurrentWeather(location string, unit string) (string, error) {
 	// Simulated weather data for demonstration
-	weatherData := map[string]interface{}{
+	weatherData := map[string]any{
 		"location":       location,
 		"temperature":    72,
 		"unit":           unit,
@@ -110,12 +110,12 @@ func runBookSearchExample(ctx context.Context, client *openrouter.Client) {
 			Function: openrouter.Function{
 				Name:        "search_gutenberg_books",
 				Description: "Search for books in the Project Gutenberg library",
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"type": "object",
-					"properties": map[string]interface{}{
-						"search_terms": map[string]interface{}{
+					"properties": map[string]any{
+						"search_terms": map[string]any{
 							"type": "array",
-							"items": map[string]interface{}{
+							"items": map[string]any{
 								"type": "string",
 							},
 							"description": "List of search terms to find books",
@@ -206,14 +206,14 @@ func runWeatherExample(ctx context.Context, client *openrouter.Client) {
 			Function: openrouter.Function{
 				Name:        "get_current_weather",
 				Description: "Get the current weather for a specific location",
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"type": "object",
-					"properties": map[string]interface{}{
-						"location": map[string]interface{}{
+					"properties": map[string]any{
+						"location": map[string]any{
 							"type":        "string",
 							"description": "City name, zip code, or coordinates",
 						},
-						"unit": map[string]interface{}{
+						"unit": map[string]any{
 							"type":        "string",
 							"enum":        []string{"celsius", "fahrenheit"},
 							"description": "Temperature unit preference",
@@ -284,12 +284,12 @@ func runMultipleToolsExample(ctx context.Context, client *openrouter.Client) {
 			Function: openrouter.Function{
 				Name:        "search_gutenberg_books",
 				Description: "Search for books in the Project Gutenberg library",
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"type": "object",
-					"properties": map[string]interface{}{
-						"search_terms": map[string]interface{}{
+					"properties": map[string]any{
+						"search_terms": map[string]any{
 							"type": "array",
-							"items": map[string]interface{}{
+							"items": map[string]any{
 								"type": "string",
 							},
 							"description": "List of search terms",
@@ -304,10 +304,10 @@ func runMultipleToolsExample(ctx context.Context, client *openrouter.Client) {
 			Function: openrouter.Function{
 				Name:        "get_current_weather",
 				Description: "Get the current weather for a location",
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"type": "object",
-					"properties": map[string]interface{}{
-						"location": map[string]interface{}{
+					"properties": map[string]any{
+						"location": map[string]any{
 							"type":        "string",
 							"description": "City name",
 						},
@@ -389,10 +389,10 @@ func runForcedToolChoiceExample(ctx context.Context, client *openrouter.Client) 
 			Function: openrouter.Function{
 				Name:        "get_current_weather",
 				Description: "Get weather information",
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"type": "object",
-					"properties": map[string]interface{}{
-						"location": map[string]interface{}{
+					"properties": map[string]any{
+						"location": map[string]any{
 							"type": "string",
 						},
 					},
@@ -410,9 +410,9 @@ func runForcedToolChoiceExample(ctx context.Context, client *openrouter.Client) 
 	}
 
 	// Force the model to use the weather tool
-	toolChoice := map[string]interface{}{
+	toolChoice := map[string]any{
 		"type": "function",
-		"function": map[string]interface{}{
+		"function": map[string]any{
 			"name": "get_current_weather",
 		},
 	}
