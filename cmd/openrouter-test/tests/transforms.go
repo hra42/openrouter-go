@@ -125,7 +125,7 @@ func RunTransformsTest(ctx context.Context, client *openrouter.Client, model str
 		printError("Failed to create stream with transforms", err)
 		return false
 	}
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	var fullResponse strings.Builder
 	eventCount := 0

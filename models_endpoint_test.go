@@ -66,7 +66,7 @@ func TestListModels(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -160,7 +160,7 @@ func TestListModelsWithCategory(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -205,7 +205,7 @@ func TestListModelsWithSupportedParameters(t *testing.T) {
 		// Send empty response
 		response := ModelsResponse{Data: []Model{}}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -241,7 +241,7 @@ func TestListModelsWithMultipleOptions(t *testing.T) {
 		// Send empty response
 		response := ModelsResponse{Data: []Model{}}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 

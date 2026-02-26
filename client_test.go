@@ -140,7 +140,7 @@ func TestDoRequest(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -229,7 +229,7 @@ func TestDoRequestErrorHandling(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.statusCode)
-				w.Write([]byte(tt.responseBody))
+				_, _ = w.Write([]byte(tt.responseBody))
 			}))
 			defer server.Close()
 
@@ -278,7 +278,7 @@ func TestDoRequestRetry(t *testing.T) {
 		// Fail first 2 attempts with 500, succeed on third
 		if attempts < 3 {
 			w.WriteHeader(500)
-			w.Write([]byte("Server Error"))
+			_, _ = w.Write([]byte("Server Error"))
 			return
 		}
 
@@ -288,7 +288,7 @@ func TestDoRequestRetry(t *testing.T) {
 			Model: "test-model",
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 

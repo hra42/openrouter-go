@@ -11,7 +11,7 @@ import (
 func TestProviderRoutingOptions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req ChatCompletionRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		// Check that provider options are set correctly
 		if req.Provider == nil {
@@ -19,7 +19,7 @@ func TestProviderRoutingOptions(t *testing.T) {
 		}
 
 		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+		_ = json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
 	}))
 	defer server.Close()
 
@@ -148,10 +148,10 @@ func TestProviderRoutingOptions(t *testing.T) {
 			// Create a new test server for each test to capture request
 			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				var req ChatCompletionRequest
-				json.NewDecoder(r.Body).Decode(&req)
+				_ = json.NewDecoder(r.Body).Decode(&req)
 				tt.verify(t, req)
 				w.WriteHeader(200)
-				json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+				_ = json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
 			}))
 			defer testServer.Close()
 
@@ -170,10 +170,10 @@ func TestProviderRoutingOptions(t *testing.T) {
 func TestCompletionProviderOptions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req CompletionRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
+		_ = json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
 	}))
 	defer server.Close()
 
@@ -300,10 +300,10 @@ func TestCompletionProviderOptions(t *testing.T) {
 			// Create a new test server for each test to capture request
 			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				var req CompletionRequest
-				json.NewDecoder(r.Body).Decode(&req)
+				_ = json.NewDecoder(r.Body).Decode(&req)
 				tt.verify(t, req)
 				w.WriteHeader(200)
-				json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
+				_ = json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
 			}))
 			defer testServer.Close()
 
@@ -333,7 +333,7 @@ func TestAppAttributionOptions(t *testing.T) {
 		}
 
 		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+		_ = json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
 	}))
 	defer server.Close()
 
@@ -366,7 +366,7 @@ func TestAppAttributionOptionsCompletion(t *testing.T) {
 		}
 
 		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
+		_ = json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
 	}))
 	defer server.Close()
 
@@ -388,7 +388,7 @@ func TestMultipleProviderOptions(t *testing.T) {
 	// Test that multiple provider options work together correctly
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req ChatCompletionRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		// Verify multiple options are applied
 		if req.Provider == nil {
@@ -422,7 +422,7 @@ func TestMultipleProviderOptions(t *testing.T) {
 		}
 
 		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+		_ = json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
 	}))
 	defer server.Close()
 
@@ -445,7 +445,7 @@ func TestMultipleProviderOptions(t *testing.T) {
 func TestUntestedOptions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req ChatCompletionRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		// Verify WithTools
 		if req.Tools == nil || len(req.Tools) != 1 {
@@ -488,7 +488,7 @@ func TestUntestedOptions(t *testing.T) {
 		}
 
 		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+		_ = json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
 	}))
 	defer server.Close()
 
@@ -538,7 +538,7 @@ func TestUntestedOptions(t *testing.T) {
 func TestCompletionUntestedOptions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req CompletionRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		// Verify WithCompletionProvider
 		if req.Provider == nil {
@@ -576,7 +576,7 @@ func TestCompletionUntestedOptions(t *testing.T) {
 		}
 
 		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
+		_ = json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
 	}))
 	defer server.Close()
 
@@ -609,7 +609,7 @@ func TestCompletionUntestedOptions(t *testing.T) {
 func TestJSONModeOptions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req ChatCompletionRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		// Verify WithJSONMode sets type to json_object
 		if req.ResponseFormat == nil || req.ResponseFormat.Type != "json_object" {
@@ -617,7 +617,7 @@ func TestJSONModeOptions(t *testing.T) {
 		}
 
 		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+		_ = json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
 	}))
 	defer server.Close()
 
@@ -637,7 +637,7 @@ func TestJSONModeOptions(t *testing.T) {
 func TestCompletionJSONModeOptions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req CompletionRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		// Verify WithCompletionJSONMode sets type to json_object
 		if req.ResponseFormat == nil || req.ResponseFormat.Type != "json_object" {
@@ -645,7 +645,7 @@ func TestCompletionJSONModeOptions(t *testing.T) {
 		}
 
 		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
+		_ = json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
 	}))
 	defer server.Close()
 
@@ -664,7 +664,7 @@ func TestCompletionJSONModeOptions(t *testing.T) {
 func TestUserTrackingOption(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req ChatCompletionRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		// Verify WithUser
 		if req.User != "user_12345" {
@@ -672,7 +672,7 @@ func TestUserTrackingOption(t *testing.T) {
 		}
 
 		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+		_ = json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
 	}))
 	defer server.Close()
 
@@ -692,7 +692,7 @@ func TestUserTrackingOption(t *testing.T) {
 func TestCompletionUserTrackingOption(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req CompletionRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		// Verify WithCompletionUser
 		if req.User != "customer_abc123" {
@@ -700,7 +700,7 @@ func TestCompletionUserTrackingOption(t *testing.T) {
 		}
 
 		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
+		_ = json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
 	}))
 	defer server.Close()
 
@@ -719,7 +719,7 @@ func TestCompletionUserTrackingOption(t *testing.T) {
 func TestTopKAndRepetitionPenalty(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req ChatCompletionRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		// Verify WithTopK
 		if req.TopK == nil || *req.TopK != 40 {
@@ -732,7 +732,7 @@ func TestTopKAndRepetitionPenalty(t *testing.T) {
 		}
 
 		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+		_ = json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
 	}))
 	defer server.Close()
 

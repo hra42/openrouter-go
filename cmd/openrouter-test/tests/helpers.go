@@ -2,7 +2,6 @@ package tests
 
 import (
 	"fmt"
-	"strings"
 )
 
 // printSuccess prints a success message with a checkmark
@@ -33,14 +32,4 @@ func truncateString(s string, maxLen int) string {
 		return s
 	}
 	return s[:maxLen-3] + "..."
-}
-
-// sanitizeForDisplay sanitizes a string for display by removing control characters
-func sanitizeForDisplay(s string) string {
-	return strings.Map(func(r rune) rune {
-		if r == '\n' || r == '\t' || (r >= 32 && r < 127) || r >= 160 {
-			return r
-		}
-		return -1
-	}, s)
 }

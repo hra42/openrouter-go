@@ -147,7 +147,7 @@ func RunStructuredOutputTest(ctx context.Context, client *openrouter.Client, mod
 		// Fallback to non-streaming if streaming with structured output isn't supported
 		fmt.Printf("   ⚠️  Streaming with structured output error: %v\n", err)
 	} else {
-		defer stream.Close()
+		defer func() { _ = stream.Close() }()
 
 		var fullContent strings.Builder
 		eventCount := 0

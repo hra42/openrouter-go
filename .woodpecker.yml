@@ -5,6 +5,11 @@ when:
     - manual
 
 steps:
+  lint:
+    image: golangci/golangci-lint:v2.10.1
+    commands:
+      - golangci-lint run ./...
+
   unit-tests:
     image: golang:1.25.1-alpine
     environment:

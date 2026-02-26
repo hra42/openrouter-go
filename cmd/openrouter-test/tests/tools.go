@@ -239,7 +239,7 @@ func RunToolCallingTest(ctx context.Context, client *openrouter.Client, model st
 		printError("Failed to create stream", err)
 		return false
 	}
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	hasToolCalls := false
 	eventCount := 0

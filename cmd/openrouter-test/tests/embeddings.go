@@ -114,7 +114,7 @@ func RunBatchEmbeddingTest(ctx context.Context, client *openrouter.Client, model
 			return false
 		}
 		vec := embedding.GetEmbeddingVector()
-		if vec == nil || len(vec) == 0 {
+		if len(vec) == 0 {
 			printError(fmt.Sprintf("Empty embedding vector at index %d", i), nil)
 			return false
 		}

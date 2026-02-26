@@ -188,7 +188,7 @@ func RunWebSearchTest(ctx context.Context, client *openrouter.Client, model stri
 	if err != nil {
 		fmt.Printf("   ⚠️  Streaming with web search failed: %v\n", err)
 	} else {
-		defer stream.Close()
+		defer func() { _ = stream.Close() }()
 
 		var fullResponse strings.Builder
 		eventCount := 0

@@ -78,7 +78,7 @@ func (c *Client) createStream(ctx context.Context, endpoint string, body interfa
 
 	// Check status code
 	if resp.StatusCode != http.StatusOK {
-		defer resp.Body.Close()
+		defer resp.Body.Close() //nolint:errcheck
 		body, _ := io.ReadAll(resp.Body)
 
 		var errorResp ErrorResponse
@@ -121,7 +121,7 @@ func (c *Client) createStream(ctx context.Context, endpoint string, body interfa
 // readEvents reads SSE events from the stream.
 func (es *eventStream) readEvents() {
 	defer close(es.events)
-	defer es.response.Body.Close()
+	defer es.response.Body.Close() //nolint:errcheck
 
 	retryCount := 0
 	maxRetries := 3
@@ -223,7 +223,7 @@ func (es *eventStream) Close() error {
 func (es *eventStream) attemptReconnect(attempt int) bool {
 	// Close current connection
 	if es.response != nil && es.response.Body != nil {
-		es.response.Body.Close()
+		_ = es.response.Body.Close()
 	}
 
 	// Calculate backoff
@@ -262,7 +262,7 @@ func (es *eventStream) attemptReconnect(attempt int) bool {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		return false
 	}
 

@@ -56,7 +56,7 @@ func TestCreateAnthropicMessage(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -139,7 +139,7 @@ func TestCreateAnthropicMessageWithSystemPrompt(t *testing.T) {
 					Usage:      AnthropicUsage{InputTokens: 5, OutputTokens: 1},
 				}
 				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(response)
+				_ = json.NewEncoder(w).Encode(response)
 			}))
 			defer server.Close()
 
@@ -202,7 +202,7 @@ func TestCreateAnthropicMessageWithTools(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -285,7 +285,7 @@ func TestCreateAnthropicMessageWithThinking(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -538,7 +538,7 @@ func TestAnthropicOptions(t *testing.T) {
 			Usage:      AnthropicUsage{InputTokens: 5, OutputTokens: 1},
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -579,7 +579,7 @@ func TestAnthropicHeaderMetadata(t *testing.T) {
 			Usage:      AnthropicUsage{InputTokens: 5, OutputTokens: 1},
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 

@@ -64,7 +64,7 @@ func TestCreateResponse_BasicText(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -140,7 +140,7 @@ func TestCreateResponse_StructuredInput(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -215,7 +215,7 @@ func TestCreateResponse_WithReasoning(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -278,7 +278,7 @@ func TestCreateResponse_WithTools(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -376,7 +376,7 @@ func TestCreateResponse_WithWebSearch(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -536,7 +536,7 @@ func TestCreateResponse_InvalidInputRole(t *testing.T) {
 func TestCreateResponse_Options(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req ResponsesRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		// Verify all options were applied
 		if req.Temperature == nil || *req.Temperature != 0.8 {
@@ -555,7 +555,7 @@ func TestCreateResponse_Options(t *testing.T) {
 		}
 
 		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(ResponsesResponse{ID: "test", Status: "completed"})
+		_ = json.NewEncoder(w).Encode(ResponsesResponse{ID: "test", Status: "completed"})
 	}))
 	defer server.Close()
 
@@ -614,7 +614,7 @@ func TestCreateResponseStream(t *testing.T) {
 		}
 
 		for _, event := range events {
-			w.Write([]byte(event + "\n\n"))
+			_, _ = w.Write([]byte(event + "\n\n"))
 			flusher.Flush()
 		}
 	}))
@@ -631,7 +631,7 @@ func TestCreateResponseStream(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	defer stream.Close()
+	defer stream.Close() //nolint:errcheck
 
 	eventCount := 0
 	var lastEvent ResponsesResponse
