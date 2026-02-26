@@ -424,14 +424,12 @@ func TestCompleteStream(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	defer stream.Close()
+	defer stream.Close() //nolint:errcheck
 
 	eventCount := 0
 	for event := range stream.Events() {
 		eventCount++
-		if len(event.Choices) > 0 {
-			// Valid event received
-		}
+		_ = len(event.Choices) > 0 // Valid event received
 	}
 
 	if err := stream.Err(); err != nil {

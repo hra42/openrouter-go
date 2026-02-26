@@ -103,7 +103,7 @@ func (c *Client) doRequestOnce(ctx context.Context, method, endpoint string, bod
 	if err != nil {
 		return fmt.Errorf("request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	// Read response body
 	respBody, err := io.ReadAll(resp.Body)

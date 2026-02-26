@@ -631,7 +631,7 @@ func TestCreateResponseStream(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	defer stream.Close()
+	defer stream.Close() //nolint:errcheck
 
 	eventCount := 0
 	var lastEvent ResponsesResponse
