@@ -203,7 +203,7 @@ type transportConfig struct {
 }
 
 // extractTransportConfig extracts per-request transport configuration from a request body.
-func extractTransportConfig(body interface{}) transportConfig {
+func extractTransportConfig(body any) transportConfig {
 	var tc transportConfig
 	switch r := body.(type) {
 	case *ChatCompletionRequest:
@@ -217,7 +217,7 @@ func extractTransportConfig(body interface{}) transportConfig {
 }
 
 // doRequest performs an HTTP request to the OpenRouter API with retry logic.
-func (c *Client) doRequest(ctx context.Context, method, endpoint string, body interface{}, v interface{}) error {
+func (c *Client) doRequest(ctx context.Context, method, endpoint string, body any, v any) error {
 	tc := extractTransportConfig(body)
 
 	retryableError := func(err error) bool {
