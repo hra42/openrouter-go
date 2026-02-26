@@ -2,6 +2,7 @@ package sse
 
 import (
 	"bytes"
+	"io"
 	"strings"
 	"testing"
 	"time"
@@ -253,6 +254,137 @@ func TestWriter(t *testing.T) {
 	expected = "retry: 3000\n\n"
 	if buf.String() != expected {
 		t.Errorf("expected:\n%q\ngot:\n%q", expected, buf.String())
+	}
+}
+
+func TestParserPrematureEOF(t *testing.T) {
+	// Stream ends with data line but no trailing newline at all
+	// The parser returns EOF because ReadBytes('\n') returns both data and EOF,
+	// but the line hasn't been processed yet (no trailing newline means no complete line)
+	input := "data: partial event"
+
+	parser := NewParser(strings.NewReader(input))
+	_, err := parser.Next()
+	if err != io.EOF {
+		t.Errorf("expected io.EOF for unterminated stream, got %v", err)
+	}
+
+	// Stream that has data with newline but no blank-line terminator
+	// This allows ReadBytes to return the line successfully, then EOF on next read
+	input2 := "data: partial event\n"
+
+	parser2 := NewParser(strings.NewReader(input2))
+	event, err := parser2.Next()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if string(event.Data) != "partial event" {
+		t.Errorf("expected 'partial event', got %q", event.Data)
+	}
+}
+
+func TestParserEmptyStream(t *testing.T) {
+	parser := NewParser(strings.NewReader(""))
+	_, err := parser.Next()
+	if err != io.EOF {
+		t.Errorf("expected io.EOF for empty stream, got %v", err)
+	}
+}
+
+func TestScannerTruncatedStream(t *testing.T) {
+	// 2 complete events + 1 truncated with newline but no blank-line terminator
+	input := "data: first\n\ndata: second\n\ndata: truncated\n"
+
+	scanner := NewScanner(strings.NewReader(input))
+
+	// First complete event
+	if !scanner.Scan() {
+		t.Fatal("expected first event")
+	}
+	if string(scanner.Event().Data) != "first" {
+		t.Errorf("expected 'first', got %q", scanner.Event().Data)
+	}
+
+	// Second complete event
+	if !scanner.Scan() {
+		t.Fatal("expected second event")
+	}
+	if string(scanner.Event().Data) != "second" {
+		t.Errorf("expected 'second', got %q", scanner.Event().Data)
+	}
+
+	// Third event (truncated but returned on EOF since it has data)
+	if !scanner.Scan() {
+		t.Fatal("expected truncated event")
+	}
+	if string(scanner.Event().Data) != "truncated" {
+		t.Errorf("expected 'truncated', got %q", scanner.Event().Data)
+	}
+
+	// No more events
+	if scanner.Scan() {
+		t.Error("expected no more events")
+	}
+	if err := scanner.Err(); err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestParserMalformedLines(t *testing.T) {
+	// Non-SSE lines (no colon) are treated as field name with empty value
+	// but unknown field names are effectively skipped
+	input := "garbage line without meaning\ndata: real data\n\n"
+
+	parser := NewParser(strings.NewReader(input))
+	event, err := parser.Next()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if string(event.Data) != "real data" {
+		t.Errorf("expected 'real data', got %q", event.Data)
+	}
+}
+
+// Benchmarks
+
+func BenchmarkParserSingleEvent(b *testing.B) {
+	input := "data: hello world\n\n"
+	b.ResetTimer()
+	for b.Loop() {
+		parser := NewParser(strings.NewReader(input))
+		_, _ = parser.Next()
+	}
+}
+
+func BenchmarkParserMultilineData(b *testing.B) {
+	input := "data: line 1\ndata: line 2\ndata: line 3\ndata: line 4\ndata: line 5\n\n"
+	b.ResetTimer()
+	for b.Loop() {
+		parser := NewParser(strings.NewReader(input))
+		_, _ = parser.Next()
+	}
+}
+
+func BenchmarkParserManyEvents(b *testing.B) {
+	var buf bytes.Buffer
+	for i := 0; i < 100; i++ {
+		buf.WriteString("data: event data payload\n\n")
+	}
+	input := buf.String()
+	b.ResetTimer()
+	for b.Loop() {
+		scanner := NewScanner(strings.NewReader(input))
+		for scanner.Scan() {
+			_ = scanner.Event()
+		}
+	}
+}
+
+func BenchmarkIsEndOfStream(b *testing.B) {
+	data := []byte("[DONE]")
+	b.ResetTimer()
+	for b.Loop() {
+		IsEndOfStream(data)
 	}
 }
 
