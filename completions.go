@@ -3,6 +3,7 @@ package openrouter
 import (
 	"context"
 	"fmt"
+	"strings"
 )
 
 // Complete sends a legacy completion request to the OpenRouter API.
@@ -29,6 +30,11 @@ func (c *Client) Complete(ctx context.Context, prompt string, opts ...Completion
 		if err := validateResponseFormat(req.ResponseFormat); err != nil {
 			return nil, err
 		}
+	}
+
+	// Validate request parameters
+	if err := validateCompletionParams(req); err != nil {
+		return nil, err
 	}
 
 	// Handle model suffixes
@@ -76,6 +82,11 @@ func (c *Client) CompleteStream(ctx context.Context, prompt string, opts ...Comp
 		}
 	}
 
+	// Validate request parameters
+	if err := validateCompletionParams(req); err != nil {
+		return nil, err
+	}
+
 	// Handle model suffixes
 	req.Model = processModelSuffix(req.Model, req)
 
@@ -84,8 +95,16 @@ func (c *Client) CompleteStream(ctx context.Context, prompt string, opts ...Comp
 		return nil, ErrNoModel
 	}
 
-	// Create stream
-	stream, err := c.createStream(ctx, "/completions", req)
+	// Apply per-request timeout to connection setup only
+	connectCtx := ctx
+	if req.requestTimeout != nil {
+		var cancel context.CancelFunc
+		connectCtx, cancel = context.WithTimeout(ctx, *req.requestTimeout)
+		defer cancel()
+	}
+
+	// Create stream (timeout applies to connection, not stream lifetime)
+	stream, err := c.createStream(connectCtx, "/completions", req)
 	if err != nil {
 		return nil, err
 	}
@@ -116,16 +135,17 @@ func (c *Client) CompleteWithContext(ctx context.Context, contextPrompt, userPro
 
 // CompleteWithExamples is a convenience method for few-shot prompting.
 func (c *Client) CompleteWithExamples(ctx context.Context, instruction string, examples []string, prompt string, opts ...CompletionOption) (*CompletionResponse, error) {
-	fullPrompt := instruction
+	var fullPrompt strings.Builder
+	fullPrompt.WriteString(instruction)
 
 	if len(examples) > 0 {
-		fullPrompt += "\n\nExamples:\n"
+		fullPrompt.WriteString("\n\nExamples:\n")
 		for i, example := range examples {
-			fullPrompt += fmt.Sprintf("%d. %s\n", i+1, example)
+			fmt.Fprintf(&fullPrompt, "%d. %s\n", i+1, example)
 		}
 	}
 
-	fullPrompt += fmt.Sprintf("\n\nNow: %s", prompt)
+	fmt.Fprintf(&fullPrompt, "\n\nNow: %s", prompt)
 
-	return c.Complete(ctx, fullPrompt, opts...)
+	return c.Complete(ctx, fullPrompt.String(), opts...)
 }

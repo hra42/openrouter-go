@@ -106,7 +106,7 @@ func WithResponsesWebSearch(maxResults int) ResponsesOption {
 }
 
 // WithResponsesMetadata sets metadata headers for the request.
-func WithResponsesMetadata(metadata map[string]interface{}) ResponsesOption {
+func WithResponsesMetadata(metadata map[string]any) ResponsesOption {
 	return func(r *ResponsesRequest) {
 		r.Metadata = metadata
 	}

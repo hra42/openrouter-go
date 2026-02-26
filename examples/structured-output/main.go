@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/hra42/openrouter-go"
 )
@@ -32,26 +33,26 @@ func weatherExample(client *openrouter.Client) {
 	fmt.Println("=== Weather Information Example ===")
 
 	// Define the JSON schema for weather information
-	weatherSchema := map[string]interface{}{
+	weatherSchema := map[string]any{
 		"type": "object",
-		"properties": map[string]interface{}{
-			"location": map[string]interface{}{
+		"properties": map[string]any{
+			"location": map[string]any{
 				"type":        "string",
 				"description": "City or location name",
 			},
-			"temperature": map[string]interface{}{
+			"temperature": map[string]any{
 				"type":        "number",
 				"description": "Temperature in Celsius",
 			},
-			"conditions": map[string]interface{}{
+			"conditions": map[string]any{
 				"type":        "string",
 				"description": "Weather conditions description",
 			},
-			"humidity": map[string]interface{}{
+			"humidity": map[string]any{
 				"type":        "number",
 				"description": "Humidity percentage",
 			},
-			"windSpeed": map[string]interface{}{
+			"windSpeed": map[string]any{
 				"type":        "number",
 				"description": "Wind speed in km/h",
 			},
@@ -81,7 +82,7 @@ func weatherExample(client *openrouter.Client) {
 	}
 
 	// Parse the JSON response
-	var weather map[string]interface{}
+	var weather map[string]any
 	if err := json.Unmarshal([]byte(resp.Choices[0].Message.Content.(string)), &weather); err != nil {
 		log.Printf("Error parsing JSON: %v", err)
 		return
@@ -94,33 +95,33 @@ func functionCallingExample(client *openrouter.Client) {
 	fmt.Println("=== Function Calling Example ===")
 
 	// Define a schema for extracting function calls from natural language
-	functionSchema := map[string]interface{}{
+	functionSchema := map[string]any{
 		"type": "object",
-		"properties": map[string]interface{}{
-			"action": map[string]interface{}{
+		"properties": map[string]any{
+			"action": map[string]any{
 				"type":        "string",
 				"enum":        []string{"search", "calculate", "translate", "summarize"},
 				"description": "The type of action to perform",
 			},
-			"parameters": map[string]interface{}{
+			"parameters": map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"query": map[string]interface{}{
+				"properties": map[string]any{
+					"query": map[string]any{
 						"type":        "string",
 						"description": "The main input for the action",
 					},
-					"options": map[string]interface{}{
+					"options": map[string]any{
 						"type": "object",
-						"properties": map[string]interface{}{
-							"language": map[string]interface{}{
+						"properties": map[string]any{
+							"language": map[string]any{
 								"type":        "string",
 								"description": "Target language for translation",
 							},
-							"limit": map[string]interface{}{
+							"limit": map[string]any{
 								"type":        "integer",
 								"description": "Maximum number of results",
 							},
-							"format": map[string]interface{}{
+							"format": map[string]any{
 								"type":        "string",
 								"enum":        []string{"brief", "detailed", "bullets"},
 								"description": "Output format preference",
@@ -133,7 +134,7 @@ func functionCallingExample(client *openrouter.Client) {
 				"required":             []string{"query", "options"}, // All properties must be in required
 				"additionalProperties": false,
 			},
-			"confidence": map[string]interface{}{
+			"confidence": map[string]any{
 				"type":        "number",
 				"description": "Confidence level in the interpretation (0-1)",
 				"minimum":     0,
@@ -164,7 +165,7 @@ func functionCallingExample(client *openrouter.Client) {
 	}
 
 	// Parse the structured response
-	var functionCall map[string]interface{}
+	var functionCall map[string]any
 	if err := json.Unmarshal([]byte(resp.Choices[0].Message.Content.(string)), &functionCall); err != nil {
 		log.Printf("Error parsing JSON: %v", err)
 		return
@@ -177,28 +178,28 @@ func streamingExample(client *openrouter.Client) {
 	fmt.Println("=== Streaming with Structured Output ===")
 
 	// Define a simple schema for a task list
-	taskSchema := map[string]interface{}{
+	taskSchema := map[string]any{
 		"type": "object",
-		"properties": map[string]interface{}{
-			"tasks": map[string]interface{}{
+		"properties": map[string]any{
+			"tasks": map[string]any{
 				"type": "array",
-				"items": map[string]interface{}{
+				"items": map[string]any{
 					"type": "object",
-					"properties": map[string]interface{}{
-						"id": map[string]interface{}{
+					"properties": map[string]any{
+						"id": map[string]any{
 							"type":        "integer",
 							"description": "Task ID",
 						},
-						"title": map[string]interface{}{
+						"title": map[string]any{
 							"type":        "string",
 							"description": "Task title",
 						},
-						"priority": map[string]interface{}{
+						"priority": map[string]any{
 							"type":        "string",
 							"enum":        []string{"low", "medium", "high"},
 							"description": "Task priority",
 						},
-						"completed": map[string]interface{}{
+						"completed": map[string]any{
 							"type":        "boolean",
 							"description": "Whether the task is completed",
 						},
@@ -208,7 +209,7 @@ func streamingExample(client *openrouter.Client) {
 				},
 				"description": "List of tasks",
 			},
-			"summary": map[string]interface{}{
+			"summary": map[string]any{
 				"type":        "string",
 				"description": "Brief summary of the task list",
 			},
@@ -237,13 +238,13 @@ func streamingExample(client *openrouter.Client) {
 	}
 
 	fmt.Println("Streaming response:")
-	var fullContent string
+	var fullContent strings.Builder
 
 	for event := range stream.Events() {
 		if len(event.Choices) > 0 && event.Choices[0].Delta != nil {
 			if content, ok := event.Choices[0].Delta.Content.(string); ok {
 				fmt.Print(content)
-				fullContent += content
+				fullContent.WriteString(content)
 			}
 		}
 	}
@@ -255,8 +256,8 @@ func streamingExample(client *openrouter.Client) {
 
 	// Parse the complete JSON
 	fmt.Println("\n\nParsed tasks:")
-	var taskList map[string]interface{}
-	if err := json.Unmarshal([]byte(fullContent), &taskList); err != nil {
+	var taskList map[string]any
+	if err := json.Unmarshal([]byte(fullContent.String()), &taskList); err != nil {
 		log.Printf("Error parsing JSON: %v", err)
 		return
 	}

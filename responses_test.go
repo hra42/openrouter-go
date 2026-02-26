@@ -104,7 +104,7 @@ func TestCreateResponse_StructuredInput(t *testing.T) {
 		}
 
 		// Verify structured input (it arrives as a generic slice/map due to JSON)
-		input, ok := req.Input.([]interface{})
+		input, ok := req.Input.([]any)
 		if !ok {
 			t.Fatalf("expected input to be array, got %T", req.Input)
 		}
@@ -409,7 +409,7 @@ func TestCreateResponse_Validation(t *testing.T) {
 	tests := []struct {
 		name          string
 		apiKey        string
-		input         interface{}
+		input         any
 		model         string
 		expectedError error
 	}{
@@ -566,7 +566,7 @@ func TestCreateResponse_Options(t *testing.T) {
 		WithResponsesTemperature(0.8),
 		WithResponsesTopP(0.9),
 		WithResponsesMaxOutputTokens(200),
-		WithResponsesMetadata(map[string]interface{}{
+		WithResponsesMetadata(map[string]any{
 			"custom-field": "custom-value",
 		}),
 	)

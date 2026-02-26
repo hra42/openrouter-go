@@ -28,7 +28,8 @@ type eventStream struct {
 	reconnect bool
 	client    *Client
 	endpoint  string
-	body      interface{}
+	body      any
+	config    *StreamConfig
 }
 
 // setStreamHeaders sets all required headers for SSE streaming requests.
@@ -54,7 +55,7 @@ func (c *Client) setStreamHeaders(req *http.Request) {
 }
 
 // createStream creates a new SSE stream for the given endpoint and request.
-func (c *Client) createStream(ctx context.Context, endpoint string, body interface{}) (*eventStream, error) {
+func (c *Client) createStream(ctx context.Context, endpoint string, body any) (*eventStream, error) {
 	url := c.baseURL + endpoint
 
 	jsonData, err := json.Marshal(body)
@@ -97,6 +98,16 @@ func (c *Client) createStream(ctx context.Context, endpoint string, body interfa
 		}
 	}
 
+	// Resolve stream config from request → client → default
+	var reqStreamConfig *StreamConfig
+	switch r := body.(type) {
+	case *ChatCompletionRequest:
+		reqStreamConfig = r.streamConfig
+	case *CompletionRequest:
+		reqStreamConfig = r.streamConfig
+	}
+	config := resolveStreamConfig(reqStreamConfig, c.streamConfig)
+
 	// Create stream context
 	streamCtx, cancel := context.WithCancel(ctx)
 
@@ -105,11 +116,12 @@ func (c *Client) createStream(ctx context.Context, endpoint string, body interfa
 		cancel:    cancel,
 		response:  resp,
 		scanner:   sse.NewScanner(resp.Body),
-		events:    make(chan StreamEvent, 10),
+		events:    make(chan StreamEvent, config.ChannelBuffer),
 		reconnect: true,
 		client:    c,
 		endpoint:  endpoint,
 		body:      body,
+		config:    config,
 	}
 
 	// Start reading events
@@ -124,7 +136,6 @@ func (es *eventStream) readEvents() {
 	defer es.response.Body.Close() //nolint:errcheck
 
 	retryCount := 0
-	maxRetries := 3
 
 	for {
 		// Check if context is cancelled
@@ -139,7 +150,7 @@ func (es *eventStream) readEvents() {
 		if !es.scanner.Scan() {
 			if err := es.scanner.Err(); err != nil {
 				// Handle connection errors with reconnection
-				if es.reconnect && retryCount < maxRetries {
+				if es.reconnect && retryCount < es.config.MaxRetries {
 					retryCount++
 					if es.attemptReconnect(retryCount) {
 						continue
@@ -221,16 +232,20 @@ func (es *eventStream) Close() error {
 
 // attemptReconnect attempts to reconnect to the stream.
 func (es *eventStream) attemptReconnect(attempt int) bool {
+	// Check circuit breaker if configured
+	if es.client.circuitBreaker != nil {
+		if !es.client.circuitBreaker.AllowRequest() {
+			return false
+		}
+	}
+
 	// Close current connection
 	if es.response != nil && es.response.Body != nil {
 		_ = es.response.Body.Close()
 	}
 
-	// Calculate backoff
-	backoff := time.Duration(attempt) * time.Second
-	if backoff > maxReconnectBackoff {
-		backoff = maxReconnectBackoff
-	}
+	// Calculate backoff using stream config
+	backoff := min(time.Duration(attempt)*es.config.InitialBackoff, es.config.MaxBackoff)
 
 	// Wait before reconnecting
 	select {
@@ -258,12 +273,23 @@ func (es *eventStream) attemptReconnect(attempt int) bool {
 	// Make the request
 	resp, err := es.client.httpClient.Do(req)
 	if err != nil {
+		if es.client.circuitBreaker != nil {
+			es.client.circuitBreaker.RecordFailure()
+		}
 		return false
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		_ = resp.Body.Close()
+		if es.client.circuitBreaker != nil {
+			es.client.circuitBreaker.RecordFailure()
+		}
 		return false
+	}
+
+	// Record success with circuit breaker
+	if es.client.circuitBreaker != nil {
+		es.client.circuitBreaker.RecordSuccess()
 	}
 
 	// Update stream with new connection
@@ -274,7 +300,7 @@ func (es *eventStream) attemptReconnect(attempt int) bool {
 }
 
 // parseSSEData parses the SSE data field into the given value.
-func parseSSEData(data string, v interface{}) error {
+func parseSSEData(data string, v any) error {
 	if data == "" {
 		return nil
 	}

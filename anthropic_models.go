@@ -1,6 +1,8 @@
 // Package openrouter provides Go bindings for the OpenRouter API.
 package openrouter
 
+import "strings"
+
 import "encoding/json"
 
 // Anthropic Messages API stop reasons.
@@ -60,7 +62,7 @@ type AnthropicMessagesRequest struct {
 	Messages []AnthropicMessage `json:"messages"`
 
 	// System is an optional system prompt. Can be a string or []AnthropicTextBlock.
-	System interface{} `json:"system,omitempty"`
+	System any `json:"system,omitempty"`
 
 	// Temperature controls randomness (0-1).
 	Temperature *float64 `json:"temperature,omitempty"`
@@ -108,11 +110,11 @@ type AnthropicMessagesRequest struct {
 	Metadata *AnthropicRequestMetadata `json:"metadata,omitempty"`
 
 	// HeaderMetadata is used for X-* header injection (not serialized to JSON).
-	HeaderMetadata map[string]interface{} `json:"-"`
+	HeaderMetadata map[string]any `json:"-"`
 }
 
 // GetMetadata returns the header metadata map for header generation.
-func (r *AnthropicMessagesRequest) GetMetadata() map[string]interface{} {
+func (r *AnthropicMessagesRequest) GetMetadata() map[string]any {
 	return r.HeaderMetadata
 }
 
@@ -122,7 +124,7 @@ type AnthropicMessage struct {
 	Role string `json:"role"`
 
 	// Content can be a string or []AnthropicContentBlock.
-	Content interface{} `json:"content"`
+	Content any `json:"content"`
 }
 
 // AnthropicContentBlock represents a content block in a message.
@@ -151,7 +153,7 @@ type AnthropicContentBlock struct {
 	ToolUseID string `json:"tool_use_id,omitempty"`
 
 	// Content is the tool result content (for "tool_result" type). Can be string or []AnthropicContentBlock.
-	ToolResultContent interface{} `json:"content,omitempty"`
+	ToolResultContent any `json:"content,omitempty"`
 
 	// IsError indicates if the tool result is an error (for "tool_result" type).
 	IsError *bool `json:"is_error,omitempty"`
@@ -203,7 +205,7 @@ type AnthropicTool struct {
 	Description string `json:"description,omitempty"`
 
 	// InputSchema is the JSON Schema for the tool parameters (custom tools).
-	InputSchema map[string]interface{} `json:"input_schema,omitempty"`
+	InputSchema map[string]any `json:"input_schema,omitempty"`
 
 	// MaxUses limits the number of times the tool can be used (for web_search).
 	MaxUses *int `json:"max_uses,omitempty"`
@@ -520,7 +522,7 @@ func CreateAnthropicToolResultBlock(toolUseID string, content string) AnthropicC
 }
 
 // CreateAnthropicCustomTool creates a custom tool definition.
-func CreateAnthropicCustomTool(name, description string, schema map[string]interface{}) AnthropicTool {
+func CreateAnthropicCustomTool(name, description string, schema map[string]any) AnthropicTool {
 	return AnthropicTool{
 		Name:        name,
 		Description: description,
@@ -557,13 +559,13 @@ func CreateAnthropicWebSearchTool(maxUses *int) AnthropicTool {
 
 // GetTextContent extracts all text content from the response, concatenated.
 func (r *AnthropicMessagesResponse) GetTextContent() string {
-	var result string
+	var result strings.Builder
 	for _, block := range r.Content {
 		if block.Type == AnthropicContentTypeText {
-			result += block.Text
+			result.WriteString(block.Text)
 		}
 	}
-	return result
+	return result.String()
 }
 
 // GetTextBlocks returns all text content blocks from the response.
@@ -590,13 +592,13 @@ func (r *AnthropicMessagesResponse) GetToolUseBlocks() []AnthropicResponseConten
 
 // GetThinkingContent extracts all thinking text from the response, concatenated.
 func (r *AnthropicMessagesResponse) GetThinkingContent() string {
-	var result string
+	var result strings.Builder
 	for _, block := range r.Content {
 		if block.Type == AnthropicContentTypeThinking {
-			result += block.Thinking
+			result.WriteString(block.Thinking)
 		}
 	}
-	return result
+	return result.String()
 }
 
 // IsToolUse returns true if the response stop reason is "tool_use".

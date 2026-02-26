@@ -100,7 +100,7 @@ func TestCreateAnthropicMessage(t *testing.T) {
 func TestCreateAnthropicMessageWithSystemPrompt(t *testing.T) {
 	tests := []struct {
 		name   string
-		system interface{}
+		system any
 	}{
 		{
 			name:   "string system",
@@ -118,7 +118,7 @@ func TestCreateAnthropicMessageWithSystemPrompt(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				var req map[string]interface{}
+				var req map[string]any
 				if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 					t.Fatalf("failed to decode request: %v", err)
 				}
@@ -208,10 +208,10 @@ func TestCreateAnthropicMessageWithTools(t *testing.T) {
 
 	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
 
-	tool := CreateAnthropicCustomTool("get_weather", "Get current weather", map[string]interface{}{
+	tool := CreateAnthropicCustomTool("get_weather", "Get current weather", map[string]any{
 		"type": "object",
-		"properties": map[string]interface{}{
-			"location": map[string]interface{}{
+		"properties": map[string]any{
+			"location": map[string]any{
 				"type":        "string",
 				"description": "City name",
 			},
@@ -500,13 +500,13 @@ func TestAnthropicValidationThinkingNoBudget(t *testing.T) {
 
 func TestAnthropicOptions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var req map[string]interface{}
+		var req map[string]any
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			t.Fatalf("failed to decode request: %v", err)
 		}
 
 		// Verify tool_choice
-		if tc, ok := req["tool_choice"].(map[string]interface{}); ok {
+		if tc, ok := req["tool_choice"].(map[string]any); ok {
 			if tc["type"] != "tool" {
 				t.Errorf("expected tool_choice type 'tool', got %v", tc["type"])
 			}
@@ -518,7 +518,7 @@ func TestAnthropicOptions(t *testing.T) {
 		}
 
 		// Verify metadata
-		if meta, ok := req["metadata"].(map[string]interface{}); ok {
+		if meta, ok := req["metadata"].(map[string]any); ok {
 			if meta["user_id"] != "user-123" {
 				t.Errorf("expected user_id 'user-123', got %v", meta["user_id"])
 			}
@@ -550,9 +550,9 @@ func TestAnthropicOptions(t *testing.T) {
 		WithAnthropicMaxTokens(100),
 		WithAnthropicToolChoiceSpecific("get_weather"),
 		WithAnthropicRequestMetadata(AnthropicRequestMetadata{UserID: "user-123"}),
-		WithAnthropicTools(CreateAnthropicCustomTool("get_weather", "Get weather", map[string]interface{}{
+		WithAnthropicTools(CreateAnthropicCustomTool("get_weather", "Get weather", map[string]any{
 			"type":       "object",
-			"properties": map[string]interface{}{},
+			"properties": map[string]any{},
 		})),
 	)
 
@@ -589,7 +589,7 @@ func TestAnthropicHeaderMetadata(t *testing.T) {
 	_, err := client.CreateAnthropicMessage(context.Background(), messages,
 		WithAnthropicModel("anthropic/claude-sonnet-4"),
 		WithAnthropicMaxTokens(100),
-		WithAnthropicHeaderMetadata(map[string]interface{}{
+		WithAnthropicHeaderMetadata(map[string]any{
 			"Custom-Header": "custom-value",
 		}),
 	)
@@ -667,7 +667,7 @@ func TestAnthropicHelperConstructors(t *testing.T) {
 	})
 
 	t.Run("custom tool", func(t *testing.T) {
-		tool := CreateAnthropicCustomTool("test_tool", "A test tool", map[string]interface{}{"type": "object"})
+		tool := CreateAnthropicCustomTool("test_tool", "A test tool", map[string]any{"type": "object"})
 		if tool.Name != "test_tool" || tool.Description != "A test tool" {
 			t.Errorf("unexpected tool: %+v", tool)
 		}

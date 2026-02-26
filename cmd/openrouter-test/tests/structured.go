@@ -17,23 +17,23 @@ func RunStructuredOutputTest(ctx context.Context, client *openrouter.Client, mod
 
 	// Test 1: Basic structured output with weather data
 	fmt.Printf("   Testing weather data schema...\n")
-	weatherSchema := map[string]interface{}{
+	weatherSchema := map[string]any{
 		"type": "object",
-		"properties": map[string]interface{}{
-			"city": map[string]interface{}{
+		"properties": map[string]any{
+			"city": map[string]any{
 				"type":        "string",
 				"description": "City name",
 			},
-			"temperature": map[string]interface{}{
+			"temperature": map[string]any{
 				"type":        "number",
 				"description": "Temperature in Celsius",
 			},
-			"conditions": map[string]interface{}{
+			"conditions": map[string]any{
 				"type":        "string",
 				"enum":        []string{"sunny", "cloudy", "rainy", "snowy"},
 				"description": "Weather conditions",
 			},
-			"humidity": map[string]interface{}{
+			"humidity": map[string]any{
 				"type":        "integer",
 				"minimum":     0,
 				"maximum":     100,
@@ -86,7 +86,7 @@ func RunStructuredOutputTest(ctx context.Context, client *openrouter.Client, mod
 	}
 
 	// Parse and validate the JSON response
-	var weatherData map[string]interface{}
+	var weatherData map[string]any
 	content := resp.Choices[0].Message.Content.(string)
 	if err := json.Unmarshal([]byte(content), &weatherData); err != nil {
 		printError("Failed to parse JSON", err)
@@ -105,18 +105,18 @@ func RunStructuredOutputTest(ctx context.Context, client *openrouter.Client, mod
 
 	// Test 2: Structured output with streaming
 	fmt.Printf("   Testing structured output with streaming...\n")
-	taskSchema := map[string]interface{}{
+	taskSchema := map[string]any{
 		"type": "object",
-		"properties": map[string]interface{}{
-			"tasks": map[string]interface{}{
+		"properties": map[string]any{
+			"tasks": map[string]any{
 				"type": "array",
-				"items": map[string]interface{}{
+				"items": map[string]any{
 					"type": "object",
-					"properties": map[string]interface{}{
-						"name": map[string]interface{}{
+					"properties": map[string]any{
+						"name": map[string]any{
 							"type": "string",
 						},
-						"priority": map[string]interface{}{
+						"priority": map[string]any{
 							"type": "string",
 							"enum": []string{"low", "medium", "high"},
 						},
@@ -171,7 +171,7 @@ func RunStructuredOutputTest(ctx context.Context, client *openrouter.Client, mod
 		}
 
 		// Validate the streamed JSON
-		var taskData map[string]interface{}
+		var taskData map[string]any
 		if err := json.Unmarshal([]byte(fullContent.String()), &taskData); err != nil {
 			fmt.Printf("   ⚠️  Streamed content not valid JSON (this can happen with some models)\n")
 		} else {
@@ -204,7 +204,7 @@ func RunStructuredOutputTest(ctx context.Context, client *openrouter.Client, mod
 	}
 
 	// Validate it's valid JSON
-	var jsonData map[string]interface{}
+	var jsonData map[string]any
 	content = resp.Choices[0].Message.Content.(string)
 	if err := json.Unmarshal([]byte(content), &jsonData); err != nil {
 		printError("Response is not valid JSON", err)

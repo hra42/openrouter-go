@@ -208,12 +208,12 @@ func TestImageMessageSerialization(t *testing.T) {
 	t.Logf("Serialized JSON: %s", string(data))
 
 	// Verify the JSON contains expected fields
-	var jsonMap map[string]interface{}
+	var jsonMap map[string]any
 	if err := json.Unmarshal(data, &jsonMap); err != nil {
 		t.Fatalf("failed to unmarshal to map: %v", err)
 	}
 
-	content, ok := jsonMap["content"].([]interface{})
+	content, ok := jsonMap["content"].([]any)
 	if !ok {
 		t.Fatal("expected content to be an array")
 	}
@@ -236,7 +236,7 @@ func TestChatCompleteWithImage(t *testing.T) {
 		}
 
 		// Content should be array for multimodal
-		contentArray, ok := req.Messages[0].Content.([]interface{})
+		contentArray, ok := req.Messages[0].Content.([]any)
 		if !ok {
 			t.Errorf("expected content to be array, got %T", req.Messages[0].Content)
 		}

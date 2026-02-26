@@ -71,6 +71,23 @@ func WithRetry(maxRetries int, retryDelay time.Duration) ClientOption {
 	}
 }
 
+// WithStreamConfig sets the stream configuration for the client.
+// This controls stream reconnection behavior and channel buffering.
+func WithStreamConfig(config *StreamConfig) ClientOption {
+	return func(c *Client) {
+		c.streamConfig = config
+	}
+}
+
+// WithCircuitBreaker enables a circuit breaker for stream reconnections.
+// The circuit breaker tracks consecutive failures and stops reconnection
+// attempts when the failure threshold is reached.
+func WithCircuitBreaker(config *CircuitBreakerConfig) ClientOption {
+	return func(c *Client) {
+		c.circuitBreaker = NewCircuitBreaker(config)
+	}
+}
+
 // WithHeader adds a custom header to all requests.
 func WithHeader(key, value string) ClientOption {
 	return func(c *Client) {
@@ -144,6 +161,20 @@ func WithRepetitionPenalty(penalty float64) ChatCompletionOption {
 	}
 }
 
+// WithMinP sets the min_p parameter for nucleus sampling.
+func WithMinP(minP float64) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.MinP = &minP
+	}
+}
+
+// WithTopA sets the top_a parameter for top-a sampling.
+func WithTopA(topA float64) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.TopA = &topA
+	}
+}
+
 // WithSeed sets the random seed.
 func WithSeed(seed int) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
@@ -159,7 +190,7 @@ func WithTools(tools ...Tool) ChatCompletionOption {
 }
 
 // WithToolChoice sets the tool choice strategy.
-func WithToolChoice(toolChoice interface{}) ChatCompletionOption {
+func WithToolChoice(toolChoice any) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
 		r.ToolChoice = toolChoice
 	}
@@ -227,7 +258,7 @@ func WithRoute(route string) ChatCompletionOption {
 }
 
 // WithMetadata sets metadata headers for the request.
-func WithMetadata(metadata map[string]interface{}) ChatCompletionOption {
+func WithMetadata(metadata map[string]any) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
 		r.Metadata = metadata
 	}
@@ -339,7 +370,7 @@ func setRoute[T RequestConfig](r T, route string) {
 }
 
 // setMetadata is a generic helper to set metadata.
-func setMetadata[T RequestConfig](r T, metadata map[string]interface{}) {
+func setMetadata[T RequestConfig](r T, metadata map[string]any) {
 	switch req := any(r).(type) {
 	case *ChatCompletionRequest:
 		req.Metadata = metadata
@@ -465,6 +496,55 @@ func WithCompletionSuffix(suffix string) CompletionOption {
 	}
 }
 
+// WithCompletionMinP sets the min_p parameter for completion.
+func WithCompletionMinP(minP float64) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.MinP = &minP
+	}
+}
+
+// WithCompletionTopA sets the top_a parameter for completion.
+func WithCompletionTopA(topA float64) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.TopA = &topA
+	}
+}
+
+// WithCompletionRepetitionPenalty sets the repetition penalty for completion.
+func WithCompletionRepetitionPenalty(penalty float64) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.RepetitionPenalty = &penalty
+	}
+}
+
+// WithCompletionTopK sets the top_k parameter for completion.
+func WithCompletionTopK(topK int) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.TopK = &topK
+	}
+}
+
+// WithCompletionFrequencyPenalty sets the frequency penalty for completion.
+func WithCompletionFrequencyPenalty(penalty float64) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.FrequencyPenalty = &penalty
+	}
+}
+
+// WithCompletionPresencePenalty sets the presence penalty for completion.
+func WithCompletionPresencePenalty(penalty float64) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.PresencePenalty = &penalty
+	}
+}
+
+// WithCompletionSeed sets the random seed for completion.
+func WithCompletionSeed(seed int) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.Seed = &seed
+	}
+}
+
 // WithCompletionProvider sets provider-specific parameters for completion.
 func WithCompletionProvider(provider Provider) CompletionOption {
 	return func(r *CompletionRequest) {
@@ -473,7 +553,7 @@ func WithCompletionProvider(provider Provider) CompletionOption {
 }
 
 // WithCompletionMetadata sets metadata headers for the completion request.
-func WithCompletionMetadata(metadata map[string]interface{}) CompletionOption {
+func WithCompletionMetadata(metadata map[string]any) CompletionOption {
 	return func(r *CompletionRequest) {
 		setMetadata(r, metadata)
 	}
@@ -497,6 +577,48 @@ func WithCompletionModels(models ...string) CompletionOption {
 func WithCompletionRoute(route string) CompletionOption {
 	return func(r *CompletionRequest) {
 		setRoute(r, route)
+	}
+}
+
+// WithRequestTimeout sets a per-request timeout that overrides the client-level timeout.
+// The timeout applies to the full request lifecycle for non-streaming calls,
+// and to the connection setup phase for streaming calls.
+func WithRequestTimeout(timeout time.Duration) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.requestTimeout = &timeout
+	}
+}
+
+// WithRequestRetry sets per-request retry configuration that overrides the client-level retry settings.
+func WithRequestRetry(maxRetries int, retryDelay time.Duration) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.requestRetry = &RetryConfig{
+			MaxRetries:   maxRetries,
+			InitialDelay: retryDelay,
+			MaxDelay:     defaultMaxDelay,
+			Multiplier:   defaultMultiplier,
+			Jitter:       true,
+		}
+	}
+}
+
+// WithCompletionRequestTimeout sets a per-request timeout for completion requests.
+func WithCompletionRequestTimeout(timeout time.Duration) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.requestTimeout = &timeout
+	}
+}
+
+// WithCompletionRequestRetry sets per-request retry configuration for completion requests.
+func WithCompletionRequestRetry(maxRetries int, retryDelay time.Duration) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.requestRetry = &RetryConfig{
+			MaxRetries:   maxRetries,
+			InitialDelay: retryDelay,
+			MaxDelay:     defaultMaxDelay,
+			Multiplier:   defaultMultiplier,
+			Jitter:       true,
+		}
 	}
 }
 
@@ -671,7 +793,7 @@ func WithCompletionFloorPrice() CompletionOption {
 
 // WithJSONSchema sets the response format to use a specific JSON schema for structured outputs.
 // This ensures the model response follows the provided schema exactly.
-func WithJSONSchema(name string, strict bool, schema map[string]interface{}) ChatCompletionOption {
+func WithJSONSchema(name string, strict bool, schema map[string]any) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
 		format := &ResponseFormat{
 			Type: "json_schema",
@@ -686,7 +808,7 @@ func WithJSONSchema(name string, strict bool, schema map[string]interface{}) Cha
 }
 
 // WithCompletionJSONSchema sets the response format to use a specific JSON schema for completion requests.
-func WithCompletionJSONSchema(name string, strict bool, schema map[string]interface{}) CompletionOption {
+func WithCompletionJSONSchema(name string, strict bool, schema map[string]any) CompletionOption {
 	return func(r *CompletionRequest) {
 		format := &ResponseFormat{
 			Type: "json_schema",
@@ -771,5 +893,55 @@ func WithUser(user string) ChatCompletionOption {
 func WithCompletionUser(user string) CompletionOption {
 	return func(r *CompletionRequest) {
 		setUser(r, user)
+	}
+}
+
+// ensureStreamConfig ensures the request has a stream config initialized with defaults.
+func ensureStreamConfig(cfg **StreamConfig) *StreamConfig {
+	if *cfg == nil {
+		*cfg = DefaultStreamConfig()
+	}
+	return *cfg
+}
+
+// WithStreamMaxRetries sets the maximum number of stream reconnection retries for this request.
+func WithStreamMaxRetries(n int) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		ensureStreamConfig(&r.streamConfig).MaxRetries = n
+	}
+}
+
+// WithStreamMaxBackoff sets the maximum backoff duration for stream reconnection for this request.
+func WithStreamMaxBackoff(d time.Duration) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		ensureStreamConfig(&r.streamConfig).MaxBackoff = d
+	}
+}
+
+// WithStreamChannelBuffer sets the events channel buffer size for this request.
+func WithStreamChannelBuffer(n int) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		ensureStreamConfig(&r.streamConfig).ChannelBuffer = n
+	}
+}
+
+// WithCompletionStreamMaxRetries sets the maximum number of stream reconnection retries for this completion request.
+func WithCompletionStreamMaxRetries(n int) CompletionOption {
+	return func(r *CompletionRequest) {
+		ensureStreamConfig(&r.streamConfig).MaxRetries = n
+	}
+}
+
+// WithCompletionStreamMaxBackoff sets the maximum backoff duration for stream reconnection for this completion request.
+func WithCompletionStreamMaxBackoff(d time.Duration) CompletionOption {
+	return func(r *CompletionRequest) {
+		ensureStreamConfig(&r.streamConfig).MaxBackoff = d
+	}
+}
+
+// WithCompletionStreamChannelBuffer sets the events channel buffer size for this completion request.
+func WithCompletionStreamChannelBuffer(n int) CompletionOption {
+	return func(r *CompletionRequest) {
+		ensureStreamConfig(&r.streamConfig).ChannelBuffer = n
 	}
 }

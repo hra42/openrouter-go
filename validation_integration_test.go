@@ -11,15 +11,15 @@ func TestChatCompleteWithInvalidSchema(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		schema      map[string]interface{}
+		schema      map[string]any
 		expectError bool
 		errorField  string
 	}{
 		{
 			name: "missing type field",
-			schema: map[string]interface{}{
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+			schema: map[string]any{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
 				},
@@ -29,10 +29,10 @@ func TestChatCompleteWithInvalidSchema(t *testing.T) {
 		},
 		{
 			name: "required field not in properties",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
 				},
@@ -43,13 +43,13 @@ func TestChatCompleteWithInvalidSchema(t *testing.T) {
 		},
 		{
 			name: "valid schema",
-			schema: map[string]interface{}{
+			schema: map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
-					"age": map[string]interface{}{
+					"age": map[string]any{
 						"type": "integer",
 					},
 				},
@@ -107,10 +107,10 @@ func TestChatCompleteWithInvalidSchema(t *testing.T) {
 func TestCompleteWithInvalidSchema(t *testing.T) {
 	client := NewClient(WithAPIKey("test-key"))
 
-	schema := map[string]interface{}{
+	schema := map[string]any{
 		"type": "object",
-		"properties": map[string]interface{}{
-			"response": map[string]interface{}{
+		"properties": map[string]any{
+			"response": map[string]any{
 				"type": "string",
 			},
 		},
@@ -144,10 +144,10 @@ func TestCompleteWithInvalidSchema(t *testing.T) {
 func TestChatCompleteStreamWithInvalidSchema(t *testing.T) {
 	client := NewClient(WithAPIKey("test-key"))
 
-	schema := map[string]interface{}{
+	schema := map[string]any{
 		// Missing "type" field
-		"properties": map[string]interface{}{
-			"content": map[string]interface{}{
+		"properties": map[string]any{
+			"content": map[string]any{
 				"type": "string",
 			},
 		},
@@ -189,7 +189,7 @@ func TestWithResponseFormatDirectValidation(t *testing.T) {
 		Type: "json_schema",
 		JSONSchema: &JSONSchema{
 			Name: "", // Invalid: name is required
-			Schema: map[string]interface{}{
+			Schema: map[string]any{
 				"type": "object",
 			},
 		},
@@ -227,13 +227,13 @@ func TestNestedSchemaValidation(t *testing.T) {
 	client := NewClient(WithAPIKey("test-key"))
 
 	// Schema with nested object that has invalid required field
-	schema := map[string]interface{}{
+	schema := map[string]any{
 		"type": "object",
-		"properties": map[string]interface{}{
-			"user": map[string]interface{}{
+		"properties": map[string]any{
+			"user": map[string]any{
 				"type": "object",
-				"properties": map[string]interface{}{
-					"name": map[string]interface{}{
+				"properties": map[string]any{
+					"name": map[string]any{
 						"type": "string",
 					},
 				},

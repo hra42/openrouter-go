@@ -22,7 +22,7 @@ type MCPInputSchema struct {
 	// Type is typically "object" for MCP tool schemas
 	Type string `json:"type,omitempty"`
 	// Properties defines the tool's input parameters
-	Properties map[string]interface{} `json:"properties,omitempty"`
+	Properties map[string]any `json:"properties,omitempty"`
 	// Required lists parameter names that must be provided
 	Required []string `json:"required,omitempty"`
 	// AdditionalProperties controls whether extra properties are allowed
@@ -52,7 +52,7 @@ type MCPContent struct {
 // ConvertMCPTool converts an MCP tool to OpenRouter's Tool format.
 // The OpenRouter format follows the OpenAI function calling specification.
 func ConvertMCPTool(mcpTool MCPTool) Tool {
-	parameters := make(map[string]interface{})
+	parameters := make(map[string]any)
 
 	if mcpTool.InputSchema != nil {
 		// Set the type to "object" as required by OpenAI format
@@ -62,7 +62,7 @@ func ConvertMCPTool(mcpTool MCPTool) Tool {
 		if mcpTool.InputSchema.Properties != nil {
 			parameters["properties"] = mcpTool.InputSchema.Properties
 		} else {
-			parameters["properties"] = make(map[string]interface{})
+			parameters["properties"] = make(map[string]any)
 		}
 
 		// Copy required fields
@@ -77,7 +77,7 @@ func ConvertMCPTool(mcpTool MCPTool) Tool {
 	} else {
 		// Empty schema defaults
 		parameters["type"] = "object"
-		parameters["properties"] = make(map[string]interface{})
+		parameters["properties"] = make(map[string]any)
 	}
 
 	return Tool{

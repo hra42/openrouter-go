@@ -12,7 +12,7 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Complete API coverage (chat completions, legacy completions, models, model endpoints, and providers)
 - ✅ Full streaming support with Server-Sent Events (SSE)
 - ✅ Zero external dependencies
-- ✅ Go 1.25.1 support
+- ✅ Go 1.26 support
 - ✅ Comprehensive error handling and retry logic
 - ✅ Context-aware cancellation
 - ✅ Thread-safe client operations
@@ -709,7 +709,7 @@ See the [app attribution example](examples/app-attribution/main.go) for more det
 
 ## Requirements
 
-- Go 1.25.1
+- Go 1.26
 - No external dependencies
 
 ## Status

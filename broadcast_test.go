@@ -2,7 +2,6 @@ package openrouter
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -207,11 +206,11 @@ func TestOTLPAnyValue_StringVal(t *testing.T) {
 		val  OTLPAnyValue
 		want string
 	}{
-		{"string", OTLPAnyValue{StringValue: strPtr("hello")}, "hello"},
-		{"int", OTLPAnyValue{IntValue: strPtr("42")}, "42"},
-		{"double", OTLPAnyValue{DoubleValue: float64Ptr(3.14)}, "3.14"},
-		{"bool true", OTLPAnyValue{BoolValue: boolPtr(true)}, "true"},
-		{"bool false", OTLPAnyValue{BoolValue: boolPtr(false)}, "false"},
+		{"string", OTLPAnyValue{StringValue: new("hello")}, "hello"},
+		{"int", OTLPAnyValue{IntValue: new("42")}, "42"},
+		{"double", OTLPAnyValue{DoubleValue: new(3.14)}, "3.14"},
+		{"bool true", OTLPAnyValue{BoolValue: new(true)}, "true"},
+		{"bool false", OTLPAnyValue{BoolValue: new(false)}, "false"},
 		{"empty", OTLPAnyValue{}, ""},
 		{"array", OTLPAnyValue{ArrayValue: &OTLPArrayValue{}}, ""},
 	}
@@ -364,9 +363,3 @@ func assertEqualInt(t *testing.T, field string, got, want int) {
 	}
 }
 
-func strPtr(s string) *string       { return &s }
-func float64Ptr(f float64) *float64 { return &f }
-func boolPtr(b bool) *bool          { return &b }
-
-// Ensure format verbs are used (prevent unused import)
-var _ = fmt.Sprintf

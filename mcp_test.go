@@ -11,8 +11,8 @@ func TestConvertMCPTool_Simple(t *testing.T) {
 		Description: "Reads a file from disk",
 		InputSchema: &MCPInputSchema{
 			Type: "object",
-			Properties: map[string]interface{}{
-				"path": map[string]interface{}{
+			Properties: map[string]any{
+				"path": map[string]any{
 					"type":        "string",
 					"description": "Path to the file to read",
 				},
@@ -37,7 +37,7 @@ func TestConvertMCPTool_Simple(t *testing.T) {
 	}
 
 	// Check properties are copied
-	props, ok := tool.Function.Parameters["properties"].(map[string]interface{})
+	props, ok := tool.Function.Parameters["properties"].(map[string]any)
 	if !ok {
 		t.Fatal("expected properties to be a map")
 	}
@@ -73,7 +73,7 @@ func TestConvertMCPTool_EmptySchema(t *testing.T) {
 		t.Errorf("expected parameters type 'object', got %v", tool.Function.Parameters["type"])
 	}
 
-	props, ok := tool.Function.Parameters["properties"].(map[string]interface{})
+	props, ok := tool.Function.Parameters["properties"].(map[string]any)
 	if !ok || len(props) != 0 {
 		t.Errorf("expected empty properties map, got %v", tool.Function.Parameters["properties"])
 	}
@@ -90,7 +90,7 @@ func TestConvertMCPTool_NilProperties(t *testing.T) {
 
 	tool := ConvertMCPTool(mcpTool)
 
-	props, ok := tool.Function.Parameters["properties"].(map[string]interface{})
+	props, ok := tool.Function.Parameters["properties"].(map[string]any)
 	if !ok || len(props) != 0 {
 		t.Errorf("expected empty properties map when nil, got %v", tool.Function.Parameters["properties"])
 	}
@@ -102,7 +102,7 @@ func TestConvertMCPTool_AdditionalProperties(t *testing.T) {
 		Name: "strict_tool",
 		InputSchema: &MCPInputSchema{
 			Type:                 "object",
-			Properties:           map[string]interface{}{},
+			Properties:           map[string]any{},
 			AdditionalProperties: &additionalProps,
 		},
 	}
@@ -152,9 +152,9 @@ func TestMCPToolSerialization(t *testing.T) {
 		Description: "Search for items",
 		InputSchema: &MCPInputSchema{
 			Type: "object",
-			Properties: map[string]interface{}{
-				"query": map[string]interface{}{"type": "string"},
-				"limit": map[string]interface{}{"type": "integer"},
+			Properties: map[string]any{
+				"query": map[string]any{"type": "string"},
+				"limit": map[string]any{"type": "integer"},
 			},
 			Required: []string{"query"},
 		},
@@ -372,8 +372,8 @@ func TestConvertedToolJSONFormat(t *testing.T) {
 		Description: "Get weather for a location",
 		InputSchema: &MCPInputSchema{
 			Type: "object",
-			Properties: map[string]interface{}{
-				"location": map[string]interface{}{
+			Properties: map[string]any{
+				"location": map[string]any{
 					"type":        "string",
 					"description": "City name",
 				},

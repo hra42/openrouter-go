@@ -10,8 +10,6 @@ import (
 const (
 	// defaultJitterFactor is the default jitter factor for retry backoff (±25%).
 	defaultJitterFactor = 0.25
-	// maxReconnectBackoff is the maximum backoff duration for stream reconnection attempts.
-	maxReconnectBackoff = 10 * time.Second
 	// defaultMaxDelay is the default maximum delay for retry backoff.
 	defaultMaxDelay = 30 * time.Second
 	// defaultMultiplier is the default multiplier for exponential backoff.
@@ -198,29 +196,69 @@ func (rl *RateLimiter) Close() {
 	close(rl.done)
 }
 
+// transportConfig holds per-request transport overrides extracted from request bodies.
+type transportConfig struct {
+	timeout *time.Duration
+	retry   *RetryConfig
+}
+
+// extractTransportConfig extracts per-request transport configuration from a request body.
+func extractTransportConfig(body any) transportConfig {
+	var tc transportConfig
+	switch r := body.(type) {
+	case *ChatCompletionRequest:
+		tc.timeout = r.requestTimeout
+		tc.retry = r.requestRetry
+	case *CompletionRequest:
+		tc.timeout = r.requestTimeout
+		tc.retry = r.requestRetry
+	}
+	return tc
+}
+
 // doRequest performs an HTTP request to the OpenRouter API with retry logic.
-func (c *Client) doRequest(ctx context.Context, method, endpoint string, body interface{}, v interface{}) error {
-	config := &RetryConfig{
-		MaxRetries:   c.maxRetries,
-		InitialDelay: c.retryDelay,
-		MaxDelay:     defaultMaxDelay,
-		Multiplier:   defaultMultiplier,
-		Jitter:       true,
-		RetryableError: func(err error) bool {
-			if reqErr, ok := err.(*RequestError); ok {
-				// Don't retry client errors except rate limit
-				if reqErr.StatusCode >= 400 && reqErr.StatusCode < 500 {
-					return reqErr.IsRateLimitError()
-				}
-				// Retry server errors
-				return true
+func (c *Client) doRequest(ctx context.Context, method, endpoint string, body any, v any) error {
+	tc := extractTransportConfig(body)
+
+	retryableError := func(err error) bool {
+		if reqErr, ok := err.(*RequestError); ok {
+			// Don't retry client errors except rate limit
+			if reqErr.StatusCode >= 400 && reqErr.StatusCode < 500 {
+				return reqErr.IsRateLimitError()
 			}
-			// Retry network errors
+			// Retry server errors
 			return true
-		},
+		}
+		// Retry network errors
+		return true
 	}
 
-	return RetryWithBackoff(ctx, config, func() error {
-		return c.doRequestOnce(ctx, method, endpoint, body, v)
+	var config *RetryConfig
+	if tc.retry != nil {
+		config = tc.retry
+		if config.RetryableError == nil {
+			config.RetryableError = retryableError
+		}
+	} else {
+		config = &RetryConfig{
+			MaxRetries:     c.maxRetries,
+			InitialDelay:   c.retryDelay,
+			MaxDelay:       defaultMaxDelay,
+			Multiplier:     defaultMultiplier,
+			Jitter:         true,
+			RetryableError: retryableError,
+		}
+	}
+
+	// Apply per-request timeout if set
+	reqCtx := ctx
+	if tc.timeout != nil {
+		var cancel context.CancelFunc
+		reqCtx, cancel = context.WithTimeout(ctx, *tc.timeout)
+		defer cancel()
+	}
+
+	return RetryWithBackoff(reqCtx, config, func() error {
+		return c.doRequestOnce(reqCtx, method, endpoint, body, v)
 	})
 }

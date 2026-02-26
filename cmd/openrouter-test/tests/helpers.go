@@ -20,7 +20,7 @@ func printInfo(message string) {
 }
 
 // printVerbose prints a verbose message if verbose mode is enabled
-func printVerbose(verbose bool, format string, args ...interface{}) {
+func printVerbose(verbose bool, format string, args ...any) {
 	if verbose {
 		fmt.Printf("  "+format+"\n", args...)
 	}

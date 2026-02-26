@@ -11,35 +11,35 @@ steps:
       - golangci-lint run ./...
 
   unit-tests:
-    image: golang:1.25.1-alpine
+    image: golang:1.26-alpine
     environment:
       CGO_ENABLED: "0"
     commands:
       - go test ./...
 
   coverage-tests:
-    image: golang:1.25.1-alpine
+    image: golang:1.26-alpine
     environment:
       CGO_ENABLED: "0"
     commands:
       - go test -cover ./...
 
   race-detection:
-    image: golang:1.25.1
+    image: golang:1.26
     environment:
       CGO_ENABLED: "1"
     commands:
       - go test -race ./...
 
   specific-tests:
-    image: golang:1.25.1-alpine
+    image: golang:1.26-alpine
     environment:
       CGO_ENABLED: "0"
     commands:
       - go test -run TestChatComplete
 
   integration-test:
-    image: golang:1.25.1-alpine
+    image: golang:1.26-alpine
     environment:
       CGO_ENABLED: "0"
       ORAPIKEY:
@@ -48,7 +48,7 @@ steps:
       - go run cmd/openrouter-test/main.go -key $ORAPIKEY -test all -model "google/gemini-3-flash-preview" -embedding-model "qwen/qwen3-embedding-8b"
 
   integration-test-analytics:
-    image: golang:1.25.1-alpine
+    image: golang:1.26-alpine
     environment:
       CGO_ENABLED: "0"
       ORPROVKEY:

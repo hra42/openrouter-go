@@ -171,7 +171,7 @@ func WithAnthropicRequestMetadata(metadata AnthropicRequestMetadata) AnthropicOp
 }
 
 // WithAnthropicHeaderMetadata sets metadata for X-* header injection.
-func WithAnthropicHeaderMetadata(metadata map[string]interface{}) AnthropicOption {
+func WithAnthropicHeaderMetadata(metadata map[string]any) AnthropicOption {
 	return func(r *AnthropicMessagesRequest) {
 		r.HeaderMetadata = metadata
 	}

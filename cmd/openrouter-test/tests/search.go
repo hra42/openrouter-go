@@ -241,11 +241,3 @@ func RunWebSearchTest(ctx context.Context, client *openrouter.Client, model stri
 	printSuccess("Web search tests completed")
 	return true
 }
-
-// min returns the minimum of two integers
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}

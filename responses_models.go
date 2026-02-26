@@ -48,11 +48,11 @@ type ResponsesRequest struct {
 	Plugins []Plugin `json:"plugins,omitempty"`
 
 	// Metadata is used for custom headers (not serialized to JSON).
-	Metadata map[string]interface{} `json:"-"`
+	Metadata map[string]any `json:"-"`
 }
 
 // GetMetadata returns the metadata map for header generation.
-func (r *ResponsesRequest) GetMetadata() map[string]interface{} {
+func (r *ResponsesRequest) GetMetadata() map[string]any {
 	return r.Metadata
 }
 
@@ -125,7 +125,7 @@ type ResponsesResponse struct {
 	Status string `json:"status"`
 
 	// Metadata contains additional response metadata.
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	Metadata map[string]any `json:"metadata,omitempty"`
 }
 
 // ResponsesOutput represents an output item in the response.

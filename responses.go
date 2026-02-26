@@ -29,7 +29,7 @@ type ResponsesStream = Stream[ResponsesResponse]
 //	resp, err := client.CreateResponse(ctx, input,
 //	    openrouter.WithResponsesModel("openai/o4-mini"),
 //	)
-func (c *Client) CreateResponse(ctx context.Context, input interface{}, opts ...ResponsesOption) (*ResponsesResponse, error) {
+func (c *Client) CreateResponse(ctx context.Context, input any, opts ...ResponsesOption) (*ResponsesResponse, error) {
 	// Validate input
 	if err := c.validateResponsesInput(input); err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (c *Client) CreateResponse(ctx context.Context, input interface{}, opts ...
 //	if err := stream.Err(); err != nil {
 //	    log.Printf("Stream error: %v", err)
 //	}
-func (c *Client) CreateResponseStream(ctx context.Context, input interface{}, opts ...ResponsesOption) (*ResponsesStream, error) {
+func (c *Client) CreateResponseStream(ctx context.Context, input any, opts ...ResponsesOption) (*ResponsesStream, error) {
 	// Validate input
 	if err := c.validateResponsesInput(input); err != nil {
 		return nil, err

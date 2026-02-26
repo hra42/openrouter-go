@@ -10,6 +10,85 @@ import (
 	"testing"
 )
 
+// Benchmarks
+
+func BenchmarkChunkByCharacters(b *testing.B) {
+	text := strings.Repeat("abcdefghij", 100) // 1000 chars
+	config := ChunkConfig{Strategy: ChunkByCharacters, ChunkSize: 100}
+	b.ResetTimer()
+	for b.Loop() {
+		_, _ = ChunkText(text, config)
+	}
+}
+
+func BenchmarkChunkByParagraphs(b *testing.B) {
+	var buf strings.Builder
+	for range 50 {
+		buf.WriteString("This is paragraph number ")
+		buf.WriteString(strings.Repeat("content ", 20))
+		buf.WriteString("\n\n")
+	}
+	text := buf.String()
+	config := ChunkConfig{Strategy: ChunkByParagraphs, ChunkSize: 200, TrimWhitespace: true}
+	b.ResetTimer()
+	for b.Loop() {
+		_, _ = ChunkText(text, config)
+	}
+}
+
+func BenchmarkChunkBySentences(b *testing.B) {
+	text := strings.Repeat("This is a sentence. Another sentence here! A third one? ", 50)
+	config := ChunkConfig{Strategy: ChunkBySentences, ChunkSize: 100, TrimWhitespace: true}
+	b.ResetTimer()
+	for b.Loop() {
+		_, _ = ChunkText(text, config)
+	}
+}
+
+func BenchmarkChunkByTokens(b *testing.B) {
+	text := strings.Repeat("word ", 500) // ~500 words
+	config := ChunkConfig{Strategy: ChunkByTokens, ChunkSize: 100, PreserveWords: true}
+	b.ResetTimer()
+	for b.Loop() {
+		_, _ = ChunkText(text, config)
+	}
+}
+
+func BenchmarkEstimateTokens(b *testing.B) {
+	text := strings.Repeat("hello world testing benchmarks ", 100)
+	b.ResetTimer()
+	for b.Loop() {
+		EstimateTokens(text)
+	}
+}
+
+func BenchmarkCosineSimilarity(b *testing.B) {
+	a := make([]float64, 1536)
+	bb := make([]float64, 1536)
+	for i := range a {
+		a[i] = float64(i) * 0.001
+		bb[i] = float64(i) * 0.002
+	}
+	b.ResetTimer()
+	for b.Loop() {
+		CosineSimilarity(a, bb)
+	}
+}
+
+func BenchmarkAverageEmbeddings(b *testing.B) {
+	embeddings := make([][]float64, 10)
+	for i := range embeddings {
+		embeddings[i] = make([]float64, 1536)
+		for j := range embeddings[i] {
+			embeddings[i][j] = float64(j) * 0.001
+		}
+	}
+	b.ResetTimer()
+	for b.Loop() {
+		AverageEmbeddings(embeddings)
+	}
+}
+
 func TestChunkBySections(t *testing.T) {
 	text := `# Introduction
 This is the introduction section with some content.
@@ -266,8 +345,8 @@ func TestPreserveWords(t *testing.T) {
 
 	// No chunk should contain a word split in the middle
 	for _, chunk := range chunks {
-		words := strings.Fields(chunk.Text)
-		for _, word := range words {
+		words := strings.FieldsSeq(chunk.Text)
+		for word := range words {
 			if word != "hello" && word != "world" && word != "testing" && word != "chunking" {
 				t.Errorf("unexpected partial word in chunk: %q", word)
 			}
@@ -494,7 +573,7 @@ func TestCreateChunkedEmbedding(t *testing.T) {
 		// Get number of inputs
 		var inputCount int
 		switch input := reqBody.Input.(type) {
-		case []interface{}:
+		case []any:
 			inputCount = len(input)
 		case string:
 			inputCount = 1
@@ -505,7 +584,7 @@ func TestCreateChunkedEmbedding(t *testing.T) {
 		for i := 0; i < inputCount; i++ {
 			data[i] = EmbeddingData{
 				Object:    "embedding",
-				Embedding: []interface{}{0.1, 0.2, 0.3, 0.4, 0.5},
+				Embedding: []any{0.1, 0.2, 0.3, 0.4, 0.5},
 				Index:     i,
 			}
 		}

@@ -67,8 +67,8 @@ func (p *Parser) Next() (*Event, error) {
 		}
 
 		// Skip comments (lines starting with :)
-		if bytes.HasPrefix(line, []byte(":")) {
-			event.Comment = string(bytes.TrimPrefix(line, []byte(":")))
+		if after, ok := bytes.CutPrefix(line, []byte(":")); ok {
+			event.Comment = string(after)
 			continue
 		}
 
@@ -219,8 +219,8 @@ func (w *Writer) WriteEvent(event *Event) error {
 
 	// Write data
 	if len(event.Data) > 0 {
-		lines := strings.Split(string(event.Data), "\n")
-		for _, line := range lines {
+		lines := strings.SplitSeq(string(event.Data), "\n")
+		for line := range lines {
 			fmt.Fprintf(&buf, "data: %s\n", line)
 		}
 	}

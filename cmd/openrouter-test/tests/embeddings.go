@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/hra42/openrouter-go"
@@ -232,13 +233,7 @@ func RunListEmbeddingsModelsTest(ctx context.Context, client *openrouter.Client,
 	}
 
 	// Check that output modality includes embeddings
-	hasEmbeddingsOutput := false
-	for _, modality := range firstModel.Architecture.OutputModalities {
-		if modality == "embeddings" {
-			hasEmbeddingsOutput = true
-			break
-		}
-	}
+	hasEmbeddingsOutput := slices.Contains(firstModel.Architecture.OutputModalities, "embeddings")
 	if !hasEmbeddingsOutput && len(firstModel.Architecture.OutputModalities) > 0 {
 		fmt.Printf("   ⚠️  First model doesn't have 'embeddings' output modality: %v\n",
 			firstModel.Architecture.OutputModalities)

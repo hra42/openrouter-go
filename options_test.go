@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestProviderRoutingOptions(t *testing.T) {
@@ -509,10 +510,10 @@ func TestUntestedOptions(t *testing.T) {
 		CreateUserMessage("Override"),
 	}
 
-	schema := map[string]interface{}{
+	schema := map[string]any{
 		"type": "object",
-		"properties": map[string]interface{}{
-			"field": map[string]interface{}{"type": "string"},
+		"properties": map[string]any{
+			"field": map[string]any{"type": "string"},
 		},
 	}
 
@@ -586,7 +587,7 @@ func TestCompletionUntestedOptions(t *testing.T) {
 		Order: []string{"openai"},
 	}
 
-	schema := map[string]interface{}{
+	schema := map[string]any{
 		"type": "object",
 	}
 
@@ -713,6 +714,191 @@ func TestCompletionUserTrackingOption(t *testing.T) {
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestMinPAndTopAOptions(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req ChatCompletionRequest
+		_ = json.NewDecoder(r.Body).Decode(&req)
+
+		if req.MinP == nil || *req.MinP != 0.1 {
+			t.Error("MinP not set correctly")
+		}
+		if req.TopA == nil || *req.TopA != 0.5 {
+			t.Error("TopA not set correctly")
+		}
+
+		w.WriteHeader(200)
+		_ = json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
+	messages := []Message{CreateUserMessage("Test")}
+
+	_, err := client.ChatComplete(context.Background(), messages,
+		WithModel("test-model"),
+		WithMinP(0.1),
+		WithTopA(0.5),
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestCompletionSamplingOptions(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req CompletionRequest
+		_ = json.NewDecoder(r.Body).Decode(&req)
+
+		if req.MinP == nil || *req.MinP != 0.2 {
+			t.Error("MinP not set correctly")
+		}
+		if req.TopA == nil || *req.TopA != 0.3 {
+			t.Error("TopA not set correctly")
+		}
+		if req.RepetitionPenalty == nil || *req.RepetitionPenalty != 1.2 {
+			t.Error("RepetitionPenalty not set correctly")
+		}
+		if req.TopK == nil || *req.TopK != 50 {
+			t.Error("TopK not set correctly")
+		}
+		if req.FrequencyPenalty == nil || *req.FrequencyPenalty != 0.5 {
+			t.Error("FrequencyPenalty not set correctly")
+		}
+		if req.PresencePenalty == nil || *req.PresencePenalty != 0.6 {
+			t.Error("PresencePenalty not set correctly")
+		}
+		if req.Seed == nil || *req.Seed != 42 {
+			t.Error("Seed not set correctly")
+		}
+
+		w.WriteHeader(200)
+		_ = json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
+
+	_, err := client.Complete(context.Background(), "test prompt",
+		WithCompletionModel("test-model"),
+		WithCompletionMinP(0.2),
+		WithCompletionTopA(0.3),
+		WithCompletionRepetitionPenalty(1.2),
+		WithCompletionTopK(50),
+		WithCompletionFrequencyPenalty(0.5),
+		WithCompletionPresencePenalty(0.6),
+		WithCompletionSeed(42),
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestRequestTimeoutOption(t *testing.T) {
+	// Create a slow server that takes 500ms to respond
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		select {
+		case <-time.After(500 * time.Millisecond):
+			w.WriteHeader(200)
+			_ = json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+		case <-r.Context().Done():
+			return
+		}
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
+	messages := []Message{CreateUserMessage("Test")}
+
+	// Request with short timeout should fail
+	_, err := client.ChatComplete(context.Background(), messages,
+		WithModel("test-model"),
+		WithRequestTimeout(50*time.Millisecond),
+	)
+	if err == nil {
+		t.Error("expected timeout error, got nil")
+	}
+}
+
+func TestRequestRetryOption(t *testing.T) {
+	callCount := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		callCount++
+		// Always return 500 to trigger retries
+		w.WriteHeader(500)
+		_ = json.NewEncoder(w).Encode(ErrorResponse{Error: APIError{Message: "server error"}})
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
+	messages := []Message{CreateUserMessage("Test")}
+
+	// Request with 0 retries should only make 1 call
+	callCount = 0
+	_, _ = client.ChatComplete(context.Background(), messages,
+		WithModel("test-model"),
+		WithRequestRetry(0, time.Millisecond),
+	)
+	if callCount != 1 {
+		t.Errorf("expected 1 call with 0 retries, got %d", callCount)
+	}
+
+	// Request with 2 retries should make 3 calls
+	callCount = 0
+	_, _ = client.ChatComplete(context.Background(), messages,
+		WithModel("test-model"),
+		WithRequestRetry(2, time.Millisecond),
+	)
+	if callCount != 3 {
+		t.Errorf("expected 3 calls with 2 retries, got %d", callCount)
+	}
+}
+
+func TestCompletionRequestTimeoutOption(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		select {
+		case <-time.After(500 * time.Millisecond):
+			w.WriteHeader(200)
+			_ = json.NewEncoder(w).Encode(CompletionResponse{ID: "test"})
+		case <-r.Context().Done():
+			return
+		}
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
+
+	_, err := client.Complete(context.Background(), "test",
+		WithCompletionModel("test-model"),
+		WithCompletionRequestTimeout(50*time.Millisecond),
+	)
+	if err == nil {
+		t.Error("expected timeout error, got nil")
+	}
+}
+
+func TestCompletionRequestRetryOption(t *testing.T) {
+	callCount := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		callCount++
+		w.WriteHeader(500)
+		_ = json.NewEncoder(w).Encode(ErrorResponse{Error: APIError{Message: "server error"}})
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"), WithBaseURL(server.URL))
+
+	callCount = 0
+	_, _ = client.Complete(context.Background(), "test",
+		WithCompletionModel("test-model"),
+		WithCompletionRequestRetry(1, time.Millisecond),
+	)
+	if callCount != 2 {
+		t.Errorf("expected 2 calls with 1 retry, got %d", callCount)
 	}
 }
 

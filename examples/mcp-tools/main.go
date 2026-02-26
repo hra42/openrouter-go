@@ -50,8 +50,8 @@ func runMCPToolConversionExample(ctx context.Context, client *openrouter.Client)
 			Description: "Read the contents of a file from the filesystem",
 			InputSchema: &openrouter.MCPInputSchema{
 				Type: "object",
-				Properties: map[string]interface{}{
-					"path": map[string]interface{}{
+				Properties: map[string]any{
+					"path": map[string]any{
 						"type":        "string",
 						"description": "The path to the file to read",
 					},
@@ -64,12 +64,12 @@ func runMCPToolConversionExample(ctx context.Context, client *openrouter.Client)
 			Description: "Write content to a file on the filesystem",
 			InputSchema: &openrouter.MCPInputSchema{
 				Type: "object",
-				Properties: map[string]interface{}{
-					"path": map[string]interface{}{
+				Properties: map[string]any{
+					"path": map[string]any{
 						"type":        "string",
 						"description": "The path to the file to write",
 					},
-					"content": map[string]interface{}{
+					"content": map[string]any{
 						"type":        "string",
 						"description": "The content to write to the file",
 					},
@@ -193,7 +193,7 @@ func runMCPJSONParsingExample(ctx context.Context, client *openrouter.Client) {
 			fmt.Printf("Arguments: %s\n", tc.Function.Arguments)
 
 			// Parse the arguments
-			var args map[string]interface{}
+			var args map[string]any
 			if err := json.Unmarshal([]byte(tc.Function.Arguments), &args); err == nil {
 				fmt.Printf("Parsed arguments: %v\n", args)
 			}
