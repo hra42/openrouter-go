@@ -54,3 +54,17 @@ func (c *Client) ListModels(ctx context.Context, opts *ListModelsOptions) (*Mode
 
 	return &response, nil
 }
+
+// ListModelsUser retrieves a list of models filtered by the authenticated user's
+// provider preferences, privacy settings, and guardrails.
+// Requires authentication via API key.
+// If the client is configured with an EU base URL (eu.openrouter.ai), results
+// will be filtered to models that satisfy EU in-region routing.
+func (c *Client) ListModelsUser(ctx context.Context) (*ModelsResponse, error) {
+	var response ModelsResponse
+	if err := c.doRequest(ctx, "GET", "/models/user", nil, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
