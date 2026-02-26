@@ -201,8 +201,8 @@ func TestCreateUserMessageWithTextFiles(t *testing.T) {
 	file1 := filepath.Join(tmpDir, "file1.txt")
 	file2 := filepath.Join(tmpDir, "file2.txt")
 
-	os.WriteFile(file1, []byte("Content 1"), 0644)
-	os.WriteFile(file2, []byte("Content 2"), 0644)
+	_ = os.WriteFile(file1, []byte("Content 1"), 0644)
+	_ = os.WriteFile(file2, []byte("Content 2"), 0644)
 
 	msg, err := CreateUserMessageWithTextFiles("Review these files:", file1, file2)
 	if err != nil {
@@ -423,7 +423,7 @@ func TestCreateUserMessageWithTextFiles_MissingFile(t *testing.T) {
 	existingFile := filepath.Join(tmpDir, "exists.txt")
 	nonexistentFile := filepath.Join(tmpDir, "nonexistent.txt")
 
-	os.WriteFile(existingFile, []byte("content"), 0644)
+	_ = os.WriteFile(existingFile, []byte("content"), 0644)
 
 	_, err := CreateUserMessageWithTextFiles("text", existingFile, nonexistentFile)
 	if err == nil {

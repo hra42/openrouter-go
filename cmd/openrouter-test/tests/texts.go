@@ -31,7 +31,7 @@ print(fibonacci(10))
 		printError("Failed to create test file", err)
 		return false
 	}
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	message, err := openrouter.CreateUserMessageWithTextFile(
 		"Review this Python code. What does it do and is there any issue? Keep your response brief.",
@@ -106,10 +106,10 @@ func HandleRequest() {
 }
 `
 
-	os.WriteFile(file1, []byte(yaml), 0644)
-	os.WriteFile(file2, []byte(goCode), 0644)
-	defer os.Remove(file1)
-	defer os.Remove(file2)
+	if err := os.WriteFile(file1, []byte(yaml), 0644); err != nil { panic(err) }
+	if err := os.WriteFile(file2, []byte(goCode), 0644); err != nil { panic(err) }
+	defer func() { _ = os.Remove(file1) }()
+	defer func() { _ = os.Remove(file2) }()
 
 	message, err := openrouter.CreateUserMessageWithTextFiles(
 		"Review these configuration and code files. Do they work together correctly? Keep your response brief.",
@@ -173,8 +173,8 @@ This is a sample project.
 - Feature 2
 `
 
-	os.WriteFile(tmpFile, []byte(markdown), 0644)
-	defer os.Remove(tmpFile)
+	if err := os.WriteFile(tmpFile, []byte(markdown), 0644); err != nil { panic(err) }
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	builder := openrouter.NewContentBuilder()
 	builder.AddText("I have a documentation file:")
@@ -234,10 +234,10 @@ func RunTextFormatValidationTest(ctx context.Context, client *openrouter.Client,
 
 	for _, ext := range supportedFormats {
 		tmpFile := filepath.Join(tmpDir, "test"+ext)
-		os.WriteFile(tmpFile, []byte("test content"), 0644)
+		if err := os.WriteFile(tmpFile, []byte("test content"), 0644); err != nil { panic(err) }
 
 		_, err := openrouter.ReadTextFile(tmpFile)
-		os.Remove(tmpFile)
+		_ = os.Remove(tmpFile)
 
 		if err != nil {
 			printError(fmt.Sprintf("Format %s should be supported", ext), err)
@@ -247,9 +247,9 @@ func RunTextFormatValidationTest(ctx context.Context, client *openrouter.Client,
 
 	// Test unsupported format
 	tmpFile := filepath.Join(tmpDir, "test.exe")
-	os.WriteFile(tmpFile, []byte("binary"), 0644)
+	if err := os.WriteFile(tmpFile, []byte("binary"), 0644); err != nil { panic(err) }
 	_, err := openrouter.ReadTextFile(tmpFile)
-	os.Remove(tmpFile)
+	_ = os.Remove(tmpFile)
 
 	if err == nil {
 		printError("Unsupported format should fail", fmt.Errorf("expected error for .exe file"))
