@@ -280,7 +280,7 @@ func TestChatCompletionOptions(t *testing.T) {
 		WithPresencePenalty(0.6),
 		WithSeed(42),
 		WithLogProbs(5),
-		WithMetadata(map[string]interface{}{
+		WithMetadata(map[string]any{
 			"custom-field": "custom-value",
 		}),
 	)
