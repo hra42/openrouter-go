@@ -375,6 +375,7 @@ type Model struct {
 	SupportedParameters []string                `json:"supported_parameters,omitempty"`
 	DefaultParameters   *ModelDefaultParameters `json:"default_parameters"`
 	Pricing             ModelPricing            `json:"pricing"`
+	ExpirationDate      *string                 `json:"expiration_date,omitempty"`
 }
 
 // ModelArchitecture contains information about a model's architecture.
@@ -383,6 +384,7 @@ type ModelArchitecture struct {
 	OutputModalities []string `json:"output_modalities"`
 	Tokenizer        string   `json:"tokenizer"`
 	InstructType     *string  `json:"instruct_type"`
+	Modality         *string  `json:"modality"`
 }
 
 // ModelTopProvider contains information about the top provider for a model.
@@ -394,7 +396,8 @@ type ModelTopProvider struct {
 
 // ModelPerRequestLimits contains per-request limits for a model.
 type ModelPerRequestLimits struct {
-	// Currently empty but may be extended in the future
+	PromptTokens     *float64 `json:"prompt_tokens"`
+	CompletionTokens *float64 `json:"completion_tokens"`
 }
 
 // ModelDefaultParameters contains default generation parameters for a model.
