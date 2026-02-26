@@ -84,8 +84,16 @@ func (c *Client) CompleteStream(ctx context.Context, prompt string, opts ...Comp
 		return nil, ErrNoModel
 	}
 
-	// Create stream
-	stream, err := c.createStream(ctx, "/completions", req)
+	// Apply per-request timeout to connection setup only
+	connectCtx := ctx
+	if req.requestTimeout != nil {
+		var cancel context.CancelFunc
+		connectCtx, cancel = context.WithTimeout(ctx, *req.requestTimeout)
+		defer cancel()
+	}
+
+	// Create stream (timeout applies to connection, not stream lifetime)
+	stream, err := c.createStream(connectCtx, "/completions", req)
 	if err != nil {
 		return nil, err
 	}

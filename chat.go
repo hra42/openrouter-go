@@ -84,8 +84,16 @@ func (c *Client) ChatCompleteStream(ctx context.Context, messages []Message, opt
 		return nil, ErrNoModel
 	}
 
-	// Create stream
-	stream, err := c.createStream(ctx, "/chat/completions", req)
+	// Apply per-request timeout to connection setup only
+	connectCtx := ctx
+	if req.requestTimeout != nil {
+		var cancel context.CancelFunc
+		connectCtx, cancel = context.WithTimeout(ctx, *req.requestTimeout)
+		defer cancel()
+	}
+
+	// Create stream (timeout applies to connection, not stream lifetime)
+	stream, err := c.createStream(connectCtx, "/chat/completions", req)
 	if err != nil {
 		return nil, err
 	}

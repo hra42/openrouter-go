@@ -563,6 +563,48 @@ func WithCompletionRoute(route string) CompletionOption {
 	}
 }
 
+// WithRequestTimeout sets a per-request timeout that overrides the client-level timeout.
+// The timeout applies to the full request lifecycle for non-streaming calls,
+// and to the connection setup phase for streaming calls.
+func WithRequestTimeout(timeout time.Duration) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.requestTimeout = &timeout
+	}
+}
+
+// WithRequestRetry sets per-request retry configuration that overrides the client-level retry settings.
+func WithRequestRetry(maxRetries int, retryDelay time.Duration) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.requestRetry = &RetryConfig{
+			MaxRetries:   maxRetries,
+			InitialDelay: retryDelay,
+			MaxDelay:     defaultMaxDelay,
+			Multiplier:   defaultMultiplier,
+			Jitter:       true,
+		}
+	}
+}
+
+// WithCompletionRequestTimeout sets a per-request timeout for completion requests.
+func WithCompletionRequestTimeout(timeout time.Duration) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.requestTimeout = &timeout
+	}
+}
+
+// WithCompletionRequestRetry sets per-request retry configuration for completion requests.
+func WithCompletionRequestRetry(maxRetries int, retryDelay time.Duration) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.requestRetry = &RetryConfig{
+			MaxRetries:   maxRetries,
+			InitialDelay: retryDelay,
+			MaxDelay:     defaultMaxDelay,
+			Multiplier:   defaultMultiplier,
+			Jitter:       true,
+		}
+	}
+}
+
 // WithZDR enables Zero Data Retention for the request.
 // This ensures the request is only routed to endpoints with Zero Data Retention policy.
 func WithZDR(enabled bool) ChatCompletionOption {

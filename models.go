@@ -37,6 +37,10 @@ type ChatCompletionRequest struct {
 	WebSearchOptions  *WebSearchOptions      `json:"web_search_options,omitempty"`
 	User              string                 `json:"user,omitempty"`
 	Metadata          map[string]interface{} `json:"-"` // Used for headers
+
+	// Transport overrides (unexported, not serialized)
+	requestTimeout *time.Duration `json:"-"`
+	requestRetry   *RetryConfig   `json:"-"`
 }
 
 // CompletionRequest represents a legacy completion request to the OpenRouter API.
@@ -71,6 +75,10 @@ type CompletionRequest struct {
 	WebSearchOptions  *WebSearchOptions      `json:"web_search_options,omitempty"`
 	User              string                 `json:"user,omitempty"`
 	Metadata          map[string]interface{} `json:"-"` // Used for headers
+
+	// Transport overrides (unexported, not serialized)
+	requestTimeout *time.Duration `json:"-"`
+	requestRetry   *RetryConfig   `json:"-"`
 }
 
 // Message represents a message in the chat completion request.
