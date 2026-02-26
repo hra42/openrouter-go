@@ -17,10 +17,10 @@ type ErrorResponse struct {
 
 // APIError represents the error details in an error response.
 type APIError struct {
-	Message  string                 `json:"message"`
-	Type     string                 `json:"type"`
-	Code     string                 `json:"code,omitempty"`
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	Message  string         `json:"message"`
+	Type     string         `json:"type"`
+	Code     string         `json:"code,omitempty"`
+	Metadata map[string]any `json:"metadata,omitempty"`
 }
 
 // Plugin represents a plugin configuration for enhancing model responses.
@@ -88,5 +88,5 @@ type FileAnnotation struct {
 	// ParsedContent contains the extracted text/data from the file
 	ParsedContent string `json:"parsed_content,omitempty"`
 	// Metadata contains additional file information
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	Metadata map[string]any `json:"metadata,omitempty"`
 }
