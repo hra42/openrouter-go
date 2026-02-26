@@ -60,7 +60,7 @@ func RunStreamTest(ctx context.Context, client *openrouter.Client, model string,
 		printError("Failed to create stream", err)
 		return false
 	}
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	fmt.Printf("   Streaming: ")
 	var fullResponse strings.Builder
