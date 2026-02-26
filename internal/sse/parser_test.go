@@ -367,7 +367,7 @@ func BenchmarkParserMultilineData(b *testing.B) {
 
 func BenchmarkParserManyEvents(b *testing.B) {
 	var buf bytes.Buffer
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		buf.WriteString("data: event data payload\n\n")
 	}
 	input := buf.String()
@@ -388,6 +388,7 @@ func BenchmarkIsEndOfStream(b *testing.B) {
 	}
 }
 
+//go:fix inline
 func durationPtr(d time.Duration) *time.Duration {
-	return &d
+	return new(d)
 }
