@@ -152,7 +152,8 @@ func (c *Client) validateResponsesInput(input any) error {
 					Message: "type is required",
 				}
 			}
-			if item.Type == "message" {
+			switch item.Type {
+			case "message":
 				if item.Role == "" {
 					return &ValidationError{
 						Field:   fmt.Sprintf("input[%d].role", i),
@@ -170,7 +171,7 @@ func (c *Client) validateResponsesInput(input any) error {
 						Message: fmt.Sprintf("invalid role '%s', must be one of: system, user, assistant", item.Role),
 					}
 				}
-			} else if item.Type == "function_call_output" {
+			case "function_call_output":
 				if item.CallID == "" {
 					return &ValidationError{
 						Field:   fmt.Sprintf("input[%d].call_id", i),
