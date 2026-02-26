@@ -320,6 +320,230 @@ func TestDoRequestRetry(t *testing.T) {
 	}
 }
 
+func TestConnectionResetByPeer(t *testing.T) {
+	// Server sends partial response then closes connection
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hijacker, ok := w.(http.Hijacker)
+		if !ok {
+			t.Fatal("server doesn't support hijacking")
+		}
+		conn, buf, err := hijacker.Hijack()
+		if err != nil {
+			t.Fatalf("hijack failed: %v", err)
+		}
+		// Send partial HTTP response and close
+		_, _ = buf.WriteString("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"id\":")
+		_ = buf.Flush()
+		_ = conn.Close()
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+		WithRetry(0, 0),
+	)
+
+	req := ChatCompletionRequest{
+		Model:    "test-model",
+		Messages: []Message{{Role: "user", Content: "Hello"}},
+	}
+
+	var resp ChatCompletionResponse
+	err := client.doRequest(context.Background(), "POST", "/chat/completions", req, &resp)
+	if err == nil {
+		t.Fatal("expected error from connection reset")
+	}
+}
+
+func TestNoRetryOn4xxErrors(t *testing.T) {
+	tests := []struct {
+		name       string
+		statusCode int
+	}{
+		{"400 Bad Request", 400},
+		{"401 Unauthorized", 401},
+		{"403 Forbidden", 403},
+		{"404 Not Found", 404},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			attempts := 0
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				attempts++
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(tt.statusCode)
+				_ = json.NewEncoder(w).Encode(ErrorResponse{
+					Error: APIError{
+						Message: "client error",
+						Type:    "invalid_request_error",
+					},
+				})
+			}))
+			defer server.Close()
+
+			client := NewClient(WithAPIKey("test-key"),
+				WithBaseURL(server.URL),
+				WithRetry(3, 10*time.Millisecond),
+			)
+
+			req := ChatCompletionRequest{
+				Model:    "test-model",
+				Messages: []Message{{Role: "user", Content: "Hello"}},
+			}
+
+			var resp ChatCompletionResponse
+			err := client.doRequest(context.Background(), "POST", "/chat/completions", req, &resp)
+
+			if err == nil {
+				t.Fatal("expected error")
+			}
+			if attempts != 1 {
+				t.Errorf("expected 1 attempt (no retry), got %d", attempts)
+			}
+		})
+	}
+}
+
+func TestRetryOn5xxErrors(t *testing.T) {
+	tests := []struct {
+		name       string
+		statusCode int
+	}{
+		{"500 Internal Server Error", 500},
+		{"502 Bad Gateway", 502},
+		{"503 Service Unavailable", 503},
+		{"504 Gateway Timeout", 504},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			attempts := 0
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				attempts++
+				if attempts < 3 {
+					w.WriteHeader(tt.statusCode)
+					_, _ = w.Write([]byte("server error"))
+					return
+				}
+				response := ChatCompletionResponse{
+					ID:    "success",
+					Model: "test-model",
+				}
+				w.Header().Set("Content-Type", "application/json")
+				_ = json.NewEncoder(w).Encode(response)
+			}))
+			defer server.Close()
+
+			client := NewClient(WithAPIKey("test-key"),
+				WithBaseURL(server.URL),
+				WithRetry(3, 10*time.Millisecond),
+			)
+
+			req := ChatCompletionRequest{
+				Model:    "test-model",
+				Messages: []Message{{Role: "user", Content: "Hello"}},
+			}
+
+			var resp ChatCompletionResponse
+			err := client.doRequest(context.Background(), "POST", "/chat/completions", req, &resp)
+
+			if err != nil {
+				t.Fatalf("expected success after retries, got: %v", err)
+			}
+			if attempts != 3 {
+				t.Errorf("expected 3 attempts, got %d", attempts)
+			}
+		})
+	}
+}
+
+func TestRetryOnConnectionReset(t *testing.T) {
+	attempts := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		attempts++
+		if attempts < 3 {
+			// Hijack and close to simulate connection reset
+			hijacker, ok := w.(http.Hijacker)
+			if !ok {
+				t.Fatal("server doesn't support hijacking")
+			}
+			conn, _, err := hijacker.Hijack()
+			if err != nil {
+				t.Fatalf("hijack failed: %v", err)
+			}
+			_ = conn.Close()
+			return
+		}
+		// Succeed on 3rd attempt
+		response := ChatCompletionResponse{
+			ID:    "success",
+			Model: "test-model",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+		WithRetry(3, 10*time.Millisecond),
+	)
+
+	req := ChatCompletionRequest{
+		Model:    "test-model",
+		Messages: []Message{{Role: "user", Content: "Hello"}},
+	}
+
+	var resp ChatCompletionResponse
+	err := client.doRequest(context.Background(), "POST", "/chat/completions", req, &resp)
+
+	if err != nil {
+		t.Fatalf("expected success after retries, got: %v", err)
+	}
+	if attempts != 3 {
+		t.Errorf("expected 3 attempts, got %d", attempts)
+	}
+	if resp.ID != "success" {
+		t.Errorf("expected response ID 'success', got %q", resp.ID)
+	}
+}
+
+func TestContextCancellationDuringRetry(t *testing.T) {
+	attempts := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		attempts++
+		w.WriteHeader(500)
+		_, _ = w.Write([]byte("server error"))
+	}))
+	defer server.Close()
+
+	client := NewClient(WithAPIKey("test-key"),
+		WithBaseURL(server.URL),
+		WithRetry(10, 100*time.Millisecond), // Many retries with long delay
+	)
+
+	// Cancel quickly so it times out during retry backoff
+	ctx, cancel := context.WithTimeout(context.Background(), 150*time.Millisecond)
+	defer cancel()
+
+	req := ChatCompletionRequest{
+		Model:    "test-model",
+		Messages: []Message{{Role: "user", Content: "Hello"}},
+	}
+
+	var resp ChatCompletionResponse
+	err := client.doRequest(ctx, "POST", "/chat/completions", req, &resp)
+
+	if err == nil {
+		t.Fatal("expected error from context cancellation during retry")
+	}
+	// Should have been cancelled before exhausting all retries
+	if attempts >= 10 {
+		t.Errorf("expected fewer than 10 attempts due to context cancellation, got %d", attempts)
+	}
+}
+
 func TestContextCancellation(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Simulate slow response
