@@ -232,15 +232,22 @@ func (es *eventStream) Close() error {
 
 // attemptReconnect attempts to reconnect to the stream.
 func (es *eventStream) attemptReconnect(attempt int) bool {
+	// Check circuit breaker if configured
+	if es.client.circuitBreaker != nil {
+		if !es.client.circuitBreaker.AllowRequest() {
+			return false
+		}
+	}
+
 	// Close current connection
 	if es.response != nil && es.response.Body != nil {
 		_ = es.response.Body.Close()
 	}
 
-	// Calculate backoff
-	backoff := time.Duration(attempt) * time.Second
-	if backoff > maxReconnectBackoff {
-		backoff = maxReconnectBackoff
+	// Calculate backoff using stream config
+	backoff := time.Duration(attempt) * es.config.InitialBackoff
+	if backoff > es.config.MaxBackoff {
+		backoff = es.config.MaxBackoff
 	}
 
 	// Wait before reconnecting
@@ -269,12 +276,23 @@ func (es *eventStream) attemptReconnect(attempt int) bool {
 	// Make the request
 	resp, err := es.client.httpClient.Do(req)
 	if err != nil {
+		if es.client.circuitBreaker != nil {
+			es.client.circuitBreaker.RecordFailure()
+		}
 		return false
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		_ = resp.Body.Close()
+		if es.client.circuitBreaker != nil {
+			es.client.circuitBreaker.RecordFailure()
+		}
 		return false
+	}
+
+	// Record success with circuit breaker
+	if es.client.circuitBreaker != nil {
+		es.client.circuitBreaker.RecordSuccess()
 	}
 
 	// Update stream with new connection

@@ -111,3 +111,21 @@ func IsValidationError(err error) (*ValidationError, bool) {
 	ok := errors.As(err, &valErr)
 	return valErr, ok
 }
+
+// CircuitBreakerError is returned when a request is blocked by the circuit breaker.
+type CircuitBreakerError struct {
+	State   CircuitState
+	Message string
+}
+
+// Error implements the error interface.
+func (e *CircuitBreakerError) Error() string {
+	return fmt.Sprintf("circuit breaker error (state: %s): %s", e.State, e.Message)
+}
+
+// IsCircuitBreakerError checks if an error is a CircuitBreakerError and returns it.
+func IsCircuitBreakerError(err error) (*CircuitBreakerError, bool) {
+	var cbErr *CircuitBreakerError
+	ok := errors.As(err, &cbErr)
+	return cbErr, ok
+}
