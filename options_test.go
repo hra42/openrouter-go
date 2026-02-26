@@ -510,10 +510,10 @@ func TestUntestedOptions(t *testing.T) {
 		CreateUserMessage("Override"),
 	}
 
-	schema := map[string]interface{}{
+	schema := map[string]any{
 		"type": "object",
-		"properties": map[string]interface{}{
-			"field": map[string]interface{}{"type": "string"},
+		"properties": map[string]any{
+			"field": map[string]any{"type": "string"},
 		},
 	}
 
@@ -587,7 +587,7 @@ func TestCompletionUntestedOptions(t *testing.T) {
 		Order: []string{"openai"},
 	}
 
-	schema := map[string]interface{}{
+	schema := map[string]any{
 		"type": "object",
 	}
 

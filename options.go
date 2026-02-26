@@ -190,7 +190,7 @@ func WithTools(tools ...Tool) ChatCompletionOption {
 }
 
 // WithToolChoice sets the tool choice strategy.
-func WithToolChoice(toolChoice interface{}) ChatCompletionOption {
+func WithToolChoice(toolChoice any) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
 		r.ToolChoice = toolChoice
 	}
@@ -258,7 +258,7 @@ func WithRoute(route string) ChatCompletionOption {
 }
 
 // WithMetadata sets metadata headers for the request.
-func WithMetadata(metadata map[string]interface{}) ChatCompletionOption {
+func WithMetadata(metadata map[string]any) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
 		r.Metadata = metadata
 	}
@@ -370,7 +370,7 @@ func setRoute[T RequestConfig](r T, route string) {
 }
 
 // setMetadata is a generic helper to set metadata.
-func setMetadata[T RequestConfig](r T, metadata map[string]interface{}) {
+func setMetadata[T RequestConfig](r T, metadata map[string]any) {
 	switch req := any(r).(type) {
 	case *ChatCompletionRequest:
 		req.Metadata = metadata
@@ -553,7 +553,7 @@ func WithCompletionProvider(provider Provider) CompletionOption {
 }
 
 // WithCompletionMetadata sets metadata headers for the completion request.
-func WithCompletionMetadata(metadata map[string]interface{}) CompletionOption {
+func WithCompletionMetadata(metadata map[string]any) CompletionOption {
 	return func(r *CompletionRequest) {
 		setMetadata(r, metadata)
 	}
@@ -793,7 +793,7 @@ func WithCompletionFloorPrice() CompletionOption {
 
 // WithJSONSchema sets the response format to use a specific JSON schema for structured outputs.
 // This ensures the model response follows the provided schema exactly.
-func WithJSONSchema(name string, strict bool, schema map[string]interface{}) ChatCompletionOption {
+func WithJSONSchema(name string, strict bool, schema map[string]any) ChatCompletionOption {
 	return func(r *ChatCompletionRequest) {
 		format := &ResponseFormat{
 			Type: "json_schema",
@@ -808,7 +808,7 @@ func WithJSONSchema(name string, strict bool, schema map[string]interface{}) Cha
 }
 
 // WithCompletionJSONSchema sets the response format to use a specific JSON schema for completion requests.
-func WithCompletionJSONSchema(name string, strict bool, schema map[string]interface{}) CompletionOption {
+func WithCompletionJSONSchema(name string, strict bool, schema map[string]any) CompletionOption {
 	return func(r *CompletionRequest) {
 		format := &ResponseFormat{
 			Type: "json_schema",
