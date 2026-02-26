@@ -2,7 +2,6 @@ package openrouter
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -364,14 +363,3 @@ func assertEqualInt(t *testing.T, field string, got, want int) {
 	}
 }
 
-//go:fix inline
-func strPtr(s string) *string { return new(s) }
-
-//go:fix inline
-func float64Ptr(f float64) *float64 { return new(f) }
-
-//go:fix inline
-func boolPtr(b bool) *bool { return new(b) }
-
-// Ensure format verbs are used (prevent unused import)
-var _ = fmt.Sprintf

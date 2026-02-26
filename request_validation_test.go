@@ -7,10 +7,6 @@ import (
 //go:fix inline
 func floatPtr(f float64) *float64 { return new(f) }
 
-//go:fix inline
-func intPtr(i int) *int { return new(i) }
-
-// boolPtr is declared in broadcast_test.go
 
 func TestValidateChatCompletionParams(t *testing.T) {
 	tests := []struct {
