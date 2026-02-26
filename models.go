@@ -464,6 +464,57 @@ type ModelEndpointPricing struct {
 	Completion string `json:"completion"`
 }
 
+// PercentileStats contains latency or throughput percentile statistics.
+type PercentileStats struct {
+	P50 float64 `json:"p50"`
+	P75 float64 `json:"p75"`
+	P90 float64 `json:"p90"`
+	P99 float64 `json:"p99"`
+}
+
+// PublicEndpointPricing contains pricing information for a public endpoint.
+type PublicEndpointPricing struct {
+	Prompt            string `json:"prompt"`
+	Completion        string `json:"completion"`
+	Request           string `json:"request,omitempty"`
+	Image             string `json:"image,omitempty"`
+	ImageToken        string `json:"image_token,omitempty"`
+	ImageOutput       string `json:"image_output,omitempty"`
+	Audio             string `json:"audio,omitempty"`
+	AudioOutput       string `json:"audio_output,omitempty"`
+	InputAudioCache   string `json:"input_audio_cache,omitempty"`
+	WebSearch         string `json:"web_search,omitempty"`
+	InternalReasoning string `json:"internal_reasoning,omitempty"`
+	InputCacheRead    string `json:"input_cache_read,omitempty"`
+	InputCacheWrite   string `json:"input_cache_write,omitempty"`
+	Discount          string `json:"discount,omitempty"`
+}
+
+// PublicEndpoint represents a single endpoint from the ZDR endpoints listing.
+type PublicEndpoint struct {
+	Name                    string                `json:"name"`
+	ModelID                 string                `json:"model_id"`
+	ModelName               string                `json:"model_name"`
+	ContextLength           float64               `json:"context_length"`
+	Pricing                 PublicEndpointPricing `json:"pricing"`
+	ProviderName            string                `json:"provider_name"`
+	Tag                     *string               `json:"tag"`
+	Quantization            *string               `json:"quantization"`
+	MaxCompletionTokens     *float64              `json:"max_completion_tokens"`
+	MaxPromptTokens         *float64              `json:"max_prompt_tokens"`
+	SupportedParameters     []string              `json:"supported_parameters"`
+	Status                  float64               `json:"status"`
+	UptimeLast30m           *float64              `json:"uptime_last_30m"`
+	SupportsImplicitCaching *bool                 `json:"supports_implicit_caching"`
+	LatencyLast30m          *PercentileStats      `json:"latency_last_30m"`
+	ThroughputLast30m       *PercentileStats      `json:"throughput_last_30m"`
+}
+
+// ZDREndpointsResponse represents the response from the ZDR endpoints listing.
+type ZDREndpointsResponse struct {
+	Data []PublicEndpoint `json:"data"`
+}
+
 // ProvidersResponse represents the response from the list providers endpoint.
 type ProvidersResponse struct {
 	Data []ProviderInfo `json:"data"`
