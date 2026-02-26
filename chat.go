@@ -31,6 +31,11 @@ func (c *Client) ChatComplete(ctx context.Context, messages []Message, opts ...C
 		}
 	}
 
+	// Validate request parameters
+	if err := validateChatCompletionParams(req); err != nil {
+		return nil, err
+	}
+
 	// Handle model suffixes
 	req.Model = processModelSuffix(req.Model, req)
 
@@ -74,6 +79,11 @@ func (c *Client) ChatCompleteStream(ctx context.Context, messages []Message, opt
 		if err := validateResponseFormat(req.ResponseFormat); err != nil {
 			return nil, err
 		}
+	}
+
+	// Validate request parameters
+	if err := validateChatCompletionParams(req); err != nil {
+		return nil, err
 	}
 
 	// Handle model suffixes

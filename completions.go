@@ -31,6 +31,11 @@ func (c *Client) Complete(ctx context.Context, prompt string, opts ...Completion
 		}
 	}
 
+	// Validate request parameters
+	if err := validateCompletionParams(req); err != nil {
+		return nil, err
+	}
+
 	// Handle model suffixes
 	req.Model = processModelSuffix(req.Model, req)
 
@@ -74,6 +79,11 @@ func (c *Client) CompleteStream(ctx context.Context, prompt string, opts ...Comp
 		if err := validateResponseFormat(req.ResponseFormat); err != nil {
 			return nil, err
 		}
+	}
+
+	// Validate request parameters
+	if err := validateCompletionParams(req); err != nil {
+		return nil, err
 	}
 
 	// Handle model suffixes
