@@ -10,8 +10,6 @@ import (
 const (
 	// defaultJitterFactor is the default jitter factor for retry backoff (±25%).
 	defaultJitterFactor = 0.25
-	// maxReconnectBackoff is the maximum backoff duration for stream reconnection attempts.
-	maxReconnectBackoff = 10 * time.Second
 	// defaultMaxDelay is the default maximum delay for retry backoff.
 	defaultMaxDelay = 30 * time.Second
 	// defaultMultiplier is the default multiplier for exponential backoff.

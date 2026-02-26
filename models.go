@@ -41,6 +41,7 @@ type ChatCompletionRequest struct {
 	// Transport overrides (unexported, not serialized)
 	requestTimeout *time.Duration `json:"-"`
 	requestRetry   *RetryConfig   `json:"-"`
+	streamConfig   *StreamConfig  `json:"-"`
 }
 
 // CompletionRequest represents a legacy completion request to the OpenRouter API.
@@ -79,6 +80,7 @@ type CompletionRequest struct {
 	// Transport overrides (unexported, not serialized)
 	requestTimeout *time.Duration `json:"-"`
 	requestRetry   *RetryConfig   `json:"-"`
+	streamConfig   *StreamConfig  `json:"-"`
 }
 
 // Message represents a message in the chat completion request.

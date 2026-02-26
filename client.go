@@ -22,12 +22,14 @@ type Client struct {
 	httpClient *http.Client
 
 	// Optional configurations
-	defaultModel  string
-	referer       string
-	appName       string
-	maxRetries    int
-	retryDelay    time.Duration
-	customHeaders map[string]string
+	defaultModel   string
+	referer        string
+	appName        string
+	maxRetries     int
+	retryDelay     time.Duration
+	customHeaders  map[string]string
+	streamConfig   *StreamConfig
+	circuitBreaker *CircuitBreaker
 }
 
 // NewClient creates a new OpenRouter API client.

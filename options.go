@@ -71,6 +71,23 @@ func WithRetry(maxRetries int, retryDelay time.Duration) ClientOption {
 	}
 }
 
+// WithStreamConfig sets the stream configuration for the client.
+// This controls stream reconnection behavior and channel buffering.
+func WithStreamConfig(config *StreamConfig) ClientOption {
+	return func(c *Client) {
+		c.streamConfig = config
+	}
+}
+
+// WithCircuitBreaker enables a circuit breaker for stream reconnections.
+// The circuit breaker tracks consecutive failures and stops reconnection
+// attempts when the failure threshold is reached.
+func WithCircuitBreaker(config *CircuitBreakerConfig) ClientOption {
+	return func(c *Client) {
+		c.circuitBreaker = NewCircuitBreaker(config)
+	}
+}
+
 // WithHeader adds a custom header to all requests.
 func WithHeader(key, value string) ClientOption {
 	return func(c *Client) {
@@ -876,5 +893,55 @@ func WithUser(user string) ChatCompletionOption {
 func WithCompletionUser(user string) CompletionOption {
 	return func(r *CompletionRequest) {
 		setUser(r, user)
+	}
+}
+
+// ensureStreamConfig ensures the request has a stream config initialized with defaults.
+func ensureStreamConfig(cfg **StreamConfig) *StreamConfig {
+	if *cfg == nil {
+		*cfg = DefaultStreamConfig()
+	}
+	return *cfg
+}
+
+// WithStreamMaxRetries sets the maximum number of stream reconnection retries for this request.
+func WithStreamMaxRetries(n int) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		ensureStreamConfig(&r.streamConfig).MaxRetries = n
+	}
+}
+
+// WithStreamMaxBackoff sets the maximum backoff duration for stream reconnection for this request.
+func WithStreamMaxBackoff(d time.Duration) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		ensureStreamConfig(&r.streamConfig).MaxBackoff = d
+	}
+}
+
+// WithStreamChannelBuffer sets the events channel buffer size for this request.
+func WithStreamChannelBuffer(n int) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		ensureStreamConfig(&r.streamConfig).ChannelBuffer = n
+	}
+}
+
+// WithCompletionStreamMaxRetries sets the maximum number of stream reconnection retries for this completion request.
+func WithCompletionStreamMaxRetries(n int) CompletionOption {
+	return func(r *CompletionRequest) {
+		ensureStreamConfig(&r.streamConfig).MaxRetries = n
+	}
+}
+
+// WithCompletionStreamMaxBackoff sets the maximum backoff duration for stream reconnection for this completion request.
+func WithCompletionStreamMaxBackoff(d time.Duration) CompletionOption {
+	return func(r *CompletionRequest) {
+		ensureStreamConfig(&r.streamConfig).MaxBackoff = d
+	}
+}
+
+// WithCompletionStreamChannelBuffer sets the events channel buffer size for this completion request.
+func WithCompletionStreamChannelBuffer(n int) CompletionOption {
+	return func(r *CompletionRequest) {
+		ensureStreamConfig(&r.streamConfig).ChannelBuffer = n
 	}
 }

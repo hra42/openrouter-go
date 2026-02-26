@@ -29,6 +29,7 @@ type eventStream struct {
 	client    *Client
 	endpoint  string
 	body      interface{}
+	config    *StreamConfig
 }
 
 // setStreamHeaders sets all required headers for SSE streaming requests.
@@ -97,6 +98,16 @@ func (c *Client) createStream(ctx context.Context, endpoint string, body interfa
 		}
 	}
 
+	// Resolve stream config from request → client → default
+	var reqStreamConfig *StreamConfig
+	switch r := body.(type) {
+	case *ChatCompletionRequest:
+		reqStreamConfig = r.streamConfig
+	case *CompletionRequest:
+		reqStreamConfig = r.streamConfig
+	}
+	config := resolveStreamConfig(reqStreamConfig, c.streamConfig)
+
 	// Create stream context
 	streamCtx, cancel := context.WithCancel(ctx)
 
@@ -105,11 +116,12 @@ func (c *Client) createStream(ctx context.Context, endpoint string, body interfa
 		cancel:    cancel,
 		response:  resp,
 		scanner:   sse.NewScanner(resp.Body),
-		events:    make(chan StreamEvent, 10),
+		events:    make(chan StreamEvent, config.ChannelBuffer),
 		reconnect: true,
 		client:    c,
 		endpoint:  endpoint,
 		body:      body,
+		config:    config,
 	}
 
 	// Start reading events
@@ -124,7 +136,6 @@ func (es *eventStream) readEvents() {
 	defer es.response.Body.Close() //nolint:errcheck
 
 	retryCount := 0
-	maxRetries := 3
 
 	for {
 		// Check if context is cancelled
@@ -139,7 +150,7 @@ func (es *eventStream) readEvents() {
 		if !es.scanner.Scan() {
 			if err := es.scanner.Err(); err != nil {
 				// Handle connection errors with reconnection
-				if es.reconnect && retryCount < maxRetries {
+				if es.reconnect && retryCount < es.config.MaxRetries {
 					retryCount++
 					if es.attemptReconnect(retryCount) {
 						continue
