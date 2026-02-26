@@ -59,7 +59,7 @@ func TestChatComplete(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -225,7 +225,7 @@ func TestValidateChatRequest(t *testing.T) {
 func TestChatCompletionOptions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req ChatCompletionRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		// Verify all options were applied
 		if req.Temperature == nil || *req.Temperature != 0.8 {
@@ -262,7 +262,7 @@ func TestChatCompletionOptions(t *testing.T) {
 		}
 
 		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
+		_ = json.NewEncoder(w).Encode(ChatCompletionResponse{ID: "test"})
 	}))
 	defer server.Close()
 
@@ -435,7 +435,7 @@ func TestChatCompleteStream(t *testing.T) {
 		}
 
 		for _, event := range events {
-			w.Write([]byte(event + "\n\n"))
+			_, _ = w.Write([]byte(event + "\n\n"))
 			flusher.Flush()
 		}
 	}))

@@ -122,7 +122,7 @@ func TestParseAnnotations(t *testing.T) {
 func TestWithPlugins(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req ChatCompletionRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		if len(req.Plugins) != 2 {
 			t.Errorf("expected 2 plugins, got %d", len(req.Plugins))
@@ -137,7 +137,7 @@ func TestWithPlugins(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(ChatCompletionResponse{
+		_ = json.NewEncoder(w).Encode(ChatCompletionResponse{
 			ID:      "test-123",
 			Choices: []Choice{{Message: Message{Content: "Response with plugins"}}},
 		})
@@ -168,7 +168,7 @@ func TestWithPlugins(t *testing.T) {
 func TestWithWebSearchOptions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req ChatCompletionRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		if req.WebSearchOptions == nil {
 			t.Error("expected WebSearchOptions to be set")
@@ -177,7 +177,7 @@ func TestWithWebSearchOptions(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(ChatCompletionResponse{
+		_ = json.NewEncoder(w).Encode(ChatCompletionResponse{
 			ID:      "test-456",
 			Choices: []Choice{{Message: Message{Content: "Response with search options"}}},
 		})
@@ -207,7 +207,7 @@ func TestWithWebSearchOptions(t *testing.T) {
 func TestChatCompleteWithOnlineSuffix(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req ChatCompletionRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		if req.Model != "openai/gpt-4o:online" {
 			t.Errorf("expected model 'openai/gpt-4o:online', got %q", req.Model)
@@ -215,7 +215,7 @@ func TestChatCompleteWithOnlineSuffix(t *testing.T) {
 
 		// Send response with annotations
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(ChatCompletionResponse{
+		_ = json.NewEncoder(w).Encode(ChatCompletionResponse{
 			ID: "test-789",
 			Choices: []Choice{{
 				Message: Message{
