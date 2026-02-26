@@ -25,7 +25,8 @@ func main() {
   pdfbuilder, base64pdf, pdfcomparison, textfile, multipletextfiles, textbuilder, textformats,
   models, endpoints, providers, credits, activity, key, listkeys, createkey, updatekey, deletekey,
   embedding, batchembedding, embeddingwithoptions, embeddingmodels, chunking, chunkedembedding,
-  responses, responses-reasoning, responses-tools, responses-websearch, responses-stream`)
+  responses, responses-reasoning, responses-tools, responses-websearch, responses-stream,
+  anthropic, anthropic-tools, anthropic-thinking, anthropic-system, anthropic-stream`)
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -393,6 +394,36 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "anthropic":
+		if tests.RunAnthropicBasicTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "anthropic-tools":
+		if tests.RunAnthropicWithToolsTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "anthropic-thinking":
+		if tests.RunAnthropicWithThinkingTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "anthropic-system":
+		if tests.RunAnthropicWithSystemTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "anthropic-stream":
+		if tests.RunAnthropicStreamTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -469,6 +500,11 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, e
 		{"Responses API Tools", func() bool { return tests.RunResponsesToolsTest(ctx, client, model, maxTokens, verbose) }},
 		{"Responses API Web Search", func() bool { return tests.RunResponsesWebSearchTest(ctx, client, model, maxTokens, verbose) }},
 		{"Responses API Streaming", func() bool { return tests.RunResponsesStreamTest(ctx, client, model, maxTokens, verbose) }},
+		{"Anthropic Messages Basic", func() bool { return tests.RunAnthropicBasicTest(ctx, client, model, maxTokens, verbose) }},
+		{"Anthropic Messages Tools", func() bool { return tests.RunAnthropicWithToolsTest(ctx, client, model, maxTokens, verbose) }},
+		{"Anthropic Messages Thinking", func() bool { return tests.RunAnthropicWithThinkingTest(ctx, client, model, maxTokens, verbose) }},
+		{"Anthropic Messages System", func() bool { return tests.RunAnthropicWithSystemTest(ctx, client, model, maxTokens, verbose) }},
+		{"Anthropic Messages Streaming", func() bool { return tests.RunAnthropicStreamTest(ctx, client, model, maxTokens, verbose) }},
 	}
 
 	for _, tc := range testCases {
