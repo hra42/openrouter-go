@@ -207,7 +207,7 @@ func TestOTLPAnyValue_StringVal(t *testing.T) {
 		want string
 	}{
 		{"string", OTLPAnyValue{StringValue: new("hello")}, "hello"},
-		{"int", OTLPAnyValue{IntValue: new("42")}, "42"},
+		{"int", OTLPAnyValue{IntValue: flexIntPtr("42")}, "42"},
 		{"double", OTLPAnyValue{DoubleValue: new(3.14)}, "3.14"},
 		{"bool true", OTLPAnyValue{BoolValue: new(true)}, "true"},
 		{"bool false", OTLPAnyValue{BoolValue: new(false)}, "false"},
@@ -330,6 +330,26 @@ func TestExtractBroadcastTraces_IntValueTokens(t *testing.T) {
 	assertEqualInt(t, "TotalTokens", traces[0].TotalTokens, 300)
 }
 
+func TestExtractBroadcastTraces_IntValueAsNumber(t *testing.T) {
+	// Some implementations send intValue as a JSON number instead of a string
+	payload := `{"resourceSpans":[{"resource":{"attributes":[]},"scopeSpans":[{"spans":[{
+		"traceId":"t","spanId":"s","name":"test","kind":1,
+		"startTimeUnixNano":"0","endTimeUnixNano":"0",
+		"attributes":[
+			{"key":"gen_ai.usage.prompt_tokens","value":{"intValue":100}},
+			{"key":"gen_ai.usage.completion_tokens","value":{"intValue":200}}
+		]
+	}]}]}]}`
+
+	traces, err := ParseBroadcastTraces([]byte(payload))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	assertEqualInt(t, "PromptTokens", traces[0].PromptTokens, 100)
+	assertEqualInt(t, "CompletionTokens", traces[0].CompletionTokens, 200)
+	assertEqualInt(t, "TotalTokens", traces[0].TotalTokens, 300)
+}
+
 func TestParseBroadcastTraces_Convenience(t *testing.T) {
 	// Error case
 	_, err := ParseBroadcastTraces([]byte("{bad}"))
@@ -361,5 +381,10 @@ func assertEqualInt(t *testing.T, field string, got, want int) {
 	if got != want {
 		t.Errorf("%s = %d, want %d", field, got, want)
 	}
+}
+
+func flexIntPtr(s string) *FlexInt {
+	f := FlexInt(s)
+	return &f
 }
 

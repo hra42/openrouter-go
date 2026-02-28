@@ -1,7 +1,9 @@
 package openrouter
 
 import (
+	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -55,13 +57,45 @@ type OTLPAttribute struct {
 }
 
 // OTLPAnyValue represents a polymorphic OTLP value.
-// OTLP encodes int64 values as strings.
+// The OTLP spec encodes int64 values as strings, but some implementations
+// send them as JSON numbers. IntValue accepts both forms.
 type OTLPAnyValue struct {
 	StringValue *string         `json:"stringValue,omitempty"`
-	IntValue    *string         `json:"intValue,omitempty"`
+	IntValue    *FlexInt        `json:"intValue,omitempty"`
 	DoubleValue *float64        `json:"doubleValue,omitempty"`
 	BoolValue   *bool           `json:"boolValue,omitempty"`
 	ArrayValue  *OTLPArrayValue `json:"arrayValue,omitempty"`
+}
+
+// FlexInt is a string-backed integer that can unmarshal from both
+// a JSON string ("150") and a JSON number (150).
+type FlexInt string
+
+// UnmarshalJSON implements json.Unmarshaler for FlexInt.
+func (f *FlexInt) UnmarshalJSON(data []byte) error {
+	// Try string first (OTLP canonical form).
+	var s string
+	if err := json.Unmarshal(data, &s); err == nil {
+		*f = FlexInt(s)
+		return nil
+	}
+	// Fall back to number.
+	var n int64
+	if err := json.Unmarshal(data, &n); err == nil {
+		*f = FlexInt(strconv.FormatInt(n, 10))
+		return nil
+	}
+	return fmt.Errorf("intValue: cannot unmarshal %s as string or number", string(data))
+}
+
+// String returns the string representation.
+func (f FlexInt) String() string {
+	return string(f)
+}
+
+// MarshalJSON implements json.Marshaler, encoding as a JSON string per the OTLP spec.
+func (f FlexInt) MarshalJSON() ([]byte, error) {
+	return json.Marshal(string(f))
 }
 
 // StringVal returns the value as a string regardless of its underlying type.
@@ -70,7 +104,7 @@ func (v OTLPAnyValue) StringVal() string {
 	case v.StringValue != nil:
 		return *v.StringValue
 	case v.IntValue != nil:
-		return *v.IntValue
+		return v.IntValue.String()
 	case v.DoubleValue != nil:
 		return fmt.Sprintf("%g", *v.DoubleValue)
 	case v.BoolValue != nil:
