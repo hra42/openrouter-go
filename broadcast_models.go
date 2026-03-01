@@ -144,17 +144,75 @@ type BroadcastTrace struct {
 	EndTime   time.Time
 	Duration  time.Duration
 
-	Model            string
-	PromptTokens     int
+	// Deprecated: Use InputTokens instead. Still populated for backward compatibility.
+	PromptTokens int
+	// Deprecated: Use OutputTokens instead. Still populated for backward compatibility.
 	CompletionTokens int
 	TotalTokens      int
-	Cost             float64
+	// Deprecated: Use TotalCost instead. Still populated for backward compatibility.
+	Cost float64
+	// Deprecated: Use ResponseModel instead. Still populated for backward compatibility.
+	Model string
+
+	// Token usage fields (new canonical names).
+	InputTokens  int // gen_ai.usage.input_tokens
+	OutputTokens int // gen_ai.usage.output_tokens
+
+	// Cost breakdown fields.
+	TotalCost  float64 // gen_ai.usage.total_cost
+	InputCost  float64 // gen_ai.usage.input_cost
+	OutputCost float64 // gen_ai.usage.output_cost
+
+	// Token detail fields.
+	CachedTokens      int // gen_ai.usage.input_tokens.cached
+	AudioInputTokens  int // gen_ai.usage.input_tokens.audio
+	VideoInputTokens  int // gen_ai.usage.input_tokens.video
+	ImageOutputTokens int // gen_ai.usage.output_tokens.image
+	ReasoningTokens   int // gen_ai.usage.output_tokens.reasoning
+
+	// GenAI semantic convention fields.
+	OperationName  string // gen_ai.operation.name
+	System         string // gen_ai.system
+	ProviderName   string // gen_ai.provider.name
+	ResponseModel  string // gen_ai.response.model
+	FinishReason   string // gen_ai.response.finish_reason
+	FinishReasons  string // gen_ai.response.finish_reasons (JSON array)
+	RequestModel   string // gen_ai.request.model
+
+	// OpenRouter-specific fields.
+	ProviderSlug           string  // openrouter.provider_slug
+	OpenRouterProviderName string  // openrouter.provider_name
+	APIKeyName             string  // openrouter.api_key_name
+	EntityID               string  // openrouter.entity_id
+	OpenRouterUserID       string  // openrouter.user_id
+	OpenRouterFinishReason string  // openrouter.finish_reason
+	InputUnitPrice         float64 // openrouter.input_unit_price
+	OutputUnitPrice        float64 // openrouter.output_unit_price
+	Source                 string  // openrouter.source
+
+	// Content fields.
+	Prompt     string // gen_ai.prompt
+	Completion string // gen_ai.completion
+
+	// Span-level fields.
+	SpanType  string // span.type
+	SpanLevel string // span.level
+	SpanInput string // span.input
+	SpanOutput string // span.output
+
+	// Trace-level fields.
+	TraceName   string // trace.name
+	TraceInput  string // trace.input
+	TraceOutput string // trace.output
+	TraceTags   string // trace.tags (JSON array)
 
 	UserID    string
 	SessionID string
 
 	// Metadata contains values from trace.metadata.* attributes (prefix stripped).
 	Metadata map[string]string
+	// SpanMetadata contains values from span.metadata.* attributes (prefix stripped).
+	SpanMetadata map[string]string
 	// ResourceAttributes contains attributes from the OTLP resource.
 	ResourceAttributes map[string]string
 	// RawAttributes contains all other span attributes not mapped to named fields.
