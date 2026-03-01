@@ -27,11 +27,11 @@ func main() {
 		for _, tr := range traces {
 			fmt.Printf("--- Trace %s / Span %s ---\n", tr.TraceID, tr.SpanID)
 			fmt.Printf("  Name:     %s\n", tr.SpanName)
-			fmt.Printf("  Model:    %s\n", tr.Model)
+			fmt.Printf("  Model:    %s\n", tr.ResponseModel)
 			fmt.Printf("  Duration: %s\n", tr.Duration)
 			fmt.Printf("  Tokens:   %d prompt + %d completion = %d total\n",
-				tr.PromptTokens, tr.CompletionTokens, tr.TotalTokens)
-			fmt.Printf("  Cost:     $%.6f\n", tr.Cost)
+				tr.InputTokens, tr.OutputTokens, tr.TotalTokens)
+			fmt.Printf("  Cost:     $%.6f\n", tr.TotalCost)
 			if tr.UserID != "" {
 				fmt.Printf("  User:     %s\n", tr.UserID)
 			}
