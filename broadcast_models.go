@@ -171,13 +171,13 @@ type BroadcastTrace struct {
 	ReasoningTokens   int // gen_ai.usage.output_tokens.reasoning
 
 	// GenAI semantic convention fields.
-	OperationName  string // gen_ai.operation.name
-	System         string // gen_ai.system
-	ProviderName   string // gen_ai.provider.name
-	ResponseModel  string // gen_ai.response.model
-	FinishReason   string // gen_ai.response.finish_reason
-	FinishReasons  string // gen_ai.response.finish_reasons (JSON array)
-	RequestModel   string // gen_ai.request.model
+	OperationName string // gen_ai.operation.name
+	System        string // gen_ai.system
+	ProviderName  string // gen_ai.provider.name
+	ResponseModel string // gen_ai.response.model
+	FinishReason  string // gen_ai.response.finish_reason
+	FinishReasons string // gen_ai.response.finish_reasons (JSON array)
+	RequestModel  string // gen_ai.request.model
 
 	// OpenRouter-specific fields.
 	ProviderSlug           string  // openrouter.provider_slug
@@ -195,9 +195,9 @@ type BroadcastTrace struct {
 	Completion string // gen_ai.completion
 
 	// Span-level fields.
-	SpanType  string // span.type
-	SpanLevel string // span.level
-	SpanInput string // span.input
+	SpanType   string // span.type
+	SpanLevel  string // span.level
+	SpanInput  string // span.input
 	SpanOutput string // span.output
 
 	// Trace-level fields.

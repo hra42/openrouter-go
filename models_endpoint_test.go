@@ -458,4 +458,3 @@ func TestListModelsUserUnauthorized(t *testing.T) {
 		t.Errorf("expected status code 401, got %d", reqErr.StatusCode)
 	}
 }
-

@@ -18,6 +18,7 @@ func main() {
 		apiKey         = flag.String("key", os.Getenv("OPENROUTER_API_KEY"), "OpenRouter API key (or set OPENROUTER_API_KEY env var)")
 		model          = flag.String("model", "openai/gpt-3.5-turbo", "Model to use")
 		embeddingModel = flag.String("embedding-model", "openai/text-embedding-3-small", "Embedding model to use")
+		rerankModel    = flag.String("rerank-model", "cohere/rerank-v3.5", "Rerank model to use")
 		test           = flag.String("test", "all", `Test to run:
   all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools,
   transforms, websearch, mcp, image, multiimage, imagedetail, contentbuilder, base64image,
@@ -25,6 +26,7 @@ func main() {
   pdfbuilder, base64pdf, pdfcomparison, textfile, multipletextfiles, textbuilder, textformats,
   models, endpoints, providers, credits, activity, key, listkeys, createkey, updatekey, deletekey,
   embedding, batchembedding, embeddingwithoptions, embeddingmodels, chunking, chunkedembedding,
+  rerank,
   responses, responses-reasoning, responses-tools, responses-websearch, responses-stream,
   zdr-endpoints, models-user,
   anthropic, anthropic-tools, anthropic-thinking, anthropic-system, anthropic-stream,
@@ -67,6 +69,7 @@ func main() {
 	fmt.Printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
 	fmt.Printf("Model: %s\n", *model)
 	fmt.Printf("Embedding Model: %s\n", *embeddingModel)
+	fmt.Printf("Rerank Model: %s\n", *rerankModel)
 	fmt.Printf("Test: %s\n", *test)
 	fmt.Printf("Max Tokens: %d\n", *maxTokens)
 	fmt.Printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n")
@@ -77,7 +80,7 @@ func main() {
 	// Run tests based on selection
 	switch strings.ToLower(*test) {
 	case "all":
-		success, failed = runAllTests(ctx, client, *model, *embeddingModel, *maxTokens, *verbose)
+		success, failed = runAllTests(ctx, client, *model, *embeddingModel, *rerankModel, *maxTokens, *verbose)
 	case "chat":
 		if tests.RunChatTest(ctx, client, *model, *maxTokens, *verbose) {
 			success = 1
@@ -342,6 +345,12 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "rerank":
+		if tests.RunRerankTest(ctx, client, *rerankModel, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	case "responses":
 		if tests.RunResponsesBasicTest(ctx, client, *model, *maxTokens, *verbose) {
 			success = 1
@@ -469,7 +478,7 @@ func main() {
 	fmt.Printf("\n🎉 All tests passed!\n")
 }
 
-func runAllTests(ctx context.Context, client *openrouter.Client, model string, embeddingModel string, maxTokens int, verbose bool) (success, failed int) {
+func runAllTests(ctx context.Context, client *openrouter.Client, model string, embeddingModel string, rerankModel string, maxTokens int, verbose bool) (success, failed int) {
 	testCases := []struct {
 		name string
 		fn   func() bool
@@ -521,6 +530,7 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, e
 		{"List Embeddings Models", func() bool { return tests.RunListEmbeddingsModelsTest(ctx, client, verbose) }},
 		{"Text Chunking", func() bool { return tests.RunChunkingTest(ctx, client, embeddingModel, verbose) }},
 		{"Chunked Embeddings", func() bool { return tests.RunChunkedEmbeddingTest(ctx, client, embeddingModel, verbose) }},
+		{"Rerank", func() bool { return tests.RunRerankTest(ctx, client, rerankModel, verbose) }},
 		{"Responses API Basic", func() bool { return tests.RunResponsesBasicTest(ctx, client, model, maxTokens, verbose) }},
 		{"Responses API Reasoning", func() bool { return tests.RunResponsesReasoningTest(ctx, client, model, maxTokens, verbose) }},
 		{"Responses API Tools", func() bool { return tests.RunResponsesToolsTest(ctx, client, model, maxTokens, verbose) }},

@@ -59,6 +59,7 @@ go run examples/text-file-inputs/main.go
 go run examples/mcp-tools/main.go
 go run examples/responses/main.go
 go run examples/embedding-chunking/main.go
+go run examples/rerank/main.go
 go run examples/broadcast-webhook/main.go
 ```
 
@@ -97,6 +98,7 @@ go run cmd/openrouter-test/main.go -test zdr-endpoints
 go run cmd/openrouter-test/main.go -test models-user
 go run cmd/openrouter-test/main.go -test chunking
 go run cmd/openrouter-test/main.go -test chunkedembedding
+go run cmd/openrouter-test/main.go -test rerank
 go run cmd/openrouter-test/main.go -test guardrails
 
 # Run with verbose output

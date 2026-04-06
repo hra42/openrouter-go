@@ -7,7 +7,6 @@ import (
 //go:fix inline
 func floatPtr(f float64) *float64 { return new(f) }
 
-
 func TestValidateChatCompletionParams(t *testing.T) {
 	tests := []struct {
 		name      string
