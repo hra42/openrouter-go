@@ -59,6 +59,7 @@ go run examples/text-file-inputs/main.go
 go run examples/mcp-tools/main.go
 go run examples/responses/main.go
 go run examples/embedding-chunking/main.go
+go run examples/rerank/main.go
 go run examples/broadcast-webhook/main.go
 ```
 
