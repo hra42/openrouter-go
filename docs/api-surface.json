@@ -1,0 +1,3049 @@
+{
+  "module": "github.com/hra42/openrouter-go",
+  "package": "openrouter",
+  "overview": "Package openrouter provides Go bindings for the OpenRouter API.",
+  "consts": [
+    {
+      "name": "AnthropicContentTypeDocument",
+      "doc": "Anthropic content block types."
+    },
+    {
+      "name": "AnthropicContentTypeImage",
+      "doc": "Anthropic content block types."
+    },
+    {
+      "name": "AnthropicContentTypeRedactedThinking",
+      "doc": "Anthropic content block types."
+    },
+    {
+      "name": "AnthropicContentTypeText",
+      "doc": "Anthropic content block types."
+    },
+    {
+      "name": "AnthropicContentTypeThinking",
+      "doc": "Anthropic content block types."
+    },
+    {
+      "name": "AnthropicContentTypeToolResult",
+      "doc": "Anthropic content block types."
+    },
+    {
+      "name": "AnthropicContentTypeToolUse",
+      "doc": "Anthropic content block types."
+    },
+    {
+      "name": "AnthropicServiceTierAuto",
+      "doc": "Anthropic service tier values."
+    },
+    {
+      "name": "AnthropicServiceTierStandard",
+      "doc": "Anthropic service tier values."
+    },
+    {
+      "name": "AnthropicSourceBase64",
+      "doc": "Anthropic source types."
+    },
+    {
+      "name": "AnthropicSourceURL",
+      "doc": "Anthropic source types."
+    },
+    {
+      "name": "AnthropicStopReasonEndTurn",
+      "doc": "Anthropic Messages API stop reasons."
+    },
+    {
+      "name": "AnthropicStopReasonMaxTokens",
+      "doc": "Anthropic Messages API stop reasons."
+    },
+    {
+      "name": "AnthropicStopReasonStopSequence",
+      "doc": "Anthropic Messages API stop reasons."
+    },
+    {
+      "name": "AnthropicStopReasonToolUse",
+      "doc": "Anthropic Messages API stop reasons."
+    },
+    {
+      "name": "AnthropicThinkingDisabled",
+      "doc": "Anthropic thinking types."
+    },
+    {
+      "name": "AnthropicThinkingEnabled",
+      "doc": "Anthropic thinking types."
+    },
+    {
+      "name": "AnthropicToolChoiceAny",
+      "doc": "Anthropic tool choice types."
+    },
+    {
+      "name": "AnthropicToolChoiceAuto",
+      "doc": "Anthropic tool choice types."
+    },
+    {
+      "name": "AnthropicToolChoiceNone",
+      "doc": "Anthropic tool choice types."
+    },
+    {
+      "name": "AnthropicToolChoiceTool",
+      "doc": "Anthropic tool choice types."
+    },
+    {
+      "name": "ReasoningEffortHigh",
+      "doc": "Reasoning effort level constants for the Responses API."
+    },
+    {
+      "name": "ReasoningEffortLow",
+      "doc": "Reasoning effort level constants for the Responses API."
+    },
+    {
+      "name": "ReasoningEffortMedium",
+      "doc": "Reasoning effort level constants for the Responses API."
+    },
+    {
+      "name": "ReasoningEffortMinimal",
+      "doc": "Reasoning effort level constants for the Responses API."
+    }
+  ],
+  "vars": [
+    {
+      "name": "ErrAnthropicMaxTokensRequired",
+      "doc": "Predefined validation errors for Anthropic Messages API."
+    },
+    {
+      "name": "ErrNoAPIKey",
+      "doc": "ErrNoAPIKey is returned when no API key is provided."
+    },
+    {
+      "name": "ErrNoAnthropicMessages",
+      "doc": "Predefined validation errors for Anthropic Messages API."
+    },
+    {
+      "name": "ErrNoMessages",
+      "doc": "ErrNoMessages is returned when no messages are provided for chat completion."
+    },
+    {
+      "name": "ErrNoModel",
+      "doc": "ErrNoModel is returned when no model is specified."
+    },
+    {
+      "name": "ErrNoPrompt",
+      "doc": "ErrNoPrompt is returned when no prompt is provided for completion."
+    },
+    {
+      "name": "ErrNoResponsesInput",
+      "doc": "Predefined validation errors for Responses API."
+    }
+  ],
+  "types": [
+    {
+      "name": "APIError",
+      "doc": "APIError represents the error details in an error response.",
+      "kind": "struct"
+    },
+    {
+      "name": "APIKey",
+      "doc": "APIKey represents an API key in the list keys response.",
+      "kind": "struct"
+    },
+    {
+      "name": "ActivityData",
+      "doc": "ActivityData represents daily user activity data grouped by model endpoint.",
+      "kind": "struct"
+    },
+    {
+      "name": "ActivityOptions",
+      "doc": "ActivityOptions contains optional parameters for retrieving activity data.",
+      "kind": "struct"
+    },
+    {
+      "name": "ActivityResponse",
+      "doc": "ActivityResponse represents the response from the activity endpoint.",
+      "kind": "struct"
+    },
+    {
+      "name": "Annotation",
+      "doc": "Annotation represents an annotation in a message response.",
+      "kind": "struct"
+    },
+    {
+      "name": "AnthropicCitation",
+      "doc": "AnthropicCitation represents a citation in a text content block.",
+      "kind": "struct"
+    },
+    {
+      "name": "AnthropicCitationsConfig",
+      "doc": "AnthropicCitationsConfig controls citation generation.",
+      "kind": "struct"
+    },
+    {
+      "name": "AnthropicContentBlock",
+      "doc": "AnthropicContentBlock represents a content block in a message.",
+      "kind": "struct"
+    },
+    {
+      "name": "AnthropicContentSource",
+      "doc": "AnthropicContentSource represents a source for image or document content blocks.",
+      "kind": "struct"
+    },
+    {
+      "name": "AnthropicMessage",
+      "doc": "AnthropicMessage represents a message in the Anthropic Messages API.",
+      "kind": "struct"
+    },
+    {
+      "name": "AnthropicMessagesRequest",
+      "doc": "AnthropicMessagesRequest represents a request to the Anthropic Messages API via OpenRouter.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "GetMetadata",
+          "receiver": "*AnthropicMessagesRequest",
+          "signature": "func (*AnthropicMessagesRequest) GetMetadata() (map[string]any)",
+          "doc": "GetMetadata returns the header metadata map for header generation."
+        }
+      ]
+    },
+    {
+      "name": "AnthropicMessagesResponse",
+      "doc": "AnthropicMessagesResponse represents a response from the Anthropic Messages API.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "GetStopReason",
+          "receiver": "*AnthropicMessagesResponse",
+          "signature": "func (*AnthropicMessagesResponse) GetStopReason() (string)",
+          "doc": "GetStopReason returns the stop reason string, or empty if nil."
+        },
+        {
+          "name": "GetTextBlocks",
+          "receiver": "*AnthropicMessagesResponse",
+          "signature": "func (*AnthropicMessagesResponse) GetTextBlocks() ([]AnthropicResponseContentBlock)",
+          "doc": "GetTextBlocks returns all text content blocks from the response."
+        },
+        {
+          "name": "GetTextContent",
+          "receiver": "*AnthropicMessagesResponse",
+          "signature": "func (*AnthropicMessagesResponse) GetTextContent() (string)",
+          "doc": "GetTextContent extracts all text content from the response, concatenated."
+        },
+        {
+          "name": "GetThinkingContent",
+          "receiver": "*AnthropicMessagesResponse",
+          "signature": "func (*AnthropicMessagesResponse) GetThinkingContent() (string)",
+          "doc": "GetThinkingContent extracts all thinking text from the response, concatenated."
+        },
+        {
+          "name": "GetToolUseBlocks",
+          "receiver": "*AnthropicMessagesResponse",
+          "signature": "func (*AnthropicMessagesResponse) GetToolUseBlocks() ([]AnthropicResponseContentBlock)",
+          "doc": "GetToolUseBlocks returns all tool_use content blocks from the response."
+        },
+        {
+          "name": "IsToolUse",
+          "receiver": "*AnthropicMessagesResponse",
+          "signature": "func (*AnthropicMessagesResponse) IsToolUse() (bool)",
+          "doc": "IsToolUse returns true if the response stop reason is \"tool_use\"."
+        }
+      ]
+    },
+    {
+      "name": "AnthropicOption",
+      "doc": "AnthropicOption is a functional option for configuring AnthropicMessagesRequest.",
+      "kind": "other"
+    },
+    {
+      "name": "AnthropicRequestMetadata",
+      "doc": "AnthropicRequestMetadata contains body-level metadata for the request.",
+      "kind": "struct"
+    },
+    {
+      "name": "AnthropicResponseContentBlock",
+      "doc": "AnthropicResponseContentBlock represents a content block in the response.",
+      "kind": "struct"
+    },
+    {
+      "name": "AnthropicStream",
+      "doc": "AnthropicStream represents a streaming response from the Anthropic Messages API.",
+      "kind": "other"
+    },
+    {
+      "name": "AnthropicStreamDelta",
+      "doc": "AnthropicStreamDelta represents incremental content in a streaming event.",
+      "kind": "struct"
+    },
+    {
+      "name": "AnthropicStreamError",
+      "doc": "AnthropicStreamError contains error information in streaming events.",
+      "kind": "struct"
+    },
+    {
+      "name": "AnthropicStreamEvent",
+      "doc": "AnthropicStreamEvent represents a single event in the Anthropic streaming response.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "GetTextDelta",
+          "receiver": "*AnthropicStreamEvent",
+          "signature": "func (*AnthropicStreamEvent) GetTextDelta() (string)",
+          "doc": "GetTextDelta extracts the text delta from a streaming event."
+        }
+      ]
+    },
+    {
+      "name": "AnthropicStreamUsage",
+      "doc": "AnthropicStreamUsage contains usage information in streaming events.",
+      "kind": "struct"
+    },
+    {
+      "name": "AnthropicTextBlock",
+      "doc": "AnthropicTextBlock represents a text block used in system prompts.",
+      "kind": "struct"
+    },
+    {
+      "name": "AnthropicThinkingConfig",
+      "doc": "AnthropicThinkingConfig configures extended thinking.",
+      "kind": "struct"
+    },
+    {
+      "name": "AnthropicTool",
+      "doc": "AnthropicTool represents a tool definition for the Anthropic API.",
+      "kind": "struct"
+    },
+    {
+      "name": "AnthropicToolChoice",
+      "doc": "AnthropicToolChoice controls tool invocation behavior.",
+      "kind": "struct"
+    },
+    {
+      "name": "AnthropicUsage",
+      "doc": "AnthropicUsage contains token usage information.",
+      "kind": "struct"
+    },
+    {
+      "name": "AssignKeysRequest",
+      "doc": "AssignKeysRequest represents a request to assign keys to a guardrail.",
+      "kind": "struct"
+    },
+    {
+      "name": "AssignKeysResponse",
+      "doc": "AssignKeysResponse represents the response from assigning keys to a guardrail.",
+      "kind": "struct"
+    },
+    {
+      "name": "AssignMembersRequest",
+      "doc": "AssignMembersRequest represents a request to assign members to a guardrail.",
+      "kind": "struct"
+    },
+    {
+      "name": "AssignMembersResponse",
+      "doc": "AssignMembersResponse represents the response from assigning members to a guardrail.",
+      "kind": "struct"
+    },
+    {
+      "name": "AuthURLParams",
+      "doc": "AuthURLParams contains the parameters for building an OpenRouter authorization URL.",
+      "kind": "struct"
+    },
+    {
+      "name": "BroadcastTrace",
+      "doc": "BroadcastTrace is a user-friendly representation of a single span extracted from an OTLP trace payload sent by OpenRouter Broadcast.",
+      "kind": "struct"
+    },
+    {
+      "name": "ChatCompletionOption",
+      "doc": "ChatCompletionOption is a functional option for chat completion requests.",
+      "kind": "func"
+    },
+    {
+      "name": "ChatCompletionRequest",
+      "doc": "ChatCompletionRequest represents a chat completion request to the OpenRouter API.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "GetMetadata",
+          "receiver": "*ChatCompletionRequest",
+          "signature": "func (*ChatCompletionRequest) GetMetadata() (map[string]any)",
+          "doc": "GetMetadata helper methods for request types"
+        }
+      ]
+    },
+    {
+      "name": "ChatCompletionResponse",
+      "doc": "ChatCompletionResponse represents a chat completion response from the OpenRouter API.",
+      "kind": "struct"
+    },
+    {
+      "name": "ChatStream",
+      "doc": "ChatStream represents a streaming chat completion response.",
+      "kind": "other"
+    },
+    {
+      "name": "Choice",
+      "doc": "Choice represents a choice in the chat completion response.",
+      "kind": "struct"
+    },
+    {
+      "name": "ChunkConfig",
+      "doc": "ChunkConfig configures text chunking behavior.",
+      "kind": "struct"
+    },
+    {
+      "name": "ChunkEmbedding",
+      "doc": "ChunkEmbedding contains the embedding for a single chunk.",
+      "kind": "struct"
+    },
+    {
+      "name": "ChunkStrategy",
+      "doc": "ChunkStrategy defines the strategy for chunking text.",
+      "kind": "alias"
+    },
+    {
+      "name": "ChunkedEmbeddingResult",
+      "doc": "ChunkedEmbeddingResult contains embeddings for all chunks of a document.",
+      "kind": "struct"
+    },
+    {
+      "name": "CircuitBreaker",
+      "doc": "CircuitBreaker implements the circuit breaker pattern for stream reconnection.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "AllowRequest",
+          "receiver": "*CircuitBreaker",
+          "signature": "func (*CircuitBreaker) AllowRequest() (bool)",
+          "doc": "AllowRequest returns true if the circuit breaker allows a request to proceed."
+        },
+        {
+          "name": "RecordFailure",
+          "receiver": "*CircuitBreaker",
+          "signature": "func (*CircuitBreaker) RecordFailure()",
+          "doc": "RecordFailure records a failed request and may open the circuit."
+        },
+        {
+          "name": "RecordSuccess",
+          "receiver": "*CircuitBreaker",
+          "signature": "func (*CircuitBreaker) RecordSuccess()",
+          "doc": "RecordSuccess records a successful request and resets the circuit breaker."
+        },
+        {
+          "name": "Reset",
+          "receiver": "*CircuitBreaker",
+          "signature": "func (*CircuitBreaker) Reset()",
+          "doc": "Reset resets the circuit breaker to its initial closed state."
+        },
+        {
+          "name": "State",
+          "receiver": "*CircuitBreaker",
+          "signature": "func (*CircuitBreaker) State() (CircuitState)",
+          "doc": "State returns the current state of the circuit breaker."
+        }
+      ]
+    },
+    {
+      "name": "CircuitBreakerConfig",
+      "doc": "CircuitBreakerConfig configures the circuit breaker behavior.",
+      "kind": "struct"
+    },
+    {
+      "name": "CircuitBreakerError",
+      "doc": "CircuitBreakerError is returned when a request is blocked by the circuit breaker.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "Error",
+          "receiver": "*CircuitBreakerError",
+          "signature": "func (*CircuitBreakerError) Error() (string)",
+          "doc": "Error implements the error interface."
+        }
+      ]
+    },
+    {
+      "name": "CircuitState",
+      "doc": "CircuitState represents the current state of the circuit breaker.",
+      "kind": "alias",
+      "methods": [
+        {
+          "name": "String",
+          "receiver": "CircuitState",
+          "signature": "func (CircuitState) String() (string)",
+          "doc": "String returns the string representation of the circuit state."
+        }
+      ]
+    },
+    {
+      "name": "Client",
+      "doc": "Client is the main client for interacting with the OpenRouter API.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "AssignKeysToGuardrail",
+          "receiver": "*Client",
+          "signature": "func (*Client) AssignKeysToGuardrail(ctx context.Context, id string, request *AssignKeysRequest) (*AssignKeysResponse, error)",
+          "doc": "AssignKeysToGuardrail assigns API keys to a guardrail by their hashes."
+        },
+        {
+          "name": "AssignMembersToGuardrail",
+          "receiver": "*Client",
+          "signature": "func (*Client) AssignMembersToGuardrail(ctx context.Context, id string, request *AssignMembersRequest) (*AssignMembersResponse, error)",
+          "doc": "AssignMembersToGuardrail assigns members to a guardrail by their user IDs."
+        },
+        {
+          "name": "ChatComplete",
+          "receiver": "*Client",
+          "signature": "func (*Client) ChatComplete(ctx context.Context, messages []Message, opts ...ChatCompletionOption) (*ChatCompletionResponse, error)",
+          "doc": "ChatComplete sends a chat completion request to the OpenRouter API."
+        },
+        {
+          "name": "ChatCompleteStream",
+          "receiver": "*Client",
+          "signature": "func (*Client) ChatCompleteStream(ctx context.Context, messages []Message, opts ...ChatCompletionOption) (*ChatStream, error)",
+          "doc": "ChatCompleteStream sends a streaming chat completion request to the OpenRouter API."
+        },
+        {
+          "name": "Complete",
+          "receiver": "*Client",
+          "signature": "func (*Client) Complete(ctx context.Context, prompt string, opts ...CompletionOption) (*CompletionResponse, error)",
+          "doc": "Complete sends a legacy completion request to the OpenRouter API."
+        },
+        {
+          "name": "CompleteStream",
+          "receiver": "*Client",
+          "signature": "func (*Client) CompleteStream(ctx context.Context, prompt string, opts ...CompletionOption) (*CompletionStream, error)",
+          "doc": "CompleteStream sends a streaming completion request to the OpenRouter API."
+        },
+        {
+          "name": "CompleteWithContext",
+          "receiver": "*Client",
+          "signature": "func (*Client) CompleteWithContext(ctx context.Context, contextPrompt, userPrompt string, opts ...CompletionOption) (*CompletionResponse, error)",
+          "doc": "CompleteWithContext is a convenience method that combines prompt completion with context."
+        },
+        {
+          "name": "CompleteWithExamples",
+          "receiver": "*Client",
+          "signature": "func (*Client) CompleteWithExamples(ctx context.Context, instruction string, examples []string, prompt string, opts ...CompletionOption) (*CompletionResponse, error)",
+          "doc": "CompleteWithExamples is a convenience method for few-shot prompting."
+        },
+        {
+          "name": "CreateAnthropicMessage",
+          "receiver": "*Client",
+          "signature": "func (*Client) CreateAnthropicMessage(ctx context.Context, messages []AnthropicMessage, opts ...AnthropicOption) (*AnthropicMessagesResponse, error)",
+          "doc": "CreateAnthropicMessage sends a request to the Anthropic Messages API via OpenRouter."
+        },
+        {
+          "name": "CreateAnthropicMessageStream",
+          "receiver": "*Client",
+          "signature": "func (*Client) CreateAnthropicMessageStream(ctx context.Context, messages []AnthropicMessage, opts ...AnthropicOption) (*AnthropicStream, error)",
+          "doc": "CreateAnthropicMessageStream sends a streaming request to the Anthropic Messages API via OpenRouter."
+        },
+        {
+          "name": "CreateAuthCode",
+          "receiver": "*Client",
+          "signature": "func (*Client) CreateAuthCode(ctx context.Context, request *CreateAuthCodeRequest) (*CreateAuthCodeResponse, error)",
+          "doc": "CreateAuthCode creates an authorization code to begin the OAuth PKCE flow."
+        },
+        {
+          "name": "CreateChunkedEmbedding",
+          "receiver": "*Client",
+          "signature": "func (*Client) CreateChunkedEmbedding(ctx context.Context, text string, model string, config ChunkConfig, opts ...EmbeddingOption) (*ChunkedEmbeddingResult, error)",
+          "doc": "CreateChunkedEmbedding creates embeddings for a long text by chunking it first."
+        },
+        {
+          "name": "CreateChunkedEmbeddings",
+          "receiver": "*Client",
+          "signature": "func (*Client) CreateChunkedEmbeddings(ctx context.Context, texts []string, model string, config ChunkConfig, opts ...EmbeddingOption) ([]*ChunkedEmbeddingResult, error)",
+          "doc": "CreateChunkedEmbeddings creates embeddings for multiple long texts by chunking each."
+        },
+        {
+          "name": "CreateEmbedding",
+          "receiver": "*Client",
+          "signature": "func (*Client) CreateEmbedding(ctx context.Context, input any, model string, opts ...EmbeddingOption) (*EmbeddingResponse, error)",
+          "doc": "CreateEmbedding sends an embedding request to the OpenRouter API."
+        },
+        {
+          "name": "CreateEmbeddings",
+          "receiver": "*Client",
+          "signature": "func (*Client) CreateEmbeddings(ctx context.Context, inputs []string, model string, opts ...EmbeddingOption) (*EmbeddingResponse, error)",
+          "doc": "CreateEmbeddings is an alias for CreateEmbedding that emphasizes batch embedding."
+        },
+        {
+          "name": "CreateGuardrail",
+          "receiver": "*Client",
+          "signature": "func (*Client) CreateGuardrail(ctx context.Context, request *CreateGuardrailRequest) (*Guardrail, error)",
+          "doc": "CreateGuardrail creates a new guardrail with the specified configuration."
+        },
+        {
+          "name": "CreateKey",
+          "receiver": "*Client",
+          "signature": "func (*Client) CreateKey(ctx context.Context, request *CreateKeyRequest) (*CreateKeyResponse, error)",
+          "doc": "CreateKey creates a new API key with the specified name and optional limit."
+        },
+        {
+          "name": "CreateResponse",
+          "receiver": "*Client",
+          "signature": "func (*Client) CreateResponse(ctx context.Context, input any, opts ...ResponsesOption) (*ResponsesResponse, error)",
+          "doc": "CreateResponse sends a request to the OpenRouter Responses API (beta)."
+        },
+        {
+          "name": "CreateResponseStream",
+          "receiver": "*Client",
+          "signature": "func (*Client) CreateResponseStream(ctx context.Context, input any, opts ...ResponsesOption) (*ResponsesStream, error)",
+          "doc": "CreateResponseStream sends a streaming request to the OpenRouter Responses API (beta)."
+        },
+        {
+          "name": "DeleteGuardrail",
+          "receiver": "*Client",
+          "signature": "func (*Client) DeleteGuardrail(ctx context.Context, id string) (*DeleteGuardrailResponse, error)",
+          "doc": "DeleteGuardrail deletes a guardrail by its ID."
+        },
+        {
+          "name": "DeleteKey",
+          "receiver": "*Client",
+          "signature": "func (*Client) DeleteKey(ctx context.Context, hash string) (*DeleteKeyResponse, error)",
+          "doc": "DeleteKey deletes an API key by its hash."
+        },
+        {
+          "name": "ExchangeAuthCode",
+          "receiver": "*Client",
+          "signature": "func (*Client) ExchangeAuthCode(ctx context.Context, request *ExchangeAuthCodeRequest) (*ExchangeAuthCodeResponse, error)",
+          "doc": "ExchangeAuthCode exchanges an authorization code for an API key."
+        },
+        {
+          "name": "GetActivity",
+          "receiver": "*Client",
+          "signature": "func (*Client) GetActivity(ctx context.Context, opts *ActivityOptions) (*ActivityResponse, error)",
+          "doc": "GetActivity retrieves daily user activity data grouped by model endpoint for the last 30 (completed) UTC days."
+        },
+        {
+          "name": "GetCredits",
+          "receiver": "*Client",
+          "signature": "func (*Client) GetCredits(ctx context.Context) (*CreditsResponse, error)",
+          "doc": "GetCredits retrieves the total credits purchased and used for the authenticated user."
+        },
+        {
+          "name": "GetGuardrail",
+          "receiver": "*Client",
+          "signature": "func (*Client) GetGuardrail(ctx context.Context, id string) (*Guardrail, error)",
+          "doc": "GetGuardrail retrieves details about a specific guardrail by its ID."
+        },
+        {
+          "name": "GetKey",
+          "receiver": "*Client",
+          "signature": "func (*Client) GetKey(ctx context.Context) (*KeyResponse, error)",
+          "doc": "GetKey retrieves information about the current API key including usage, limits, and rate limit information for the authenticated user."
+        },
+        {
+          "name": "GetKeyByHash",
+          "receiver": "*Client",
+          "signature": "func (*Client) GetKeyByHash(ctx context.Context, hash string) (*GetKeyByHashResponse, error)",
+          "doc": "GetKeyByHash retrieves details about a specific API key by its hash."
+        },
+        {
+          "name": "ListAllKeyAssignments",
+          "receiver": "*Client",
+          "signature": "func (*Client) ListAllKeyAssignments(ctx context.Context, options *ListGuardrailsOptions) (*ListGuardrailKeyAssignmentsResponse, error)",
+          "doc": "ListAllKeyAssignments returns all key assignments across all guardrails."
+        },
+        {
+          "name": "ListAllMemberAssignments",
+          "receiver": "*Client",
+          "signature": "func (*Client) ListAllMemberAssignments(ctx context.Context, options *ListGuardrailsOptions) (*ListGuardrailMemberAssignmentsResponse, error)",
+          "doc": "ListAllMemberAssignments returns all member assignments across all guardrails."
+        },
+        {
+          "name": "ListEmbeddingsModels",
+          "receiver": "*Client",
+          "signature": "func (*Client) ListEmbeddingsModels(ctx context.Context) (*EmbeddingsModelsResponse, error)",
+          "doc": "ListEmbeddingsModels retrieves a list of available embedding models."
+        },
+        {
+          "name": "ListGuardrailKeyAssignments",
+          "receiver": "*Client",
+          "signature": "func (*Client) ListGuardrailKeyAssignments(ctx context.Context, id string, options *ListGuardrailsOptions) (*ListGuardrailKeyAssignmentsResponse, error)",
+          "doc": "ListGuardrailKeyAssignments returns key assignments for a specific guardrail."
+        },
+        {
+          "name": "ListGuardrailMemberAssignments",
+          "receiver": "*Client",
+          "signature": "func (*Client) ListGuardrailMemberAssignments(ctx context.Context, id string, options *ListGuardrailsOptions) (*ListGuardrailMemberAssignmentsResponse, error)",
+          "doc": "ListGuardrailMemberAssignments returns member assignments for a specific guardrail."
+        },
+        {
+          "name": "ListGuardrails",
+          "receiver": "*Client",
+          "signature": "func (*Client) ListGuardrails(ctx context.Context, options *ListGuardrailsOptions) (*ListGuardrailsResponse, error)",
+          "doc": "ListGuardrails returns a list of all guardrails for the organization."
+        },
+        {
+          "name": "ListKeys",
+          "receiver": "*Client",
+          "signature": "func (*Client) ListKeys(ctx context.Context, options *ListKeysOptions) (*ListKeysResponse, error)",
+          "doc": "ListKeys returns a list of all API keys associated with the account."
+        },
+        {
+          "name": "ListModelEndpoints",
+          "receiver": "*Client",
+          "signature": "func (*Client) ListModelEndpoints(ctx context.Context, author, slug string) (*ModelEndpointsResponse, error)",
+          "doc": "ListModelEndpoints retrieves the list of endpoints for a specific model."
+        },
+        {
+          "name": "ListModels",
+          "receiver": "*Client",
+          "signature": "func (*Client) ListModels(ctx context.Context, opts *ListModelsOptions) (*ModelsResponse, error)",
+          "doc": "ListModels retrieves a list of models available through the OpenRouter API."
+        },
+        {
+          "name": "ListModelsUser",
+          "receiver": "*Client",
+          "signature": "func (*Client) ListModelsUser(ctx context.Context) (*ModelsResponse, error)",
+          "doc": "ListModelsUser retrieves a list of models filtered by the authenticated user's provider preferences, privacy settings, and guardrails."
+        },
+        {
+          "name": "ListProviders",
+          "receiver": "*Client",
+          "signature": "func (*Client) ListProviders(ctx context.Context) (*ProvidersResponse, error)",
+          "doc": "ListProviders retrieves a list of all providers available through the OpenRouter API."
+        },
+        {
+          "name": "ListZDREndpoints",
+          "receiver": "*Client",
+          "signature": "func (*Client) ListZDREndpoints(ctx context.Context) (*ZDREndpointsResponse, error)",
+          "doc": "ListZDREndpoints retrieves the list of endpoints compatible with Zero Data Retention."
+        },
+        {
+          "name": "Rerank",
+          "receiver": "*Client",
+          "signature": "func (*Client) Rerank(ctx context.Context, query string, documents []string, model string, opts ...RerankOption) (*RerankResponse, error)",
+          "doc": "Rerank sends a rerank request to the OpenRouter API."
+        },
+        {
+          "name": "UnassignKeysFromGuardrail",
+          "receiver": "*Client",
+          "signature": "func (*Client) UnassignKeysFromGuardrail(ctx context.Context, id string, request *AssignKeysRequest) (error)",
+          "doc": "UnassignKeysFromGuardrail removes API key assignments from a guardrail."
+        },
+        {
+          "name": "UnassignMembersFromGuardrail",
+          "receiver": "*Client",
+          "signature": "func (*Client) UnassignMembersFromGuardrail(ctx context.Context, id string, request *AssignMembersRequest) (error)",
+          "doc": "UnassignMembersFromGuardrail removes member assignments from a guardrail."
+        },
+        {
+          "name": "UpdateGuardrail",
+          "receiver": "*Client",
+          "signature": "func (*Client) UpdateGuardrail(ctx context.Context, id string, request *UpdateGuardrailRequest) (*Guardrail, error)",
+          "doc": "UpdateGuardrail updates an existing guardrail by its ID."
+        },
+        {
+          "name": "UpdateKey",
+          "receiver": "*Client",
+          "signature": "func (*Client) UpdateKey(ctx context.Context, hash string, request *UpdateKeyRequest) (*UpdateKeyResponse, error)",
+          "doc": "UpdateKey updates an existing API key by its hash."
+        }
+      ]
+    },
+    {
+      "name": "ClientOption",
+      "doc": "ClientOption is a functional option for configuring the Client.",
+      "kind": "func"
+    },
+    {
+      "name": "CodeChallengeMethod",
+      "doc": "CodeChallengeMethod represents the PKCE code challenge method.",
+      "kind": "alias"
+    },
+    {
+      "name": "CompletionChoice",
+      "doc": "CompletionChoice represents a choice in the legacy completion response.",
+      "kind": "struct"
+    },
+    {
+      "name": "CompletionOption",
+      "doc": "CompletionOption is a functional option for completion requests.",
+      "kind": "func"
+    },
+    {
+      "name": "CompletionRequest",
+      "doc": "CompletionRequest represents a legacy completion request to the OpenRouter API.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "GetMetadata",
+          "receiver": "*CompletionRequest",
+          "signature": "func (*CompletionRequest) GetMetadata() (map[string]any)"
+        }
+      ]
+    },
+    {
+      "name": "CompletionResponse",
+      "doc": "CompletionResponse represents a legacy completion response from the OpenRouter API.",
+      "kind": "struct"
+    },
+    {
+      "name": "CompletionStream",
+      "doc": "CompletionStream represents a streaming completion response.",
+      "kind": "other"
+    },
+    {
+      "name": "ContentBuilder",
+      "doc": "CreateContentParts is a helper to build custom content part arrays.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "AddAudio",
+          "receiver": "*ContentBuilder",
+          "signature": "func (*ContentBuilder) AddAudio(audioData string, format string) (*ContentBuilder)",
+          "doc": "AddAudio adds an audio input to the content builder."
+        },
+        {
+          "name": "AddBase64Audio",
+          "receiver": "*ContentBuilder",
+          "signature": "func (*ContentBuilder) AddBase64Audio(audioPath string) (*ContentBuilder, error)",
+          "doc": "AddBase64Audio reads and encodes an audio file, then adds it to the content builder."
+        },
+        {
+          "name": "AddBase64PDF",
+          "receiver": "*ContentBuilder",
+          "signature": "func (*ContentBuilder) AddBase64PDF(pdfPath string, filename string) (*ContentBuilder, error)",
+          "doc": "AddBase64PDF reads and encodes a PDF file, then adds it to the content builder."
+        },
+        {
+          "name": "AddFile",
+          "receiver": "*ContentBuilder",
+          "signature": "func (*ContentBuilder) AddFile(filename string, fileData string) (*ContentBuilder)",
+          "doc": "AddFile adds a file to the content builder."
+        },
+        {
+          "name": "AddImage",
+          "receiver": "*ContentBuilder",
+          "signature": "func (*ContentBuilder) AddImage(imageURL string) (*ContentBuilder)",
+          "doc": "AddImage adds an image content part."
+        },
+        {
+          "name": "AddImageWithDetail",
+          "receiver": "*ContentBuilder",
+          "signature": "func (*ContentBuilder) AddImageWithDetail(imageURL string, detail string) (*ContentBuilder)",
+          "doc": "AddImageWithDetail adds an image content part with a detail level."
+        },
+        {
+          "name": "AddPDF",
+          "receiver": "*ContentBuilder",
+          "signature": "func (*ContentBuilder) AddPDF(pdfURL string, filename string) (*ContentBuilder)",
+          "doc": "AddPDF adds a PDF file to the content builder."
+        },
+        {
+          "name": "AddText",
+          "receiver": "*ContentBuilder",
+          "signature": "func (*ContentBuilder) AddText(text string) (*ContentBuilder)",
+          "doc": "AddText adds a text content part."
+        },
+        {
+          "name": "AddTextContent",
+          "receiver": "*ContentBuilder",
+          "signature": "func (*ContentBuilder) AddTextContent(content string, label string) (*ContentBuilder)",
+          "doc": "AddTextContent adds raw text content with an optional label."
+        },
+        {
+          "name": "AddTextFile",
+          "receiver": "*ContentBuilder",
+          "signature": "func (*ContentBuilder) AddTextFile(filePath string) (*ContentBuilder, error)",
+          "doc": "AddTextFile reads a text file and adds its content to the message."
+        },
+        {
+          "name": "AddTextFileWithLabel",
+          "receiver": "*ContentBuilder",
+          "signature": "func (*ContentBuilder) AddTextFileWithLabel(filePath string, label string) (*ContentBuilder, error)",
+          "doc": "AddTextFileWithLabel reads a text file and adds its content with a custom label."
+        },
+        {
+          "name": "Build",
+          "receiver": "*ContentBuilder",
+          "signature": "func (*ContentBuilder) Build() ([]ContentPart)",
+          "doc": "Build returns the content parts array."
+        },
+        {
+          "name": "BuildMessage",
+          "receiver": "*ContentBuilder",
+          "signature": "func (*ContentBuilder) BuildMessage(role string) (Message)",
+          "doc": "BuildMessage creates a message with the builder's content."
+        }
+      ]
+    },
+    {
+      "name": "ContentPart",
+      "doc": "ContentPart represents a part of message content (text, image, file, or audio).",
+      "kind": "struct"
+    },
+    {
+      "name": "CostResult",
+      "doc": "CostResult holds a cost breakdown for a request.",
+      "kind": "struct"
+    },
+    {
+      "name": "CreateAuthCodeData",
+      "doc": "CreateAuthCodeData contains the data from a created authorization code.",
+      "kind": "struct"
+    },
+    {
+      "name": "CreateAuthCodeRequest",
+      "doc": "CreateAuthCodeRequest represents a request to create an authorization code for the PKCE flow.",
+      "kind": "struct"
+    },
+    {
+      "name": "CreateAuthCodeResponse",
+      "doc": "CreateAuthCodeResponse represents the response from creating an authorization code.",
+      "kind": "struct"
+    },
+    {
+      "name": "CreateGuardrailRequest",
+      "doc": "CreateGuardrailRequest represents a request to create a new guardrail.",
+      "kind": "struct"
+    },
+    {
+      "name": "CreateKeyRequest",
+      "doc": "CreateKeyRequest represents a request to create a new API key.",
+      "kind": "struct"
+    },
+    {
+      "name": "CreateKeyResponse",
+      "doc": "CreateKeyResponse represents the response from creating a new API key.",
+      "kind": "struct"
+    },
+    {
+      "name": "CreditsData",
+      "doc": "CreditsData contains credit balance information for the authenticated user.",
+      "kind": "struct"
+    },
+    {
+      "name": "CreditsResponse",
+      "doc": "CreditsResponse represents the response from the credits endpoint.",
+      "kind": "struct"
+    },
+    {
+      "name": "DeleteGuardrailResponse",
+      "doc": "DeleteGuardrailResponse represents the response from deleting a guardrail.",
+      "kind": "struct"
+    },
+    {
+      "name": "DeleteKeyData",
+      "doc": "DeleteKeyData contains the result of a delete operation.",
+      "kind": "struct"
+    },
+    {
+      "name": "DeleteKeyResponse",
+      "doc": "DeleteKeyResponse represents the response from deleting an API key.",
+      "kind": "struct"
+    },
+    {
+      "name": "EmbeddingContentPart",
+      "doc": "EmbeddingContentPart represents a content part for multimodal embedding input.",
+      "kind": "struct"
+    },
+    {
+      "name": "EmbeddingData",
+      "doc": "EmbeddingData represents a single embedding in the response.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "GetEmbeddingBase64",
+          "receiver": "*EmbeddingData",
+          "signature": "func (*EmbeddingData) GetEmbeddingBase64() (string)",
+          "doc": "GetEmbeddingBase64 extracts the embedding as a base64 string from an EmbeddingData."
+        },
+        {
+          "name": "GetEmbeddingVector",
+          "receiver": "*EmbeddingData",
+          "signature": "func (*EmbeddingData) GetEmbeddingVector() ([]float64)",
+          "doc": "GetEmbeddingVector extracts the embedding vector as []float64 from an EmbeddingData."
+        }
+      ]
+    },
+    {
+      "name": "EmbeddingImageURL",
+      "doc": "EmbeddingImageURL represents an image URL for multimodal embedding input.",
+      "kind": "struct"
+    },
+    {
+      "name": "EmbeddingMultimodalInput",
+      "doc": "EmbeddingMultimodalInput represents multimodal input for embeddings.",
+      "kind": "struct"
+    },
+    {
+      "name": "EmbeddingOption",
+      "doc": "EmbeddingOption is a functional option for embedding requests.",
+      "kind": "func"
+    },
+    {
+      "name": "EmbeddingRequest",
+      "doc": "EmbeddingRequest represents a request to create embeddings.",
+      "kind": "struct"
+    },
+    {
+      "name": "EmbeddingResponse",
+      "doc": "EmbeddingResponse represents the response from an embeddings request.",
+      "kind": "struct"
+    },
+    {
+      "name": "EmbeddingUsage",
+      "doc": "EmbeddingUsage contains token usage information for an embeddings request.",
+      "kind": "struct"
+    },
+    {
+      "name": "EmbeddingsModelsResponse",
+      "doc": "EmbeddingsModelsResponse represents the response from the list embeddings models endpoint.",
+      "kind": "struct"
+    },
+    {
+      "name": "EndpointFilter",
+      "doc": "EndpointFilter defines criteria for filtering model endpoints.",
+      "kind": "struct"
+    },
+    {
+      "name": "ErrorResponse",
+      "doc": "ErrorResponse represents an error response from the OpenRouter API.",
+      "kind": "struct"
+    },
+    {
+      "name": "ExchangeAuthCodeRequest",
+      "doc": "ExchangeAuthCodeRequest represents a request to exchange an authorization code for an API key.",
+      "kind": "struct"
+    },
+    {
+      "name": "ExchangeAuthCodeResponse",
+      "doc": "ExchangeAuthCodeResponse represents the response from exchanging an authorization code.",
+      "kind": "struct"
+    },
+    {
+      "name": "File",
+      "doc": "File represents a file attachment in the message content.",
+      "kind": "struct"
+    },
+    {
+      "name": "FileAnnotation",
+      "doc": "FileAnnotation represents metadata about a parsed file.",
+      "kind": "struct"
+    },
+    {
+      "name": "FlexInt",
+      "doc": "FlexInt is a string-backed integer that can unmarshal from both a JSON string (\"150\") and a JSON number (150).",
+      "kind": "alias",
+      "methods": [
+        {
+          "name": "MarshalJSON",
+          "receiver": "FlexInt",
+          "signature": "func (FlexInt) MarshalJSON() ([]byte, error)",
+          "doc": "MarshalJSON implements json.Marshaler, encoding as a JSON string per the OTLP spec."
+        },
+        {
+          "name": "String",
+          "receiver": "FlexInt",
+          "signature": "func (FlexInt) String() (string)",
+          "doc": "String returns the string representation."
+        },
+        {
+          "name": "UnmarshalJSON",
+          "receiver": "*FlexInt",
+          "signature": "func (*FlexInt) UnmarshalJSON(data []byte) (error)",
+          "doc": "UnmarshalJSON implements json.Unmarshaler for FlexInt."
+        }
+      ]
+    },
+    {
+      "name": "Function",
+      "doc": "Function represents a callable function.",
+      "kind": "struct"
+    },
+    {
+      "name": "FunctionCall",
+      "doc": "FunctionCall represents a function call made by the model.",
+      "kind": "struct"
+    },
+    {
+      "name": "GetKeyByHashResponse",
+      "doc": "GetKeyByHashResponse represents the response from getting an API key by hash.",
+      "kind": "struct"
+    },
+    {
+      "name": "Guardrail",
+      "doc": "Guardrail represents a guardrail configuration for controlling spending, model access, and data policies.",
+      "kind": "struct"
+    },
+    {
+      "name": "GuardrailKeyAssignment",
+      "doc": "GuardrailKeyAssignment represents a key assignment to a guardrail.",
+      "kind": "struct"
+    },
+    {
+      "name": "GuardrailMemberAssignment",
+      "doc": "GuardrailMemberAssignment represents a member assignment to a guardrail.",
+      "kind": "struct"
+    },
+    {
+      "name": "ImageURL",
+      "doc": "ImageURL represents an image URL in the message content.",
+      "kind": "struct"
+    },
+    {
+      "name": "InputAudio",
+      "doc": "InputAudio represents an audio input in the message content.",
+      "kind": "struct"
+    },
+    {
+      "name": "JSONSchema",
+      "doc": "JSONSchema defines the structure for structured output format.",
+      "kind": "struct"
+    },
+    {
+      "name": "KeyData",
+      "doc": "KeyData contains information about an API key.",
+      "kind": "struct"
+    },
+    {
+      "name": "KeyRateLimit",
+      "doc": "KeyRateLimit contains rate limit information for an API key.",
+      "kind": "struct"
+    },
+    {
+      "name": "KeyResponse",
+      "doc": "KeyResponse represents the response from the get current API key endpoint.",
+      "kind": "struct"
+    },
+    {
+      "name": "ListGuardrailKeyAssignmentsResponse",
+      "doc": "ListGuardrailKeyAssignmentsResponse represents the response from listing guardrail key assignments.",
+      "kind": "struct"
+    },
+    {
+      "name": "ListGuardrailMemberAssignmentsResponse",
+      "doc": "ListGuardrailMemberAssignmentsResponse represents the response from listing guardrail member assignments.",
+      "kind": "struct"
+    },
+    {
+      "name": "ListGuardrailsOptions",
+      "doc": "ListGuardrailsOptions represents options for listing guardrails.",
+      "kind": "struct"
+    },
+    {
+      "name": "ListGuardrailsResponse",
+      "doc": "ListGuardrailsResponse represents the response from listing guardrails.",
+      "kind": "struct"
+    },
+    {
+      "name": "ListKeysOptions",
+      "doc": "ListKeysOptions contains optional parameters for listing API keys.",
+      "kind": "struct"
+    },
+    {
+      "name": "ListKeysResponse",
+      "doc": "ListKeysResponse represents the response from the list API keys endpoint.",
+      "kind": "struct"
+    },
+    {
+      "name": "ListModelsOptions",
+      "doc": "ListModelsOptions contains optional parameters for listing models.",
+      "kind": "struct"
+    },
+    {
+      "name": "LogProbContent",
+      "doc": "LogProbContent represents log probability content.",
+      "kind": "struct"
+    },
+    {
+      "name": "LogProbs",
+      "doc": "LogProbs represents log probability information.",
+      "kind": "struct"
+    },
+    {
+      "name": "MCPContent",
+      "doc": "MCPContent represents content in an MCP response.",
+      "kind": "struct"
+    },
+    {
+      "name": "MCPInputSchema",
+      "doc": "MCPInputSchema represents the input schema for an MCP tool.",
+      "kind": "struct"
+    },
+    {
+      "name": "MCPTool",
+      "doc": "MCPTool represents a tool in MCP (Model Context Protocol) format.",
+      "kind": "struct"
+    },
+    {
+      "name": "MCPToolResult",
+      "doc": "MCPToolResult represents the result of an MCP tool execution.",
+      "kind": "struct"
+    },
+    {
+      "name": "MaxPrice",
+      "doc": "MaxPrice represents maximum pricing constraints for a request.",
+      "kind": "struct"
+    },
+    {
+      "name": "Message",
+      "doc": "Message represents a message in the chat completion request.",
+      "kind": "struct"
+    },
+    {
+      "name": "MessageContent",
+      "doc": "MessageContent can be either a string or an array of content parts.",
+      "kind": "alias"
+    },
+    {
+      "name": "Model",
+      "doc": "Model represents a model available on OpenRouter.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "HasInputModality",
+          "receiver": "*Model",
+          "signature": "func (*Model) HasInputModality(modality string) (bool)",
+          "doc": "HasInputModality returns true if the model accepts the given input modality."
+        },
+        {
+          "name": "HasOutputModality",
+          "receiver": "*Model",
+          "signature": "func (*Model) HasOutputModality(modality string) (bool)",
+          "doc": "HasOutputModality returns true if the model produces the given output modality."
+        },
+        {
+          "name": "SupportsAudio",
+          "receiver": "*Model",
+          "signature": "func (*Model) SupportsAudio() (bool)",
+          "doc": "SupportsAudio returns true if the model supports audio inputs."
+        },
+        {
+          "name": "SupportsJSON",
+          "receiver": "*Model",
+          "signature": "func (*Model) SupportsJSON() (bool)",
+          "doc": "SupportsJSON returns true if the model supports structured JSON output via response_format."
+        },
+        {
+          "name": "SupportsParameter",
+          "receiver": "*Model",
+          "signature": "func (*Model) SupportsParameter(param string) (bool)",
+          "doc": "SupportsParameter returns true if the model supports the given parameter."
+        },
+        {
+          "name": "SupportsStreaming",
+          "receiver": "*Model",
+          "signature": "func (*Model) SupportsStreaming() (bool)",
+          "doc": "SupportsStreaming returns true if the model supports streaming responses."
+        },
+        {
+          "name": "SupportsTools",
+          "receiver": "*Model",
+          "signature": "func (*Model) SupportsTools() (bool)",
+          "doc": "SupportsTools returns true if the model supports tool calling."
+        },
+        {
+          "name": "SupportsVision",
+          "receiver": "*Model",
+          "signature": "func (*Model) SupportsVision() (bool)",
+          "doc": "SupportsVision returns true if the model supports image inputs."
+        }
+      ]
+    },
+    {
+      "name": "ModelArchitecture",
+      "doc": "ModelArchitecture contains information about a model's architecture.",
+      "kind": "struct"
+    },
+    {
+      "name": "ModelDefaultParameters",
+      "doc": "ModelDefaultParameters contains default generation parameters for a model.",
+      "kind": "struct"
+    },
+    {
+      "name": "ModelEndpoint",
+      "doc": "ModelEndpoint represents a single endpoint for a model.",
+      "kind": "struct"
+    },
+    {
+      "name": "ModelEndpointPricing",
+      "doc": "ModelEndpointPricing contains pricing information for a specific endpoint.",
+      "kind": "struct"
+    },
+    {
+      "name": "ModelEndpointsArchitecture",
+      "doc": "ModelEndpointsArchitecture contains architecture information for a model's endpoints.",
+      "kind": "struct"
+    },
+    {
+      "name": "ModelEndpointsData",
+      "doc": "ModelEndpointsData contains details about a model and its endpoints.",
+      "kind": "struct"
+    },
+    {
+      "name": "ModelEndpointsResponse",
+      "doc": "ModelEndpointsResponse represents the response from the model endpoints endpoint.",
+      "kind": "struct"
+    },
+    {
+      "name": "ModelPerRequestLimits",
+      "doc": "ModelPerRequestLimits contains per-request limits for a model.",
+      "kind": "struct"
+    },
+    {
+      "name": "ModelPricing",
+      "doc": "ModelPricing contains pricing information for a model.",
+      "kind": "struct"
+    },
+    {
+      "name": "ModelTopProvider",
+      "doc": "ModelTopProvider contains information about the top provider for a model.",
+      "kind": "struct"
+    },
+    {
+      "name": "ModelsResponse",
+      "doc": "ModelsResponse represents the response from the list models endpoint.",
+      "kind": "struct"
+    },
+    {
+      "name": "OTLPAnyValue",
+      "doc": "OTLPAnyValue represents a polymorphic OTLP value.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "StringVal",
+          "receiver": "OTLPAnyValue",
+          "signature": "func (OTLPAnyValue) StringVal() (string)",
+          "doc": "StringVal returns the value as a string regardless of its underlying type."
+        }
+      ]
+    },
+    {
+      "name": "OTLPArrayValue",
+      "doc": "OTLPArrayValue wraps a slice of OTLP values.",
+      "kind": "struct"
+    },
+    {
+      "name": "OTLPAttribute",
+      "doc": "OTLPAttribute is a key-value pair attached to a span or resource.",
+      "kind": "struct"
+    },
+    {
+      "name": "OTLPEvent",
+      "doc": "OTLPEvent represents a timed event within a span.",
+      "kind": "struct"
+    },
+    {
+      "name": "OTLPExportTraceRequest",
+      "doc": "OTLPExportTraceRequest is the top-level OTLP JSON trace payload sent by OpenRouter's Broadcast webhook feature.",
+      "kind": "struct"
+    },
+    {
+      "name": "OTLPResource",
+      "doc": "OTLPResource describes the entity producing telemetry.",
+      "kind": "struct"
+    },
+    {
+      "name": "OTLPResourceSpan",
+      "doc": "OTLPResourceSpan groups spans by their originating resource.",
+      "kind": "struct"
+    },
+    {
+      "name": "OTLPScope",
+      "doc": "OTLPScope identifies the instrumentation library.",
+      "kind": "struct"
+    },
+    {
+      "name": "OTLPScopeSpan",
+      "doc": "OTLPScopeSpan groups spans by instrumentation scope.",
+      "kind": "struct"
+    },
+    {
+      "name": "OTLPSpan",
+      "doc": "OTLPSpan represents a single span in a trace.",
+      "kind": "struct"
+    },
+    {
+      "name": "OTLPStatus",
+      "doc": "OTLPStatus describes the status of a span.",
+      "kind": "struct"
+    },
+    {
+      "name": "PDFParserConfig",
+      "doc": "PDFParserConfig configures PDF file parsing behavior.",
+      "kind": "struct"
+    },
+    {
+      "name": "PercentileStats",
+      "doc": "PercentileStats contains latency or throughput percentile statistics.",
+      "kind": "struct"
+    },
+    {
+      "name": "Plugin",
+      "doc": "Plugin represents a plugin configuration for enhancing model responses.",
+      "kind": "struct"
+    },
+    {
+      "name": "Provider",
+      "doc": "Provider represents provider-specific parameters for routing requests.",
+      "kind": "struct"
+    },
+    {
+      "name": "ProviderInfo",
+      "doc": "ProviderInfo represents information about a provider available on OpenRouter.",
+      "kind": "struct"
+    },
+    {
+      "name": "ProvidersResponse",
+      "doc": "ProvidersResponse represents the response from the list providers endpoint.",
+      "kind": "struct"
+    },
+    {
+      "name": "PublicEndpoint",
+      "doc": "PublicEndpoint represents a single endpoint from the ZDR endpoints listing.",
+      "kind": "struct"
+    },
+    {
+      "name": "PublicEndpointPricing",
+      "doc": "PublicEndpointPricing contains pricing information for a public endpoint.",
+      "kind": "struct"
+    },
+    {
+      "name": "RateLimiter",
+      "doc": "RateLimiter provides rate limiting functionality.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "Close",
+          "receiver": "*RateLimiter",
+          "signature": "func (*RateLimiter) Close()",
+          "doc": "Close stops the rate limiter."
+        },
+        {
+          "name": "Wait",
+          "receiver": "*RateLimiter",
+          "signature": "func (*RateLimiter) Wait(ctx context.Context) (error)",
+          "doc": "Wait blocks until a token is available or the context is cancelled."
+        }
+      ]
+    },
+    {
+      "name": "RequestConfig",
+      "doc": "RequestConfig is an interface that both ChatCompletionRequest and CompletionRequest satisfy.",
+      "kind": "interface"
+    },
+    {
+      "name": "RequestError",
+      "doc": "RequestError represents an error returned by the OpenRouter API.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "Error",
+          "receiver": "*RequestError",
+          "signature": "func (*RequestError) Error() (string)",
+          "doc": "Error implements the error interface."
+        },
+        {
+          "name": "IsAuthenticationError",
+          "receiver": "*RequestError",
+          "signature": "func (*RequestError) IsAuthenticationError() (bool)",
+          "doc": "IsAuthenticationError returns true if the error is an authentication error."
+        },
+        {
+          "name": "IsNotFoundError",
+          "receiver": "*RequestError",
+          "signature": "func (*RequestError) IsNotFoundError() (bool)",
+          "doc": "IsNotFoundError returns true if the error is a not found error."
+        },
+        {
+          "name": "IsPermissionError",
+          "receiver": "*RequestError",
+          "signature": "func (*RequestError) IsPermissionError() (bool)",
+          "doc": "IsPermissionError returns true if the error is a permission error."
+        },
+        {
+          "name": "IsRateLimitError",
+          "receiver": "*RequestError",
+          "signature": "func (*RequestError) IsRateLimitError() (bool)",
+          "doc": "IsRateLimitError returns true if the error is a rate limit error."
+        },
+        {
+          "name": "IsServerError",
+          "receiver": "*RequestError",
+          "signature": "func (*RequestError) IsServerError() (bool)",
+          "doc": "IsServerError returns true if the error is a server error."
+        }
+      ]
+    },
+    {
+      "name": "RequestOption",
+      "doc": "RequestOption is a generic functional option type for configuring requests.",
+      "kind": "func"
+    },
+    {
+      "name": "RequestWithProvider",
+      "doc": "RequestWithProvider is a type constraint for requests that have provider settings.",
+      "kind": "interface"
+    },
+    {
+      "name": "RerankDocument",
+      "doc": "RerankDocument contains the text of a reranked document.",
+      "kind": "struct"
+    },
+    {
+      "name": "RerankOption",
+      "doc": "RerankOption is a functional option for rerank requests.",
+      "kind": "func"
+    },
+    {
+      "name": "RerankRequest",
+      "doc": "RerankRequest represents a request to rerank documents against a query.",
+      "kind": "struct"
+    },
+    {
+      "name": "RerankResponse",
+      "doc": "RerankResponse represents the response from a rerank request.",
+      "kind": "struct"
+    },
+    {
+      "name": "RerankResult",
+      "doc": "RerankResult represents a single reranked document result.",
+      "kind": "struct"
+    },
+    {
+      "name": "RerankUsage",
+      "doc": "RerankUsage contains usage statistics for a rerank request.",
+      "kind": "struct"
+    },
+    {
+      "name": "ResetInterval",
+      "doc": "ResetInterval represents the reset interval for a guardrail budget.",
+      "kind": "alias"
+    },
+    {
+      "name": "ResponseFormat",
+      "doc": "ResponseFormat specifies the format of the response.",
+      "kind": "struct"
+    },
+    {
+      "name": "ResponsesAnnotation",
+      "doc": "ResponsesAnnotation represents an annotation in the output content.",
+      "kind": "struct"
+    },
+    {
+      "name": "ResponsesInputContent",
+      "doc": "ResponsesInputContent represents a content item in a message.",
+      "kind": "struct"
+    },
+    {
+      "name": "ResponsesInputItem",
+      "doc": "ResponsesInputItem represents an item in the structured input array.",
+      "kind": "struct"
+    },
+    {
+      "name": "ResponsesOption",
+      "doc": "ResponsesOption is a functional option for configuring ResponsesRequest.",
+      "kind": "other"
+    },
+    {
+      "name": "ResponsesOutput",
+      "doc": "ResponsesOutput represents an output item in the response.",
+      "kind": "struct"
+    },
+    {
+      "name": "ResponsesOutputContent",
+      "doc": "ResponsesOutputContent represents a content item in the output.",
+      "kind": "struct"
+    },
+    {
+      "name": "ResponsesReasoning",
+      "doc": "ResponsesReasoning configures reasoning capabilities for the Responses API.",
+      "kind": "struct"
+    },
+    {
+      "name": "ResponsesRequest",
+      "doc": "ResponsesRequest represents a request to the OpenRouter Responses API.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "GetMetadata",
+          "receiver": "*ResponsesRequest",
+          "signature": "func (*ResponsesRequest) GetMetadata() (map[string]any)",
+          "doc": "GetMetadata returns the metadata map for header generation."
+        }
+      ]
+    },
+    {
+      "name": "ResponsesResponse",
+      "doc": "ResponsesResponse represents a response from the OpenRouter Responses API.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "GetAnnotations",
+          "receiver": "*ResponsesResponse",
+          "signature": "func (*ResponsesResponse) GetAnnotations() ([]ResponsesAnnotation)",
+          "doc": "GetAnnotations returns all annotations from the response."
+        },
+        {
+          "name": "GetFunctionCalls",
+          "receiver": "*ResponsesResponse",
+          "signature": "func (*ResponsesResponse) GetFunctionCalls() ([]ResponsesOutput)",
+          "doc": "GetFunctionCalls returns all function calls from the response."
+        },
+        {
+          "name": "GetReasoningSummary",
+          "receiver": "*ResponsesResponse",
+          "signature": "func (*ResponsesResponse) GetReasoningSummary() ([]string)",
+          "doc": "GetReasoningSummary returns the reasoning summary if present."
+        },
+        {
+          "name": "GetTextContent",
+          "receiver": "*ResponsesResponse",
+          "signature": "func (*ResponsesResponse) GetTextContent() (string)",
+          "doc": "GetTextContent extracts the text content from a ResponsesResponse."
+        }
+      ]
+    },
+    {
+      "name": "ResponsesStream",
+      "doc": "ResponsesStream represents a streaming response from the Responses API.",
+      "kind": "other"
+    },
+    {
+      "name": "ResponsesTool",
+      "doc": "ResponsesTool represents a tool definition for the Responses API.",
+      "kind": "struct"
+    },
+    {
+      "name": "ResponsesUsage",
+      "doc": "ResponsesUsage contains token usage information for the Responses API.",
+      "kind": "struct"
+    },
+    {
+      "name": "RetryConfig",
+      "doc": "RetryConfig configures retry behavior for API requests.",
+      "kind": "struct"
+    },
+    {
+      "name": "Stream",
+      "doc": "Stream represents a generic streaming response wrapper.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "Close",
+          "receiver": "*Stream[T]",
+          "signature": "func (*Stream[T]) Close() (error)",
+          "doc": "Close closes the stream."
+        },
+        {
+          "name": "Err",
+          "receiver": "*Stream[T]",
+          "signature": "func (*Stream[T]) Err() (error)",
+          "doc": "Err returns any error that occurred during streaming."
+        },
+        {
+          "name": "Events",
+          "receiver": "*Stream[T]",
+          "signature": "func (*Stream[T]) Events() (chan T)",
+          "doc": "Events returns a channel that receives streaming events."
+        }
+      ]
+    },
+    {
+      "name": "StreamConfig",
+      "doc": "StreamConfig configures stream reconnection and buffering behavior.",
+      "kind": "struct"
+    },
+    {
+      "name": "StreamError",
+      "doc": "StreamError represents an error that occurs during streaming.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "Error",
+          "receiver": "*StreamError",
+          "signature": "func (*StreamError) Error() (string)",
+          "doc": "Error implements the error interface."
+        },
+        {
+          "name": "Unwrap",
+          "receiver": "*StreamError",
+          "signature": "func (*StreamError) Unwrap() (error)",
+          "doc": "Unwrap returns the underlying error."
+        }
+      ]
+    },
+    {
+      "name": "StreamEvent",
+      "doc": "StreamEvent represents a server-sent event for streaming responses.",
+      "kind": "struct"
+    },
+    {
+      "name": "TextChunk",
+      "doc": "TextChunk represents a single chunk of text with metadata.",
+      "kind": "struct"
+    },
+    {
+      "name": "Tool",
+      "doc": "Tool represents a tool/function that can be called.",
+      "kind": "struct"
+    },
+    {
+      "name": "ToolCall",
+      "doc": "ToolCall represents a tool call made by the model.",
+      "kind": "struct"
+    },
+    {
+      "name": "TopLogProb",
+      "doc": "TopLogProb represents top log probability information.",
+      "kind": "struct"
+    },
+    {
+      "name": "URLCitation",
+      "doc": "URLCitation represents a URL citation in a message annotation.",
+      "kind": "struct"
+    },
+    {
+      "name": "UpdateGuardrailRequest",
+      "doc": "UpdateGuardrailRequest represents a request to update an existing guardrail.",
+      "kind": "struct"
+    },
+    {
+      "name": "UpdateKeyRequest",
+      "doc": "UpdateKeyRequest represents a request to update an existing API key.",
+      "kind": "struct"
+    },
+    {
+      "name": "UpdateKeyResponse",
+      "doc": "UpdateKeyResponse represents the response from updating an API key.",
+      "kind": "struct"
+    },
+    {
+      "name": "Usage",
+      "doc": "Usage represents token usage information.",
+      "kind": "struct"
+    },
+    {
+      "name": "UsageLimitType",
+      "doc": "UsageLimitType represents the usage limit interval for an API key.",
+      "kind": "alias"
+    },
+    {
+      "name": "ValidationError",
+      "doc": "ValidationError represents a validation error for request parameters.",
+      "kind": "struct",
+      "methods": [
+        {
+          "name": "Error",
+          "receiver": "*ValidationError",
+          "signature": "func (*ValidationError) Error() (string)",
+          "doc": "Error implements the error interface."
+        }
+      ]
+    },
+    {
+      "name": "WebSearchContextSize",
+      "doc": "WebSearchContextSize represents the amount of search context to retrieve.",
+      "kind": "alias"
+    },
+    {
+      "name": "WebSearchEngine",
+      "doc": "WebSearchEngine represents the search engine options for the web plugin.",
+      "kind": "alias"
+    },
+    {
+      "name": "WebSearchOptions",
+      "doc": "WebSearchOptions configures native web search behavior for supported models.",
+      "kind": "struct"
+    },
+    {
+      "name": "ZDREndpointsResponse",
+      "doc": "ZDREndpointsResponse represents the response from the ZDR endpoints listing.",
+      "kind": "struct"
+    }
+  ],
+  "funcs": [
+    {
+      "name": "AverageEmbeddings",
+      "signature": "func AverageEmbeddings(embeddings [][]float64) ([]float64)",
+      "doc": "AverageEmbeddings computes the element-wise average of multiple embeddings."
+    },
+    {
+      "name": "BroadcastWebhookHandler",
+      "signature": "func BroadcastWebhookHandler(callback func([]BroadcastTrace)) (http.HandlerFunc)",
+      "doc": "BroadcastWebhookHandler returns an http.HandlerFunc that receives OTLP trace payloads from OpenRouter Broadcast webhooks."
+    },
+    {
+      "name": "BroadcastWebhookHandlerWithError",
+      "signature": "func BroadcastWebhookHandlerWithError(callback func([]BroadcastTrace)) (http.HandlerFunc)",
+      "doc": "BroadcastWebhookHandlerWithError is like BroadcastWebhookHandler but the callback may return an error, which results in an HTTP 500 response."
+    },
+    {
+      "name": "BuildAuthURL",
+      "signature": "func BuildAuthURL(baseURL string, params AuthURLParams) (string, error)",
+      "doc": "BuildAuthURL constructs an OpenRouter authorization URL with the given parameters."
+    },
+    {
+      "name": "CheapestModelEndpoint",
+      "signature": "func CheapestModelEndpoint(endpoints []ModelEndpoint) (*ModelEndpoint)",
+      "doc": "CheapestModelEndpoint returns the endpoint with the lowest prompt price."
+    },
+    {
+      "name": "CheapestZDREndpoint",
+      "signature": "func CheapestZDREndpoint(endpoints []PublicEndpoint) (*PublicEndpoint)",
+      "doc": "CheapestZDREndpoint returns the public endpoint with the lowest prompt price."
+    },
+    {
+      "name": "ChunkText",
+      "signature": "func ChunkText(text string, config ChunkConfig) ([]TextChunk, error)",
+      "doc": "ChunkText splits text into chunks according to the configuration."
+    },
+    {
+      "name": "ChunkTexts",
+      "signature": "func ChunkTexts(texts []string, config ChunkConfig) ([][]TextChunk, error)",
+      "doc": "ChunkTexts splits multiple texts into chunks."
+    },
+    {
+      "name": "ConcatenateChatStreamResponses",
+      "signature": "func ConcatenateChatStreamResponses(responses []ChatCompletionResponse) (string)",
+      "doc": "Helper function to concatenate streaming chat responses."
+    },
+    {
+      "name": "ConcatenateCompletionStreamResponses",
+      "signature": "func ConcatenateCompletionStreamResponses(responses []CompletionResponse) (string)",
+      "doc": "Helper function to concatenate streaming completion responses."
+    },
+    {
+      "name": "ConvertMCPTool",
+      "signature": "func ConvertMCPTool(mcpTool MCPTool) (Tool)",
+      "doc": "ConvertMCPTool converts an MCP tool to OpenRouter's Tool format."
+    },
+    {
+      "name": "ConvertMCPTools",
+      "signature": "func ConvertMCPTools(mcpTools []MCPTool) ([]Tool)",
+      "doc": "ConvertMCPTools converts a slice of MCP tools to OpenRouter Tool format."
+    },
+    {
+      "name": "ConvertToolResultToMCP",
+      "signature": "func ConvertToolResultToMCP(result MCPToolResult) (string)",
+      "doc": "ConvertToolResultToMCP converts an MCP tool result to a string suitable for use as tool response content in chat completions."
+    },
+    {
+      "name": "ConvertToolToResponsesTool",
+      "signature": "func ConvertToolToResponsesTool(tool Tool) (ResponsesTool)",
+      "doc": "ConvertToolToResponsesTool converts a Chat Completions Tool to a Responses API tool."
+    },
+    {
+      "name": "ConvertToolsToResponsesTools",
+      "signature": "func ConvertToolsToResponsesTools(tools []Tool) ([]ResponsesTool)",
+      "doc": "ConvertToolsToResponsesTools converts multiple Chat Completions Tools to Responses API tools."
+    },
+    {
+      "name": "CosineSimilarity",
+      "signature": "func CosineSimilarity(a, b []float64) (float64)",
+      "doc": "CosineSimilarity computes the cosine similarity between two embedding vectors."
+    },
+    {
+      "name": "CreateAnthropicAssistantMessage",
+      "signature": "func CreateAnthropicAssistantMessage(text string) (AnthropicMessage)",
+      "doc": "CreateAnthropicAssistantMessage creates an assistant message with text content."
+    },
+    {
+      "name": "CreateAnthropicBashTool",
+      "signature": "func CreateAnthropicBashTool() (AnthropicTool)",
+      "doc": "CreateAnthropicBashTool creates a bash tool definition."
+    },
+    {
+      "name": "CreateAnthropicCustomTool",
+      "signature": "func CreateAnthropicCustomTool(name, description string, schema map[string]any) (AnthropicTool)",
+      "doc": "CreateAnthropicCustomTool creates a custom tool definition."
+    },
+    {
+      "name": "CreateAnthropicDocumentBase64Block",
+      "signature": "func CreateAnthropicDocumentBase64Block(mediaType string, data string) (AnthropicContentBlock)",
+      "doc": "CreateAnthropicDocumentBase64Block creates a document content block from base64 data."
+    },
+    {
+      "name": "CreateAnthropicDocumentURLBlock",
+      "signature": "func CreateAnthropicDocumentURLBlock(url string) (AnthropicContentBlock)",
+      "doc": "CreateAnthropicDocumentURLBlock creates a document content block from a URL."
+    },
+    {
+      "name": "CreateAnthropicImageBase64Block",
+      "signature": "func CreateAnthropicImageBase64Block(mediaType string, data string) (AnthropicContentBlock)",
+      "doc": "CreateAnthropicImageBase64Block creates an image content block from base64 data."
+    },
+    {
+      "name": "CreateAnthropicImageURLBlock",
+      "signature": "func CreateAnthropicImageURLBlock(url string) (AnthropicContentBlock)",
+      "doc": "CreateAnthropicImageURLBlock creates an image content block from a URL."
+    },
+    {
+      "name": "CreateAnthropicTextBlock",
+      "signature": "func CreateAnthropicTextBlock(text string) (AnthropicContentBlock)",
+      "doc": "CreateAnthropicTextBlock creates a text content block."
+    },
+    {
+      "name": "CreateAnthropicTextEditorTool",
+      "signature": "func CreateAnthropicTextEditorTool() (AnthropicTool)",
+      "doc": "CreateAnthropicTextEditorTool creates a text editor tool definition."
+    },
+    {
+      "name": "CreateAnthropicToolResultBlock",
+      "signature": "func CreateAnthropicToolResultBlock(toolUseID string, content string) (AnthropicContentBlock)",
+      "doc": "CreateAnthropicToolResultBlock creates a tool_result content block."
+    },
+    {
+      "name": "CreateAnthropicToolUseBlock",
+      "signature": "func CreateAnthropicToolUseBlock(id, name string, input json.RawMessage) (AnthropicContentBlock)",
+      "doc": "CreateAnthropicToolUseBlock creates a tool_use content block."
+    },
+    {
+      "name": "CreateAnthropicUserMessage",
+      "signature": "func CreateAnthropicUserMessage(text string) (AnthropicMessage)",
+      "doc": "CreateAnthropicUserMessage creates a user message with text content."
+    },
+    {
+      "name": "CreateAnthropicUserMessageWithBlocks",
+      "signature": "func CreateAnthropicUserMessageWithBlocks(blocks []AnthropicContentBlock) (AnthropicMessage)",
+      "doc": "CreateAnthropicUserMessageWithBlocks creates a user message with content blocks."
+    },
+    {
+      "name": "CreateAnthropicWebSearchTool",
+      "signature": "func CreateAnthropicWebSearchTool(maxUses *int) (AnthropicTool)",
+      "doc": "CreateAnthropicWebSearchTool creates a web search tool definition."
+    },
+    {
+      "name": "CreateAssistantMessage",
+      "signature": "func CreateAssistantMessage(content string) (Message)",
+      "doc": "CreateAssistantMessage creates an assistant message."
+    },
+    {
+      "name": "CreateChatMessage",
+      "signature": "func CreateChatMessage(role string, content string) (Message)",
+      "doc": "CreateChatMessage is a helper function to create a chat message."
+    },
+    {
+      "name": "CreateFileParserPlugin",
+      "signature": "func CreateFileParserPlugin(engine string) (Plugin)",
+      "doc": "CreateFileParserPlugin creates a file parser plugin configuration."
+    },
+    {
+      "name": "CreateMultiModalMessage",
+      "signature": "func CreateMultiModalMessage(role string, text string, imageURL string) (Message)",
+      "doc": "CreateMultiModalMessage creates a message with text and image content."
+    },
+    {
+      "name": "CreateResponsesAssistantMessage",
+      "signature": "func CreateResponsesAssistantMessage(text string) (ResponsesInputItem)",
+      "doc": "CreateResponsesAssistantMessage creates an assistant message input item."
+    },
+    {
+      "name": "CreateResponsesFunctionOutput",
+      "signature": "func CreateResponsesFunctionOutput(callID, output string) (ResponsesInputItem)",
+      "doc": "CreateResponsesFunctionOutput creates a function call output item."
+    },
+    {
+      "name": "CreateResponsesMessage",
+      "signature": "func CreateResponsesMessage(role, text string) (ResponsesInputItem)",
+      "doc": "CreateResponsesMessage creates a message input item with the specified role and text."
+    },
+    {
+      "name": "CreateResponsesSystemMessage",
+      "signature": "func CreateResponsesSystemMessage(text string) (ResponsesInputItem)",
+      "doc": "CreateResponsesSystemMessage creates a system message input item."
+    },
+    {
+      "name": "CreateResponsesTool",
+      "signature": "func CreateResponsesTool(name, description string, parameters map[string]any) (ResponsesTool)",
+      "doc": "CreateResponsesTool creates a ResponsesTool with the given parameters."
+    },
+    {
+      "name": "CreateResponsesUserMessage",
+      "signature": "func CreateResponsesUserMessage(text string) (ResponsesInputItem)",
+      "doc": "CreateResponsesUserMessage creates a user message input item."
+    },
+    {
+      "name": "CreateS256CodeChallenge",
+      "signature": "func CreateS256CodeChallenge(verifier string) (string)",
+      "doc": "CreateS256CodeChallenge creates a PKCE code challenge from a code verifier using the S256 method: BASE64URL(SHA256(verifier)) per RFC 7636."
+    },
+    {
+      "name": "CreateSystemMessage",
+      "signature": "func CreateSystemMessage(content string) (Message)",
+      "doc": "CreateSystemMessage creates a system message."
+    },
+    {
+      "name": "CreateToolMessage",
+      "signature": "func CreateToolMessage(content string, toolCallID string) (Message)",
+      "doc": "CreateToolMessage creates a tool message."
+    },
+    {
+      "name": "CreateUserMessage",
+      "signature": "func CreateUserMessage(content string) (Message)",
+      "doc": "CreateUserMessage creates a user message."
+    },
+    {
+      "name": "CreateUserMessageWithAudio",
+      "signature": "func CreateUserMessageWithAudio(text string, audioData string, format string) (Message)",
+      "doc": "CreateUserMessageWithAudio creates a user message with text and an audio input."
+    },
+    {
+      "name": "CreateUserMessageWithBase64Audio",
+      "signature": "func CreateUserMessageWithBase64Audio(text string, audioPath string) (Message, error)",
+      "doc": "CreateUserMessageWithBase64Audio creates a user message with a base64-encoded audio file."
+    },
+    {
+      "name": "CreateUserMessageWithBase64Image",
+      "signature": "func CreateUserMessageWithBase64Image(text string, imagePath string) (Message, error)",
+      "doc": "CreateUserMessageWithBase64Image creates a user message with a base64-encoded image."
+    },
+    {
+      "name": "CreateUserMessageWithBase64Images",
+      "signature": "func CreateUserMessageWithBase64Images(text string, imagePaths ...string) (Message, error)",
+      "doc": "CreateUserMessageWithBase64Images creates a user message with multiple base64-encoded images."
+    },
+    {
+      "name": "CreateUserMessageWithBase64PDF",
+      "signature": "func CreateUserMessageWithBase64PDF(text string, pdfPath string, filename string) (Message, error)",
+      "doc": "CreateUserMessageWithBase64PDF creates a user message with a base64-encoded PDF."
+    },
+    {
+      "name": "CreateUserMessageWithFiles",
+      "signature": "func CreateUserMessageWithFiles(text string, files []File) (Message)",
+      "doc": "CreateUserMessageWithFiles creates a user message with text and multiple files."
+    },
+    {
+      "name": "CreateUserMessageWithImage",
+      "signature": "func CreateUserMessageWithImage(text string, imageURL string) (Message)",
+      "doc": "CreateUserMessageWithImage creates a user message with text and a single image."
+    },
+    {
+      "name": "CreateUserMessageWithImageDetail",
+      "signature": "func CreateUserMessageWithImageDetail(text string, imageURL string, detail string) (Message)",
+      "doc": "CreateUserMessageWithImageDetail creates a user message with an image and detail level."
+    },
+    {
+      "name": "CreateUserMessageWithImages",
+      "signature": "func CreateUserMessageWithImages(text string, imageURLs ...string) (Message)",
+      "doc": "CreateUserMessageWithImages creates a user message with text and multiple images."
+    },
+    {
+      "name": "CreateUserMessageWithPDF",
+      "signature": "func CreateUserMessageWithPDF(text string, pdfURL string, filename string) (Message)",
+      "doc": "CreateUserMessageWithPDF creates a user message with text and a PDF file."
+    },
+    {
+      "name": "CreateUserMessageWithTextContent",
+      "signature": "func CreateUserMessageWithTextContent(text string, content string, filename string) (Message)",
+      "doc": "CreateUserMessageWithTextContent creates a user message with inline text content."
+    },
+    {
+      "name": "CreateUserMessageWithTextFile",
+      "signature": "func CreateUserMessageWithTextFile(text string, filePath string) (Message, error)",
+      "doc": "CreateUserMessageWithTextFile creates a user message with text and content from a text file."
+    },
+    {
+      "name": "CreateUserMessageWithTextFiles",
+      "signature": "func CreateUserMessageWithTextFiles(text string, filePaths ...string) (Message, error)",
+      "doc": "CreateUserMessageWithTextFiles creates a user message with multiple text files."
+    },
+    {
+      "name": "DefaultChunkConfig",
+      "signature": "func DefaultChunkConfig() (ChunkConfig)",
+      "doc": "DefaultChunkConfig returns a sensible default configuration."
+    },
+    {
+      "name": "DefaultCircuitBreakerConfig",
+      "signature": "func DefaultCircuitBreakerConfig() (*CircuitBreakerConfig)",
+      "doc": "DefaultCircuitBreakerConfig returns the default circuit breaker configuration."
+    },
+    {
+      "name": "DefaultRetryConfig",
+      "signature": "func DefaultRetryConfig() (*RetryConfig)",
+      "doc": "DefaultRetryConfig returns the default retry configuration."
+    },
+    {
+      "name": "DefaultStreamConfig",
+      "signature": "func DefaultStreamConfig() (*StreamConfig)",
+      "doc": "DefaultStreamConfig returns the default stream configuration."
+    },
+    {
+      "name": "DefaultWebSearchPrompt",
+      "signature": "func DefaultWebSearchPrompt(date string) (string)",
+      "doc": "DefaultWebSearchPrompt returns the default search prompt template."
+    },
+    {
+      "name": "EncodeAudioBytesToBase64",
+      "signature": "func EncodeAudioBytesToBase64(audioData []byte, format string) (string, error)",
+      "doc": "EncodeAudioBytesToBase64 encodes audio bytes to base64."
+    },
+    {
+      "name": "EncodeAudioToBase64",
+      "signature": "func EncodeAudioToBase64(audioPath string) (string, string, error)",
+      "doc": "EncodeAudioToBase64 reads an audio file and encodes it to base64."
+    },
+    {
+      "name": "EncodeImageBytesToBase64",
+      "signature": "func EncodeImageBytesToBase64(imageData []byte, contentType string) (string)",
+      "doc": "EncodeImageBytesToBase64 encodes image bytes to a base64 data URL."
+    },
+    {
+      "name": "EncodeImageToBase64",
+      "signature": "func EncodeImageToBase64(imagePath string) (string, error)",
+      "doc": "EncodeImageToBase64 reads an image file and encodes it to a base64 data URL."
+    },
+    {
+      "name": "EncodePDFBytesToBase64",
+      "signature": "func EncodePDFBytesToBase64(pdfData []byte) (string)",
+      "doc": "EncodePDFBytesToBase64 encodes PDF bytes to a base64 data URL."
+    },
+    {
+      "name": "EncodePDFToBase64",
+      "signature": "func EncodePDFToBase64(pdfPath string) (string, error)",
+      "doc": "EncodePDFToBase64 reads a PDF file and encodes it to a base64 data URL."
+    },
+    {
+      "name": "EndpointSupportsParameter",
+      "signature": "func EndpointSupportsParameter(params []string, param string) (bool)",
+      "doc": "EndpointSupportsParameter checks if a parameter list contains the given parameter."
+    },
+    {
+      "name": "EstimateCost",
+      "signature": "func EstimateCost(pricing ModelPricing, usage Usage) (CostResult)",
+      "doc": "EstimateCost calculates the estimated cost from ModelPricing and Usage."
+    },
+    {
+      "name": "EstimateCostFromTokens",
+      "signature": "func EstimateCostFromTokens(promptPrice, completionPrice string, promptTokens, completionTokens int) (CostResult)",
+      "doc": "EstimateCostFromTokens calculates cost from raw pricing strings and token counts."
+    },
+    {
+      "name": "EstimateCostWithCaching",
+      "signature": "func EstimateCostWithCaching(pricing ModelPricing, usage Usage, cacheReadTokens, cacheWriteTokens int) (CostResult)",
+      "doc": "EstimateCostWithCaching calculates cost including cache read/write tokens."
+    },
+    {
+      "name": "EstimateTokens",
+      "signature": "func EstimateTokens(text string) (int)",
+      "doc": "EstimateTokens estimates the token count for text using character-based heuristics."
+    },
+    {
+      "name": "EstimateTokensFromWords",
+      "signature": "func EstimateTokensFromWords(text string) (int)",
+      "doc": "EstimateTokensFromWords estimates token count based on word count."
+    },
+    {
+      "name": "ExtractBroadcastTraces",
+      "signature": "func ExtractBroadcastTraces(payload *OTLPExportTraceRequest) ([]BroadcastTrace)",
+      "doc": "ExtractBroadcastTraces converts an OTLP payload into user-friendly BroadcastTrace values."
+    },
+    {
+      "name": "FilterModelEndpoints",
+      "signature": "func FilterModelEndpoints(endpoints []ModelEndpoint, filter EndpointFilter) ([]ModelEndpoint)",
+      "doc": "FilterModelEndpoints returns endpoints matching all criteria in the filter."
+    },
+    {
+      "name": "FilterModels",
+      "signature": "func FilterModels(models []Model, predicate func(*Model)) ([]Model)",
+      "doc": "FilterModels returns a subset of models that match the given predicate."
+    },
+    {
+      "name": "FilterZDREndpoints",
+      "signature": "func FilterZDREndpoints(endpoints []PublicEndpoint, filter EndpointFilter) ([]PublicEndpoint)",
+      "doc": "FilterZDREndpoints returns public endpoints matching all criteria in the filter."
+    },
+    {
+      "name": "GenerateCodeVerifier",
+      "signature": "func GenerateCodeVerifier() (string, error)",
+      "doc": "GenerateCodeVerifier generates a cryptographically random PKCE code verifier."
+    },
+    {
+      "name": "IsCircuitBreakerError",
+      "signature": "func IsCircuitBreakerError(err error) (*CircuitBreakerError, bool)",
+      "doc": "IsCircuitBreakerError checks if an error is a CircuitBreakerError and returns it."
+    },
+    {
+      "name": "IsRequestError",
+      "signature": "func IsRequestError(err error) (*RequestError, bool)",
+      "doc": "IsRequestError checks if an error is a RequestError and returns it."
+    },
+    {
+      "name": "IsStreamError",
+      "signature": "func IsStreamError(err error) (*StreamError, bool)",
+      "doc": "IsStreamError checks if an error is a StreamError and returns it."
+    },
+    {
+      "name": "IsValidationError",
+      "signature": "func IsValidationError(err error) (*ValidationError, bool)",
+      "doc": "IsValidationError checks if an error is a ValidationError and returns it."
+    },
+    {
+      "name": "NewCircuitBreaker",
+      "signature": "func NewCircuitBreaker(config *CircuitBreakerConfig) (*CircuitBreaker)",
+      "doc": "NewCircuitBreaker creates a new CircuitBreaker with the given configuration."
+    },
+    {
+      "name": "NewClient",
+      "signature": "func NewClient(opts ...ClientOption) (*Client)",
+      "doc": "NewClient creates a new OpenRouter API client."
+    },
+    {
+      "name": "NewContentBuilder",
+      "signature": "func NewContentBuilder() (*ContentBuilder)",
+      "doc": "NewContentBuilder creates a new content builder."
+    },
+    {
+      "name": "NewRateLimiter",
+      "signature": "func NewRateLimiter(requestsPerSecond float64, burst int) (*RateLimiter)",
+      "doc": "NewRateLimiter creates a new rate limiter."
+    },
+    {
+      "name": "NewWebPlugin",
+      "signature": "func NewWebPlugin() (Plugin)",
+      "doc": "NewWebPlugin creates a new web search plugin configuration."
+    },
+    {
+      "name": "NewWebPluginWithOptions",
+      "signature": "func NewWebPluginWithOptions(engine WebSearchEngine, maxResults int, searchPrompt string) (Plugin)",
+      "doc": "NewWebPluginWithOptions creates a web search plugin with custom options."
+    },
+    {
+      "name": "ParseAnnotations",
+      "signature": "func ParseAnnotations(annotations []Annotation) ([]URLCitation)",
+      "doc": "ParseAnnotations extracts URL citations from message annotations."
+    },
+    {
+      "name": "ParseBroadcastPayload",
+      "signature": "func ParseBroadcastPayload(data []byte) (*OTLPExportTraceRequest, error)",
+      "doc": "ParseBroadcastPayload unmarshals raw JSON bytes into an OTLPExportTraceRequest."
+    },
+    {
+      "name": "ParseBroadcastTraces",
+      "signature": "func ParseBroadcastTraces(data []byte) ([]BroadcastTrace, error)",
+      "doc": "ParseBroadcastTraces is a convenience function that parses raw JSON and extracts traces in one call."
+    },
+    {
+      "name": "ParseMCPToolFromJSON",
+      "signature": "func ParseMCPToolFromJSON(data []byte) (MCPTool, error)",
+      "doc": "ParseMCPToolFromJSON parses an MCP tool from JSON data."
+    },
+    {
+      "name": "ParseMCPToolsFromJSON",
+      "signature": "func ParseMCPToolsFromJSON(data []byte) ([]MCPTool, error)",
+      "doc": "ParseMCPToolsFromJSON parses multiple MCP tools from JSON data."
+    },
+    {
+      "name": "ParsePricing",
+      "signature": "func ParsePricing(priceStr string) (float64)",
+      "doc": "ParsePricing parses a pricing string (e.g., \"0.0025\") to float64."
+    },
+    {
+      "name": "ParsePricingPtr",
+      "signature": "func ParsePricingPtr(priceStr *string) (float64)",
+      "doc": "ParsePricingPtr parses a *string pricing value."
+    },
+    {
+      "name": "ReadTextFile",
+      "signature": "func ReadTextFile(filePath string) (string, error)",
+      "doc": "ReadTextFile reads a text file and returns its content as a string."
+    },
+    {
+      "name": "ReadTextFileWithFilename",
+      "signature": "func ReadTextFileWithFilename(filePath string) (content string, filename string, err error)",
+      "doc": "ReadTextFileWithFilename reads a text file and returns both the content and filename."
+    },
+    {
+      "name": "RetryWithBackoff",
+      "signature": "func RetryWithBackoff(ctx context.Context, config *RetryConfig, fn func()) (error)",
+      "doc": "RetryWithBackoff executes a function with exponential backoff retry logic."
+    },
+    {
+      "name": "ValidateTextContent",
+      "signature": "func ValidateTextContent(content string) (error)",
+      "doc": "ValidateTextContent validates that the given content is valid UTF-8 text."
+    },
+    {
+      "name": "WeightedAverageEmbeddings",
+      "signature": "func WeightedAverageEmbeddings(embeddings [][]float64, weights []float64) ([]float64)",
+      "doc": "WeightedAverageEmbeddings computes a weighted average of embeddings."
+    },
+    {
+      "name": "WithAPIKey",
+      "signature": "func WithAPIKey(apiKey string) (ClientOption)",
+      "doc": "WithAPIKey sets the API key for the client."
+    },
+    {
+      "name": "WithAllowFallbacks",
+      "signature": "func WithAllowFallbacks(allow bool) (ChatCompletionOption)",
+      "doc": "WithAllowFallbacks controls whether to allow backup providers."
+    },
+    {
+      "name": "WithAnthropicHeaderMetadata",
+      "signature": "func WithAnthropicHeaderMetadata(metadata map[string]any) (AnthropicOption)",
+      "doc": "WithAnthropicHeaderMetadata sets metadata for X-* header injection."
+    },
+    {
+      "name": "WithAnthropicMaxTokens",
+      "signature": "func WithAnthropicMaxTokens(maxTokens int) (AnthropicOption)",
+      "doc": "WithAnthropicMaxTokens sets the maximum number of tokens to generate."
+    },
+    {
+      "name": "WithAnthropicMessages",
+      "signature": "func WithAnthropicMessages(messages []AnthropicMessage) (AnthropicOption)",
+      "doc": "WithAnthropicMessages sets the messages for the request."
+    },
+    {
+      "name": "WithAnthropicModel",
+      "signature": "func WithAnthropicModel(model string) (AnthropicOption)",
+      "doc": "WithAnthropicModel sets the model for the Anthropic Messages API request."
+    },
+    {
+      "name": "WithAnthropicModels",
+      "signature": "func WithAnthropicModels(models ...string) (AnthropicOption)",
+      "doc": "WithAnthropicModels sets fallback models."
+    },
+    {
+      "name": "WithAnthropicPlugins",
+      "signature": "func WithAnthropicPlugins(plugins ...Plugin) (AnthropicOption)",
+      "doc": "WithAnthropicPlugins sets plugin configurations."
+    },
+    {
+      "name": "WithAnthropicProvider",
+      "signature": "func WithAnthropicProvider(provider Provider) (AnthropicOption)",
+      "doc": "WithAnthropicProvider sets provider-specific parameters."
+    },
+    {
+      "name": "WithAnthropicRequestMetadata",
+      "signature": "func WithAnthropicRequestMetadata(metadata AnthropicRequestMetadata) (AnthropicOption)",
+      "doc": "WithAnthropicRequestMetadata sets the request body metadata."
+    },
+    {
+      "name": "WithAnthropicServiceTier",
+      "signature": "func WithAnthropicServiceTier(tier string) (AnthropicOption)",
+      "doc": "WithAnthropicServiceTier sets the service tier."
+    },
+    {
+      "name": "WithAnthropicSessionID",
+      "signature": "func WithAnthropicSessionID(sessionID string) (AnthropicOption)",
+      "doc": "WithAnthropicSessionID sets a session identifier for multi-turn conversations."
+    },
+    {
+      "name": "WithAnthropicStopSequences",
+      "signature": "func WithAnthropicStopSequences(sequences ...string) (AnthropicOption)",
+      "doc": "WithAnthropicStopSequences sets custom stop sequences."
+    },
+    {
+      "name": "WithAnthropicSystemBlocks",
+      "signature": "func WithAnthropicSystemBlocks(blocks []AnthropicTextBlock) (AnthropicOption)",
+      "doc": "WithAnthropicSystemBlocks sets a structured system prompt using text blocks."
+    },
+    {
+      "name": "WithAnthropicSystemString",
+      "signature": "func WithAnthropicSystemString(system string) (AnthropicOption)",
+      "doc": "WithAnthropicSystemString sets a string system prompt."
+    },
+    {
+      "name": "WithAnthropicTemperature",
+      "signature": "func WithAnthropicTemperature(temperature float64) (AnthropicOption)",
+      "doc": "WithAnthropicTemperature sets the temperature for sampling."
+    },
+    {
+      "name": "WithAnthropicThinkingDisabled",
+      "signature": "func WithAnthropicThinkingDisabled() (AnthropicOption)",
+      "doc": "WithAnthropicThinkingDisabled explicitly disables extended thinking."
+    },
+    {
+      "name": "WithAnthropicThinkingEnabled",
+      "signature": "func WithAnthropicThinkingEnabled(budgetTokens int) (AnthropicOption)",
+      "doc": "WithAnthropicThinkingEnabled enables extended thinking with a token budget."
+    },
+    {
+      "name": "WithAnthropicToolChoiceAny",
+      "signature": "func WithAnthropicToolChoiceAny() (AnthropicOption)",
+      "doc": "WithAnthropicToolChoiceAny sets tool choice to \"any\" (force tool use)."
+    },
+    {
+      "name": "WithAnthropicToolChoiceAuto",
+      "signature": "func WithAnthropicToolChoiceAuto() (AnthropicOption)",
+      "doc": "WithAnthropicToolChoiceAuto sets tool choice to \"auto\"."
+    },
+    {
+      "name": "WithAnthropicToolChoiceNone",
+      "signature": "func WithAnthropicToolChoiceNone() (AnthropicOption)",
+      "doc": "WithAnthropicToolChoiceNone sets tool choice to \"none\"."
+    },
+    {
+      "name": "WithAnthropicToolChoiceSpecific",
+      "signature": "func WithAnthropicToolChoiceSpecific(name string) (AnthropicOption)",
+      "doc": "WithAnthropicToolChoiceSpecific forces the use of a specific tool."
+    },
+    {
+      "name": "WithAnthropicTools",
+      "signature": "func WithAnthropicTools(tools ...AnthropicTool) (AnthropicOption)",
+      "doc": "WithAnthropicTools sets the available tools."
+    },
+    {
+      "name": "WithAnthropicTopK",
+      "signature": "func WithAnthropicTopK(topK int) (AnthropicOption)",
+      "doc": "WithAnthropicTopK sets the top_k for sampling."
+    },
+    {
+      "name": "WithAnthropicTopP",
+      "signature": "func WithAnthropicTopP(topP float64) (AnthropicOption)",
+      "doc": "WithAnthropicTopP sets the top_p for nucleus sampling."
+    },
+    {
+      "name": "WithAnthropicUser",
+      "signature": "func WithAnthropicUser(user string) (AnthropicOption)",
+      "doc": "WithAnthropicUser sets a unique identifier for the end-user."
+    },
+    {
+      "name": "WithAppName",
+      "signature": "func WithAppName(appName string) (ClientOption)",
+      "doc": "WithAppName sets the X-Title header for requests."
+    },
+    {
+      "name": "WithBaseURL",
+      "signature": "func WithBaseURL(baseURL string) (ClientOption)",
+      "doc": "WithBaseURL sets a custom base URL for the API."
+    },
+    {
+      "name": "WithCircuitBreaker",
+      "signature": "func WithCircuitBreaker(config *CircuitBreakerConfig) (ClientOption)",
+      "doc": "WithCircuitBreaker enables a circuit breaker for stream reconnections."
+    },
+    {
+      "name": "WithCompletionAllowFallbacks",
+      "signature": "func WithCompletionAllowFallbacks(allow bool) (CompletionOption)",
+      "doc": "WithCompletionAllowFallbacks controls whether to allow backup providers for completion requests."
+    },
+    {
+      "name": "WithCompletionBestOf",
+      "signature": "func WithCompletionBestOf(bestOf int) (CompletionOption)",
+      "doc": "WithCompletionBestOf sets the number of completions to generate server-side."
+    },
+    {
+      "name": "WithCompletionDataCollection",
+      "signature": "func WithCompletionDataCollection(policy string) (CompletionOption)",
+      "doc": "WithCompletionDataCollection controls whether to use providers that may store data."
+    },
+    {
+      "name": "WithCompletionEcho",
+      "signature": "func WithCompletionEcho(echo bool) (CompletionOption)",
+      "doc": "WithCompletionEcho enables echoing the prompt in the response."
+    },
+    {
+      "name": "WithCompletionFloorPrice",
+      "signature": "func WithCompletionFloorPrice() (CompletionOption)",
+      "doc": "WithCompletionFloorPrice is a shortcut for sorting by price for completion requests."
+    },
+    {
+      "name": "WithCompletionFrequencyPenalty",
+      "signature": "func WithCompletionFrequencyPenalty(penalty float64) (CompletionOption)",
+      "doc": "WithCompletionFrequencyPenalty sets the frequency penalty for completion."
+    },
+    {
+      "name": "WithCompletionIgnoreProviders",
+      "signature": "func WithCompletionIgnoreProviders(providers ...string) (CompletionOption)",
+      "doc": "WithCompletionIgnoreProviders specifies providers to skip for this request."
+    },
+    {
+      "name": "WithCompletionJSONMode",
+      "signature": "func WithCompletionJSONMode() (CompletionOption)",
+      "doc": "WithCompletionJSONMode sets the response format to return JSON for completion requests."
+    },
+    {
+      "name": "WithCompletionJSONSchema",
+      "signature": "func WithCompletionJSONSchema(name string, strict bool, schema map[string]any) (CompletionOption)",
+      "doc": "WithCompletionJSONSchema sets the response format to use a specific JSON schema for completion requests."
+    },
+    {
+      "name": "WithCompletionLogProbs",
+      "signature": "func WithCompletionLogProbs(logProbs int) (CompletionOption)",
+      "doc": "WithCompletionLogProbs sets the number of log probabilities to return."
+    },
+    {
+      "name": "WithCompletionMaxPrice",
+      "signature": "func WithCompletionMaxPrice(maxPrice MaxPrice) (CompletionOption)",
+      "doc": "WithCompletionMaxPrice sets maximum pricing constraints for the completion request."
+    },
+    {
+      "name": "WithCompletionMaxTokens",
+      "signature": "func WithCompletionMaxTokens(maxTokens int) (CompletionOption)",
+      "doc": "WithCompletionMaxTokens sets the max_tokens for completion."
+    },
+    {
+      "name": "WithCompletionMetadata",
+      "signature": "func WithCompletionMetadata(metadata map[string]any) (CompletionOption)",
+      "doc": "WithCompletionMetadata sets metadata headers for the completion request."
+    },
+    {
+      "name": "WithCompletionMinP",
+      "signature": "func WithCompletionMinP(minP float64) (CompletionOption)",
+      "doc": "WithCompletionMinP sets the min_p parameter for completion."
+    },
+    {
+      "name": "WithCompletionModel",
+      "signature": "func WithCompletionModel(model string) (CompletionOption)",
+      "doc": "WithCompletionModel sets the model for the completion request."
+    },
+    {
+      "name": "WithCompletionModels",
+      "signature": "func WithCompletionModels(models ...string) (CompletionOption)",
+      "doc": "WithCompletionModels sets the models for fallback in completion requests."
+    },
+    {
+      "name": "WithCompletionN",
+      "signature": "func WithCompletionN(n int) (CompletionOption)",
+      "doc": "WithCompletionN sets the number of completions to generate."
+    },
+    {
+      "name": "WithCompletionNitro",
+      "signature": "func WithCompletionNitro() (CompletionOption)",
+      "doc": "WithCompletionNitro is a shortcut for sorting by throughput for completion requests."
+    },
+    {
+      "name": "WithCompletionOnlyProviders",
+      "signature": "func WithCompletionOnlyProviders(providers ...string) (CompletionOption)",
+      "doc": "WithCompletionOnlyProviders restricts the request to only use specified providers."
+    },
+    {
+      "name": "WithCompletionPlugins",
+      "signature": "func WithCompletionPlugins(plugins ...Plugin) (CompletionOption)",
+      "doc": "WithCompletionPlugins adds plugin configurations to the completion request."
+    },
+    {
+      "name": "WithCompletionPresencePenalty",
+      "signature": "func WithCompletionPresencePenalty(penalty float64) (CompletionOption)",
+      "doc": "WithCompletionPresencePenalty sets the presence penalty for completion."
+    },
+    {
+      "name": "WithCompletionProvider",
+      "signature": "func WithCompletionProvider(provider Provider) (CompletionOption)",
+      "doc": "WithCompletionProvider sets provider-specific parameters for completion."
+    },
+    {
+      "name": "WithCompletionProviderOrder",
+      "signature": "func WithCompletionProviderOrder(providers ...string) (CompletionOption)",
+      "doc": "WithCompletionProviderOrder sets the order of providers to try for completion requests."
+    },
+    {
+      "name": "WithCompletionProviderSort",
+      "signature": "func WithCompletionProviderSort(sort string) (CompletionOption)",
+      "doc": "WithCompletionProviderSort sorts providers by the specified attribute."
+    },
+    {
+      "name": "WithCompletionQuantizations",
+      "signature": "func WithCompletionQuantizations(quantizations ...string) (CompletionOption)",
+      "doc": "WithCompletionQuantizations filters providers by quantization levels."
+    },
+    {
+      "name": "WithCompletionRepetitionPenalty",
+      "signature": "func WithCompletionRepetitionPenalty(penalty float64) (CompletionOption)",
+      "doc": "WithCompletionRepetitionPenalty sets the repetition penalty for completion."
+    },
+    {
+      "name": "WithCompletionRequestRetry",
+      "signature": "func WithCompletionRequestRetry(maxRetries int, retryDelay time.Duration) (CompletionOption)",
+      "doc": "WithCompletionRequestRetry sets per-request retry configuration for completion requests."
+    },
+    {
+      "name": "WithCompletionRequestTimeout",
+      "signature": "func WithCompletionRequestTimeout(timeout time.Duration) (CompletionOption)",
+      "doc": "WithCompletionRequestTimeout sets a per-request timeout for completion requests."
+    },
+    {
+      "name": "WithCompletionRequireParameters",
+      "signature": "func WithCompletionRequireParameters(require bool) (CompletionOption)",
+      "doc": "WithCompletionRequireParameters only routes to providers that support all request parameters."
+    },
+    {
+      "name": "WithCompletionResponseFormat",
+      "signature": "func WithCompletionResponseFormat(format ResponseFormat) (CompletionOption)",
+      "doc": "WithCompletionResponseFormat sets the response format for completion requests."
+    },
+    {
+      "name": "WithCompletionRoute",
+      "signature": "func WithCompletionRoute(route string) (CompletionOption)",
+      "doc": "WithCompletionRoute sets the routing preference for completion requests."
+    },
+    {
+      "name": "WithCompletionSeed",
+      "signature": "func WithCompletionSeed(seed int) (CompletionOption)",
+      "doc": "WithCompletionSeed sets the random seed for completion."
+    },
+    {
+      "name": "WithCompletionStop",
+      "signature": "func WithCompletionStop(stop ...string) (CompletionOption)",
+      "doc": "WithCompletionStop sets stop sequences for completion."
+    },
+    {
+      "name": "WithCompletionStreamChannelBuffer",
+      "signature": "func WithCompletionStreamChannelBuffer(n int) (CompletionOption)",
+      "doc": "WithCompletionStreamChannelBuffer sets the events channel buffer size for this completion request."
+    },
+    {
+      "name": "WithCompletionStreamMaxBackoff",
+      "signature": "func WithCompletionStreamMaxBackoff(d time.Duration) (CompletionOption)",
+      "doc": "WithCompletionStreamMaxBackoff sets the maximum backoff duration for stream reconnection for this completion request."
+    },
+    {
+      "name": "WithCompletionStreamMaxRetries",
+      "signature": "func WithCompletionStreamMaxRetries(n int) (CompletionOption)",
+      "doc": "WithCompletionStreamMaxRetries sets the maximum number of stream reconnection retries for this completion request."
+    },
+    {
+      "name": "WithCompletionSuffix",
+      "signature": "func WithCompletionSuffix(suffix string) (CompletionOption)",
+      "doc": "WithCompletionSuffix sets the suffix to append after the completion."
+    },
+    {
+      "name": "WithCompletionTemperature",
+      "signature": "func WithCompletionTemperature(temperature float64) (CompletionOption)",
+      "doc": "WithCompletionTemperature sets the temperature for completion."
+    },
+    {
+      "name": "WithCompletionTopA",
+      "signature": "func WithCompletionTopA(topA float64) (CompletionOption)",
+      "doc": "WithCompletionTopA sets the top_a parameter for completion."
+    },
+    {
+      "name": "WithCompletionTopK",
+      "signature": "func WithCompletionTopK(topK int) (CompletionOption)",
+      "doc": "WithCompletionTopK sets the top_k parameter for completion."
+    },
+    {
+      "name": "WithCompletionTopP",
+      "signature": "func WithCompletionTopP(topP float64) (CompletionOption)",
+      "doc": "WithCompletionTopP sets the top_p for completion."
+    },
+    {
+      "name": "WithCompletionTransforms",
+      "signature": "func WithCompletionTransforms(transforms ...string) (CompletionOption)",
+      "doc": "WithCompletionTransforms sets the transforms to apply to completion requests."
+    },
+    {
+      "name": "WithCompletionUser",
+      "signature": "func WithCompletionUser(user string) (CompletionOption)",
+      "doc": "WithCompletionUser sets a unique identifier for the end-user in completion requests."
+    },
+    {
+      "name": "WithCompletionWebSearchOptions",
+      "signature": "func WithCompletionWebSearchOptions(options *WebSearchOptions) (CompletionOption)",
+      "doc": "WithCompletionWebSearchOptions sets web search options for the completion request."
+    },
+    {
+      "name": "WithCompletionZDR",
+      "signature": "func WithCompletionZDR(enabled bool) (CompletionOption)",
+      "doc": "WithCompletionZDR enables Zero Data Retention for the completion request."
+    },
+    {
+      "name": "WithDataCollection",
+      "signature": "func WithDataCollection(policy string) (ChatCompletionOption)",
+      "doc": "WithDataCollection controls whether to use providers that may store data."
+    },
+    {
+      "name": "WithDefaultModel",
+      "signature": "func WithDefaultModel(model string) (ClientOption)",
+      "doc": "WithDefaultModel sets a default model to use for requests."
+    },
+    {
+      "name": "WithEmbeddingAllowFallbacks",
+      "signature": "func WithEmbeddingAllowFallbacks(allow bool) (EmbeddingOption)",
+      "doc": "WithEmbeddingAllowFallbacks controls whether to allow backup providers."
+    },
+    {
+      "name": "WithEmbeddingDataCollection",
+      "signature": "func WithEmbeddingDataCollection(policy string) (EmbeddingOption)",
+      "doc": "WithEmbeddingDataCollection controls whether to use providers that may store data."
+    },
+    {
+      "name": "WithEmbeddingDimensions",
+      "signature": "func WithEmbeddingDimensions(dimensions int) (EmbeddingOption)",
+      "doc": "WithEmbeddingDimensions sets the number of dimensions for the output embeddings."
+    },
+    {
+      "name": "WithEmbeddingEncodingFormat",
+      "signature": "func WithEmbeddingEncodingFormat(format string) (EmbeddingOption)",
+      "doc": "WithEmbeddingEncodingFormat sets the encoding format for the embeddings."
+    },
+    {
+      "name": "WithEmbeddingIgnoreProviders",
+      "signature": "func WithEmbeddingIgnoreProviders(providers ...string) (EmbeddingOption)",
+      "doc": "WithEmbeddingIgnoreProviders specifies providers to skip for this request."
+    },
+    {
+      "name": "WithEmbeddingInputType",
+      "signature": "func WithEmbeddingInputType(inputType string) (EmbeddingOption)",
+      "doc": "WithEmbeddingInputType sets the input type for the embeddings."
+    },
+    {
+      "name": "WithEmbeddingOnlyProviders",
+      "signature": "func WithEmbeddingOnlyProviders(providers ...string) (EmbeddingOption)",
+      "doc": "WithEmbeddingOnlyProviders restricts the request to only use specified providers."
+    },
+    {
+      "name": "WithEmbeddingProvider",
+      "signature": "func WithEmbeddingProvider(provider Provider) (EmbeddingOption)",
+      "doc": "WithEmbeddingProvider sets provider-specific routing parameters."
+    },
+    {
+      "name": "WithEmbeddingProviderOrder",
+      "signature": "func WithEmbeddingProviderOrder(providers ...string) (EmbeddingOption)",
+      "doc": "WithEmbeddingProviderOrder sets the order of providers to try."
+    },
+    {
+      "name": "WithEmbeddingProviderSort",
+      "signature": "func WithEmbeddingProviderSort(sort string) (EmbeddingOption)",
+      "doc": "WithEmbeddingProviderSort sorts providers by the specified attribute."
+    },
+    {
+      "name": "WithEmbeddingUser",
+      "signature": "func WithEmbeddingUser(user string) (EmbeddingOption)",
+      "doc": "WithEmbeddingUser sets an optional unique identifier for the end-user."
+    },
+    {
+      "name": "WithFloorPrice",
+      "signature": "func WithFloorPrice() (ChatCompletionOption)",
+      "doc": "WithFloorPrice is a shortcut for sorting by price."
+    },
+    {
+      "name": "WithFrequencyPenalty",
+      "signature": "func WithFrequencyPenalty(penalty float64) (ChatCompletionOption)",
+      "doc": "WithFrequencyPenalty sets the frequency penalty."
+    },
+    {
+      "name": "WithHTTPClient",
+      "signature": "func WithHTTPClient(httpClient *http.Client) (ClientOption)",
+      "doc": "WithHTTPClient sets a custom HTTP client."
+    },
+    {
+      "name": "WithHeader",
+      "signature": "func WithHeader(key, value string) (ClientOption)",
+      "doc": "WithHeader adds a custom header to all requests."
+    },
+    {
+      "name": "WithIgnoreProviders",
+      "signature": "func WithIgnoreProviders(providers ...string) (ChatCompletionOption)",
+      "doc": "WithIgnoreProviders specifies providers to skip for this request."
+    },
+    {
+      "name": "WithJSONMode",
+      "signature": "func WithJSONMode() (ChatCompletionOption)",
+      "doc": "WithJSONMode sets the response format to return JSON without a specific schema."
+    },
+    {
+      "name": "WithJSONSchema",
+      "signature": "func WithJSONSchema(name string, strict bool, schema map[string]any) (ChatCompletionOption)",
+      "doc": "WithJSONSchema sets the response format to use a specific JSON schema for structured outputs."
+    },
+    {
+      "name": "WithLogProbs",
+      "signature": "func WithLogProbs(topLogProbs int) (ChatCompletionOption)",
+      "doc": "WithLogProbs enables log probabilities in the response."
+    },
+    {
+      "name": "WithMaxPrice",
+      "signature": "func WithMaxPrice(maxPrice MaxPrice) (ChatCompletionOption)",
+      "doc": "WithMaxPrice sets maximum pricing constraints for the request."
+    },
+    {
+      "name": "WithMaxTokens",
+      "signature": "func WithMaxTokens(maxTokens int) (ChatCompletionOption)",
+      "doc": "WithMaxTokens sets the max_tokens parameter."
+    },
+    {
+      "name": "WithMessages",
+      "signature": "func WithMessages(messages []Message) (ChatCompletionOption)",
+      "doc": "WithMessages sets the messages for the chat completion request."
+    },
+    {
+      "name": "WithMetadata",
+      "signature": "func WithMetadata(metadata map[string]any) (ChatCompletionOption)",
+      "doc": "WithMetadata sets metadata headers for the request."
+    },
+    {
+      "name": "WithMinP",
+      "signature": "func WithMinP(minP float64) (ChatCompletionOption)",
+      "doc": "WithMinP sets the min_p parameter for nucleus sampling."
+    },
+    {
+      "name": "WithModel",
+      "signature": "func WithModel(model string) (ChatCompletionOption)",
+      "doc": "WithModel sets the model for the request."
+    },
+    {
+      "name": "WithModels",
+      "signature": "func WithModels(models ...string) (ChatCompletionOption)",
+      "doc": "WithModels sets the models for fallback."
+    },
+    {
+      "name": "WithNitro",
+      "signature": "func WithNitro() (ChatCompletionOption)",
+      "doc": "WithNitro is a shortcut for sorting by throughput."
+    },
+    {
+      "name": "WithOnlineModel",
+      "signature": "func WithOnlineModel(model string) (string)",
+      "doc": "WithOnlineModel appends \":online\" to a model name to enable web search."
+    },
+    {
+      "name": "WithOnlyProviders",
+      "signature": "func WithOnlyProviders(providers ...string) (ChatCompletionOption)",
+      "doc": "WithOnlyProviders restricts the request to only use specified providers."
+    },
+    {
+      "name": "WithParallelToolCalls",
+      "signature": "func WithParallelToolCalls(parallel *bool) (ChatCompletionOption)",
+      "doc": "WithParallelToolCalls controls whether multiple tools can be called in parallel."
+    },
+    {
+      "name": "WithPlugins",
+      "signature": "func WithPlugins(plugins ...Plugin) (ChatCompletionOption)",
+      "doc": "WithPlugins adds plugin configurations to the request."
+    },
+    {
+      "name": "WithPresencePenalty",
+      "signature": "func WithPresencePenalty(penalty float64) (ChatCompletionOption)",
+      "doc": "WithPresencePenalty sets the presence penalty."
+    },
+    {
+      "name": "WithProvider",
+      "signature": "func WithProvider(provider Provider) (ChatCompletionOption)",
+      "doc": "WithProvider sets provider-specific parameters."
+    },
+    {
+      "name": "WithProviderOrder",
+      "signature": "func WithProviderOrder(providers ...string) (ChatCompletionOption)",
+      "doc": "WithProviderOrder sets the order of providers to try."
+    },
+    {
+      "name": "WithProviderSort",
+      "signature": "func WithProviderSort(sort string) (ChatCompletionOption)",
+      "doc": "WithProviderSort sorts providers by the specified attribute."
+    },
+    {
+      "name": "WithQuantizations",
+      "signature": "func WithQuantizations(quantizations ...string) (ChatCompletionOption)",
+      "doc": "WithQuantizations filters providers by quantization levels."
+    },
+    {
+      "name": "WithReferer",
+      "signature": "func WithReferer(referer string) (ClientOption)",
+      "doc": "WithReferer sets the HTTP-Referer header for requests."
+    },
+    {
+      "name": "WithRepetitionPenalty",
+      "signature": "func WithRepetitionPenalty(penalty float64) (ChatCompletionOption)",
+      "doc": "WithRepetitionPenalty sets the repetition penalty."
+    },
+    {
+      "name": "WithRequestRetry",
+      "signature": "func WithRequestRetry(maxRetries int, retryDelay time.Duration) (ChatCompletionOption)",
+      "doc": "WithRequestRetry sets per-request retry configuration that overrides the client-level retry settings."
+    },
+    {
+      "name": "WithRequestTimeout",
+      "signature": "func WithRequestTimeout(timeout time.Duration) (ChatCompletionOption)",
+      "doc": "WithRequestTimeout sets a per-request timeout that overrides the client-level timeout."
+    },
+    {
+      "name": "WithRequireParameters",
+      "signature": "func WithRequireParameters(require bool) (ChatCompletionOption)",
+      "doc": "WithRequireParameters only routes to providers that support all request parameters."
+    },
+    {
+      "name": "WithRerankAllowFallbacks",
+      "signature": "func WithRerankAllowFallbacks(allow bool) (RerankOption)",
+      "doc": "WithRerankAllowFallbacks controls whether to allow backup providers."
+    },
+    {
+      "name": "WithRerankDataCollection",
+      "signature": "func WithRerankDataCollection(policy string) (RerankOption)",
+      "doc": "WithRerankDataCollection controls whether to use providers that may store data."
+    },
+    {
+      "name": "WithRerankIgnoreProviders",
+      "signature": "func WithRerankIgnoreProviders(providers ...string) (RerankOption)",
+      "doc": "WithRerankIgnoreProviders specifies providers to skip for this request."
+    },
+    {
+      "name": "WithRerankOnlyProviders",
+      "signature": "func WithRerankOnlyProviders(providers ...string) (RerankOption)",
+      "doc": "WithRerankOnlyProviders restricts the request to only use specified providers."
+    },
+    {
+      "name": "WithRerankProvider",
+      "signature": "func WithRerankProvider(provider Provider) (RerankOption)",
+      "doc": "WithRerankProvider sets provider-specific routing parameters."
+    },
+    {
+      "name": "WithRerankProviderOrder",
+      "signature": "func WithRerankProviderOrder(providers ...string) (RerankOption)",
+      "doc": "WithRerankProviderOrder sets the order of providers to try."
+    },
+    {
+      "name": "WithRerankProviderSort",
+      "signature": "func WithRerankProviderSort(sort string) (RerankOption)",
+      "doc": "WithRerankProviderSort sorts providers by the specified attribute."
+    },
+    {
+      "name": "WithRerankTopN",
+      "signature": "func WithRerankTopN(topN int) (RerankOption)",
+      "doc": "WithRerankTopN sets the number of most relevant documents to return."
+    },
+    {
+      "name": "WithResponseFormat",
+      "signature": "func WithResponseFormat(format ResponseFormat) (ChatCompletionOption)",
+      "doc": "WithResponseFormat sets the response format."
+    },
+    {
+      "name": "WithResponsesInput",
+      "signature": "func WithResponsesInput(input any) (ResponsesOption)",
+      "doc": "WithResponsesInput sets the input for the Responses API request."
+    },
+    {
+      "name": "WithResponsesMaxOutputTokens",
+      "signature": "func WithResponsesMaxOutputTokens(tokens int) (ResponsesOption)",
+      "doc": "WithResponsesMaxOutputTokens sets the maximum number of output tokens."
+    },
+    {
+      "name": "WithResponsesMetadata",
+      "signature": "func WithResponsesMetadata(metadata map[string]any) (ResponsesOption)",
+      "doc": "WithResponsesMetadata sets metadata headers for the request."
+    },
+    {
+      "name": "WithResponsesModel",
+      "signature": "func WithResponsesModel(model string) (ResponsesOption)",
+      "doc": "WithResponsesModel sets the model for the Responses API request."
+    },
+    {
+      "name": "WithResponsesPlugins",
+      "signature": "func WithResponsesPlugins(plugins ...Plugin) (ResponsesOption)",
+      "doc": "WithResponsesPlugins appends plugins to the request."
+    },
+    {
+      "name": "WithResponsesReasoning",
+      "signature": "func WithResponsesReasoning(ptr *ResponsesReasoning) (ResponsesOption)",
+      "doc": "WithResponsesReasoning sets the reasoning configuration."
+    },
+    {
+      "name": "WithResponsesReasoningEffort",
+      "signature": "func WithResponsesReasoningEffort(effort string) (ResponsesOption)",
+      "doc": "WithResponsesReasoningEffort sets the reasoning effort level."
+    },
+    {
+      "name": "WithResponsesTemperature",
+      "signature": "func WithResponsesTemperature(temperature float64) (ResponsesOption)",
+      "doc": "WithResponsesTemperature sets the temperature for sampling (0-2)."
+    },
+    {
+      "name": "WithResponsesToolChoice",
+      "signature": "func WithResponsesToolChoice(toolChoice any) (ResponsesOption)",
+      "doc": "WithResponsesToolChoice sets the tool choice strategy for ResponsesRequest.ToolChoice."
+    },
+    {
+      "name": "WithResponsesTools",
+      "signature": "func WithResponsesTools(tools ...ResponsesTool) (ResponsesOption)",
+      "doc": "WithResponsesTools sets the available tools/functions for the request."
+    },
+    {
+      "name": "WithResponsesTopP",
+      "signature": "func WithResponsesTopP(topP float64) (ResponsesOption)",
+      "doc": "WithResponsesTopP sets the top_p value for nucleus sampling (0-1)."
+    },
+    {
+      "name": "WithResponsesWebSearch",
+      "signature": "func WithResponsesWebSearch(maxResults int) (ResponsesOption)",
+      "doc": "WithResponsesWebSearch enables web search with the specified maximum results."
+    },
+    {
+      "name": "WithRetry",
+      "signature": "func WithRetry(maxRetries int, retryDelay time.Duration) (ClientOption)",
+      "doc": "WithRetry configures retry behavior."
+    },
+    {
+      "name": "WithRoute",
+      "signature": "func WithRoute(route string) (ChatCompletionOption)",
+      "doc": "WithRoute sets the routing preference."
+    },
+    {
+      "name": "WithSeed",
+      "signature": "func WithSeed(seed int) (ChatCompletionOption)",
+      "doc": "WithSeed sets the random seed."
+    },
+    {
+      "name": "WithStop",
+      "signature": "func WithStop(stop ...string) (ChatCompletionOption)",
+      "doc": "WithStop sets the stop sequences."
+    },
+    {
+      "name": "WithStreamChannelBuffer",
+      "signature": "func WithStreamChannelBuffer(n int) (ChatCompletionOption)",
+      "doc": "WithStreamChannelBuffer sets the events channel buffer size for this request."
+    },
+    {
+      "name": "WithStreamConfig",
+      "signature": "func WithStreamConfig(config *StreamConfig) (ClientOption)",
+      "doc": "WithStreamConfig sets the stream configuration for the client."
+    },
+    {
+      "name": "WithStreamMaxBackoff",
+      "signature": "func WithStreamMaxBackoff(d time.Duration) (ChatCompletionOption)",
+      "doc": "WithStreamMaxBackoff sets the maximum backoff duration for stream reconnection for this request."
+    },
+    {
+      "name": "WithStreamMaxRetries",
+      "signature": "func WithStreamMaxRetries(n int) (ChatCompletionOption)",
+      "doc": "WithStreamMaxRetries sets the maximum number of stream reconnection retries for this request."
+    },
+    {
+      "name": "WithTemperature",
+      "signature": "func WithTemperature(temperature float64) (ChatCompletionOption)",
+      "doc": "WithTemperature sets the temperature parameter."
+    },
+    {
+      "name": "WithTimeout",
+      "signature": "func WithTimeout(timeout time.Duration) (ClientOption)",
+      "doc": "WithTimeout sets the HTTP client timeout."
+    },
+    {
+      "name": "WithToolChoice",
+      "signature": "func WithToolChoice(toolChoice any) (ChatCompletionOption)",
+      "doc": "WithToolChoice sets the tool choice strategy."
+    },
+    {
+      "name": "WithTools",
+      "signature": "func WithTools(tools ...Tool) (ChatCompletionOption)",
+      "doc": "WithTools sets the available tools/functions."
+    },
+    {
+      "name": "WithTopA",
+      "signature": "func WithTopA(topA float64) (ChatCompletionOption)",
+      "doc": "WithTopA sets the top_a parameter for top-a sampling."
+    },
+    {
+      "name": "WithTopK",
+      "signature": "func WithTopK(topK int) (ChatCompletionOption)",
+      "doc": "WithTopK sets the top_k parameter."
+    },
+    {
+      "name": "WithTopP",
+      "signature": "func WithTopP(topP float64) (ChatCompletionOption)",
+      "doc": "WithTopP sets the top_p parameter."
+    },
+    {
+      "name": "WithTransforms",
+      "signature": "func WithTransforms(transforms ...string) (ChatCompletionOption)",
+      "doc": "WithTransforms sets the transforms to apply."
+    },
+    {
+      "name": "WithUser",
+      "signature": "func WithUser(user string) (ChatCompletionOption)",
+      "doc": "WithUser sets a unique identifier for the end-user."
+    },
+    {
+      "name": "WithWebSearchOptions",
+      "signature": "func WithWebSearchOptions(options *WebSearchOptions) (ChatCompletionOption)",
+      "doc": "WithWebSearchOptions sets web search options for the request."
+    },
+    {
+      "name": "WithZDR",
+      "signature": "func WithZDR(enabled bool) (ChatCompletionOption)",
+      "doc": "WithZDR enables Zero Data Retention for the request."
+    }
+  ]
+}
