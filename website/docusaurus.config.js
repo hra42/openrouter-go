@@ -10,8 +10,8 @@ const config = {
   title: 'openrouter-go',
   tagline: 'Zero-dependency Go client for the OpenRouter API',
 
-  url: 'https://hra42.github.io',
-  baseUrl: '/openrouter-go/',
+  url: 'https://openrouter-go.hra42.lol',
+  baseUrl: '/',
 
   organizationName: 'hra42',
   projectName: 'openrouter-go',

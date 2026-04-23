@@ -7,7 +7,7 @@
 
 A zero-dependency Go package providing complete bindings for the OpenRouter API, supporting all available endpoints with full streaming capabilities.
 
-> 📚 **Docs site:** https://hra42.github.io/openrouter-go · **Recipes:** [`docs/recipes/`](docs/recipes/) · **Building with an AI coding agent?** Start with [`AGENTS.md`](AGENTS.md).
+> 📚 **Docs site:** https://openrouter-go.hra42.lol · **Recipes:** [`docs/recipes/`](docs/recipes/) · **Building with an AI coding agent?** Start with [`AGENTS.md`](AGENTS.md).
 
 ## Features
 
