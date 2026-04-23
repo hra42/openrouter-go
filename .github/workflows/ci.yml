@@ -33,6 +33,28 @@ jobs:
       - name: Test
         run: go test -race -cover $(go list ./... | grep -v -E '/(examples|cmd)/')
 
+  api-surface:
+    name: API surface snapshot
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.26'
+
+      - name: Regenerate docs/api-surface.json
+        run: go run ./cmd/gen-api-surface
+
+      - name: Fail if api-surface.json is out of date
+        run: |
+          if ! git diff --exit-code -- docs/api-surface.json; then
+            echo ""
+            echo "::error::docs/api-surface.json is stale. Run 'go run ./cmd/gen-api-surface' locally and commit the result."
+            exit 1
+          fi
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
