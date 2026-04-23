@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Writing code against the SDK?** Read [AGENTS.md](AGENTS.md) first — it covers the functional-options pattern, the streaming contract, endpoint selection, and common pitfalls. This file is for build/test commands only.
+
 ## Commands
 
 ### Build and Test
