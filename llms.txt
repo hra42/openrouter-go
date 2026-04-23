@@ -1,0 +1,67 @@
+# openrouter-go
+
+> Zero-dependency Go client for the [OpenRouter](https://openrouter.ai) API. Covers chat completions, legacy completions, streaming (SSE), tool calling, structured outputs, multimodal inputs (image / audio / PDF / text), embeddings, the Responses API (beta), the Anthropic-compatible Messages endpoint, broadcast webhook parsing, and the full account/admin surface (models, providers, keys, activity, credits, guardrails, ZDR).
+
+Module: `github.com/hra42/openrouter-go` · Go 1.26+ · Go standard library only.
+
+```go
+import "github.com/hra42/openrouter-go"
+
+client := openrouter.NewClient(openrouter.WithAPIKey(os.Getenv("OPENROUTER_API_KEY")))
+resp, err := client.ChatComplete(ctx,
+    []openrouter.Message{openrouter.CreateUserMessage("Hello")},
+    openrouter.WithModel("openai/gpt-4o-mini"),
+)
+```
+
+## Start here (for AI agents)
+
+- [AGENTS.md](AGENTS.md): conventions, functional options, streaming contract, endpoint decision table, pitfalls. Read this first.
+- [CLAUDE.md](CLAUDE.md): build/test/e2e commands for Claude Code.
+- [README.md](README.md): human-facing feature list and narrative quick start.
+- [DOCUMENTATION.md](DOCUMENTATION.md): longer-form guide (will migrate to `docs/recipes/`).
+- Godoc: https://pkg.go.dev/github.com/hra42/openrouter-go
+
+## Common tasks → files
+
+| Task | Example | Source |
+|---|---|---|
+| Basic chat completion | `examples/basic/main.go` | `chat.go` |
+| Streaming chat | `examples/streaming/main.go` | `chat.go`, `stream.go`, `internal/sse/` |
+| Tool / function calling | `examples/tool-calling/main.go` | `chat.go`, `models.go` (Tool, ToolCall) |
+| Structured outputs (JSON schema) | `examples/structured-output/main.go` | `chat.go`, `options.go` (WithResponseFormat) |
+| MCP → OpenAI tool conversion | `examples/mcp-tools/main.go` | `mcp.go` |
+| Web search plugin | `examples/web_search/main.go` | `web_search.go` |
+| Image input (multimodal) | `examples/image-inputs/main.go` | `models.go` (ContentPart, ImageURL) |
+| Audio input | `examples/audio-inputs/main.go` | `audio_utils.go`, `models.go` (InputAudio) |
+| PDF input | `examples/pdf-inputs/main.go` | `models.go` (File) |
+| Text file input | `examples/text-file-inputs/main.go` | `models.go` (File) |
+| Embeddings + chunking | `examples/embeddings/`, `examples/embedding-chunking/` | `embeddings.go`, `chunking.go` |
+| Rerank | `examples/rerank/main.go` | `rerank.go`, `rerank_models.go` |
+| Responses API (beta) | `examples/responses/main.go` | `responses.go`, `responses_models.go` |
+| Anthropic-compatible messages | — | `anthropic.go`, `anthropic_models.go` |
+| Broadcast webhook (OTLP) | `examples/broadcast-webhook/main.go` | `broadcast.go`, `broadcast_models.go` |
+| Transforms (context-window mgmt) | `examples/transforms/main.go` | `options.go` (WithTransforms) |
+| App attribution headers | `examples/app-attribution/main.go` | `client.go` (WithReferer, WithAppName) |
+| OAuth PKCE | `examples/oauth-pkce/main.go` | `oauth.go` |
+| List models / providers / endpoints | `examples/list-models/`, `list-providers/`, `model-endpoints/` | `models_endpoint.go`, `providers_endpoint.go` |
+| Account: credits, activity, keys | `examples/get-credits/`, `activity/`, `list-keys/`, `key/`, `create-key/` | `credits_endpoint.go`, `activity_endpoint.go`, `keys_endpoint.go` |
+
+## Core types
+
+- `Client` — thread-safe; construct via `NewClient(opts ...ClientOption)`.
+- `ClientOption` — `WithAPIKey`, `WithBaseURL`, `WithHTTPClient`, `WithTimeout`, `WithReferer`, `WithAppName`, `WithMaxRetries`, etc.
+- Request options — `WithModel`, `WithMessages`, `WithTemperature`, `WithMaxTokens`, `WithTools`, `WithResponseFormat`, `WithTransforms`, `WithStream`, etc.
+- Streaming — `ChatStream`, `CompletionStream`, `ResponsesStream`. Always `defer stream.Close()`. Iterate with `for event := range stream.Events() { ... }` and check `stream.Err()` after the channel drains.
+- Errors — `*openrouter.RequestError` with `IsRateLimitError()`, `IsAuthenticationError()`, `IsModerationError()`, etc. Unwrap with `errors.As`.
+
+## Testing
+
+- Unit: `go test ./...`
+- Race: `go test -race ./...`
+- E2E live API: `go run cmd/openrouter-test/main.go -test all` (needs `OPENROUTER_API_KEY`).
+
+## Stability
+
+- Stable: chat, completions, streaming, tools, structured outputs, multimodal, embeddings, models, providers, keys, credits, activity, transforms, web search, MCP conversion, broadcast.
+- Beta (may break): Responses API (`responses.go`).
