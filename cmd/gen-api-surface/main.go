@@ -62,41 +62,57 @@ func main() {
 
 func run() error {
 	fset := token.NewFileSet()
-	pkgs, err := parser.ParseDir(fset, ".", func(fi os.FileInfo) bool {
-		return !strings.HasSuffix(fi.Name(), "_test.go")
-	}, parser.ParseComments)
+	matches, err := filepath.Glob("*.go")
 	if err != nil {
-		return fmt.Errorf("parse: %w", err)
+		return fmt.Errorf("glob: %w", err)
 	}
 
-	pkg, ok := pkgs["openrouter"]
-	if !ok {
-		return fmt.Errorf("package openrouter not found in current directory (run from repo root)")
+	files := make([]*ast.File, 0, len(matches))
+	for _, path := range matches {
+		if strings.HasSuffix(path, "_test.go") {
+			continue
+		}
+		f, err := parser.ParseFile(fset, path, nil, parser.ParseComments)
+		if err != nil {
+			return fmt.Errorf("parse %s: %w", path, err)
+		}
+		if f.Name.Name != "openrouter" {
+			// Ignore files that happen to live here but belong to a
+			// different package (e.g. build-tag-scoped alternatives).
+			continue
+		}
+		files = append(files, f)
+	}
+	if len(files) == 0 {
+		return fmt.Errorf("no openrouter package files found in current directory (run from repo root)")
 	}
 
-	docPkg := doc.New(pkg, "github.com/hra42/openrouter-go", doc.PreserveAST)
+	pkg, err := doc.NewFromFiles(fset, files, "github.com/hra42/openrouter-go", doc.PreserveAST)
+	if err != nil {
+		return fmt.Errorf("doc: %w", err)
+	}
 
 	out := apiSurface{
 		Module:   "github.com/hra42/openrouter-go",
-		Package:  docPkg.Name,
-		Overview: firstSentence(docPkg.Doc),
+		Package:  pkg.Name,
+		Overview: firstSentence(pkg, pkg.Doc),
 	}
 
-	for _, c := range docPkg.Consts {
+	for _, c := range pkg.Consts {
 		for _, name := range c.Names {
-			out.Consts = append(out.Consts, constVar{Name: name, Doc: firstSentence(c.Doc)})
+			out.Consts = append(out.Consts, constVar{Name: name, Doc: firstSentence(pkg, c.Doc)})
 		}
 	}
-	for _, v := range docPkg.Vars {
+	for _, v := range pkg.Vars {
 		for _, name := range v.Names {
-			out.Vars = append(out.Vars, constVar{Name: name, Doc: firstSentence(v.Doc)})
+			out.Vars = append(out.Vars, constVar{Name: name, Doc: firstSentence(pkg, v.Doc)})
 		}
 	}
 
-	for _, t := range docPkg.Types {
+	for _, t := range pkg.Types {
 		td := typeDecl{
 			Name: t.Name,
-			Doc:  firstSentence(t.Doc),
+			Doc:  firstSentence(pkg, t.Doc),
 			Kind: typeKind(t),
 		}
 		for _, m := range t.Methods {
@@ -104,7 +120,7 @@ func run() error {
 				Name:      m.Name,
 				Receiver:  m.Recv,
 				Signature: formatSignature(fset, m.Decl),
-				Doc:       firstSentence(m.Doc),
+				Doc:       firstSentence(pkg, m.Doc),
 			})
 		}
 		// Constructors appear under t.Funcs in go/doc.
@@ -112,17 +128,17 @@ func run() error {
 			out.Funcs = append(out.Funcs, funcDecl{
 				Name:      f.Name,
 				Signature: formatSignature(fset, f.Decl),
-				Doc:       firstSentence(f.Doc),
+				Doc:       firstSentence(pkg, f.Doc),
 			})
 		}
 		sort.Slice(td.Methods, func(i, j int) bool { return td.Methods[i].Name < td.Methods[j].Name })
 		out.Types = append(out.Types, td)
 	}
-	for _, f := range docPkg.Funcs {
+	for _, f := range pkg.Funcs {
 		out.Funcs = append(out.Funcs, funcDecl{
 			Name:      f.Name,
 			Signature: formatSignature(fset, f.Decl),
-			Doc:       firstSentence(f.Doc),
+			Doc:       firstSentence(pkg, f.Doc),
 		})
 	}
 
@@ -242,11 +258,11 @@ func exprString(e ast.Expr) string {
 	}
 }
 
-func firstSentence(s string) string {
+func firstSentence(pkg *doc.Package, s string) string {
 	s = strings.TrimSpace(s)
 	if s == "" {
 		return ""
 	}
 	// go/doc synopsis: first sentence, up to newline or period+space.
-	return strings.TrimSpace(doc.Synopsis(s))
+	return strings.TrimSpace(pkg.Synopsis(s))
 }
