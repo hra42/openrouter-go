@@ -712,6 +712,12 @@
           "doc": "ListModelsUser retrieves a list of models filtered by the authenticated user's provider preferences, privacy settings, and guardrails."
         },
         {
+          "name": "ListOrganizationMembers",
+          "receiver": "*Client",
+          "signature": "func (*Client) ListOrganizationMembers(ctx context.Context, options *ListOrganizationMembersOptions) (*ListOrganizationMembersResponse, error)",
+          "doc": "ListOrganizationMembers returns a paginated list of members in the organization associated with the authenticated management key."
+        },
+        {
           "name": "ListProviders",
           "receiver": "*Client",
           "signature": "func (*Client) ListProviders(ctx context.Context) (*ProvidersResponse, error)",
@@ -1157,6 +1163,16 @@
       "kind": "struct"
     },
     {
+      "name": "ListOrganizationMembersOptions",
+      "doc": "ListOrganizationMembersOptions represents options for listing organization members.",
+      "kind": "struct"
+    },
+    {
+      "name": "ListOrganizationMembersResponse",
+      "doc": "ListOrganizationMembersResponse is the response from listing organization members.",
+      "kind": "struct"
+    },
+    {
       "name": "LogProbContent",
       "doc": "LogProbContent represents log probability content.",
       "kind": "struct"
@@ -1373,6 +1389,16 @@
       "name": "OTLPStatus",
       "doc": "OTLPStatus describes the status of a span.",
       "kind": "struct"
+    },
+    {
+      "name": "OrganizationMember",
+      "doc": "OrganizationMember represents a single member of an organization.",
+      "kind": "struct"
+    },
+    {
+      "name": "OrganizationMemberRole",
+      "doc": "OrganizationMemberRole is the role of a member within the organization.",
+      "kind": "alias"
     },
     {
       "name": "PDFParserConfig",
