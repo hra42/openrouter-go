@@ -42,39 +42,3 @@ func (c *Client) ExchangeAuthCode(ctx context.Context, request *ExchangeAuthCode
 	return &response, nil
 }
 
-// CreateAuthCode creates an authorization code to begin the OAuth PKCE flow.
-// The returned code can be used to redirect the user to OpenRouter for authorization.
-//
-// For PKCE support, generate a code verifier and challenge using
-// GenerateCodeVerifier() and CreateS256CodeChallenge(), then include the
-// challenge in the request.
-//
-// Example:
-//
-//	ctx := context.Background()
-//	challenge := openrouter.CreateS256CodeChallenge(verifier)
-//	resp, err := client.CreateAuthCode(ctx, &openrouter.CreateAuthCodeRequest{
-//	    CallbackURL:         "https://myapp.com/callback",
-//	    CodeChallenge:       &challenge,
-//	    CodeChallengeMethod: openrouter.CodeChallengeMethodS256,
-//	})
-//	if err != nil {
-//	    log.Fatal(err)
-//	}
-//	fmt.Printf("Auth Code ID: %s\n", resp.Data.ID)
-func (c *Client) CreateAuthCode(ctx context.Context, request *CreateAuthCodeRequest) (*CreateAuthCodeResponse, error) {
-	if request == nil {
-		return nil, &ValidationError{Message: "request cannot be nil"}
-	}
-
-	if request.CallbackURL == "" {
-		return nil, &ValidationError{Message: "callback_url is required"}
-	}
-
-	var response CreateAuthCodeResponse
-	if err := c.doRequest(ctx, "POST", "/auth/keys/code", request, &response); err != nil {
-		return nil, err
-	}
-
-	return &response, nil
-}

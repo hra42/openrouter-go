@@ -117,9 +117,13 @@ func (c *Client) doRequestOnce(ctx context.Context, method, endpoint string, bod
 	if resp.StatusCode >= 400 {
 		var errorResp ErrorResponse
 		if err := json.Unmarshal(respBody, &errorResp); err != nil {
+			msg := string(respBody)
+			if isHTMLResponse(resp.Header.Get("Content-Type"), respBody) {
+				msg = fmt.Sprintf("server returned HTML instead of JSON for %s %s (endpoint may not exist or may be misrouted)", method, url)
+			}
 			return &RequestError{
 				StatusCode: resp.StatusCode,
-				Message:    string(respBody),
+				Message:    msg,
 			}
 		}
 		return &RequestError{
@@ -277,4 +281,15 @@ func processModelSuffix[T RequestWithProvider](model string, req T) string {
 		setProviderField(req, provider)
 	}
 	return model
+}
+
+// isHTMLResponse reports whether the response looks like HTML rather than JSON.
+// OpenRouter's Next.js frontend returns HTML pages for missing/misrouted API
+// paths, which produces confusing error messages when dumped verbatim.
+func isHTMLResponse(contentType string, body []byte) bool {
+	if strings.Contains(strings.ToLower(contentType), "text/html") {
+		return true
+	}
+	trimmed := strings.TrimLeft(string(body), " \t\r\n")
+	return strings.HasPrefix(trimmed, "<!DOCTYPE") || strings.HasPrefix(trimmed, "<html")
 }
