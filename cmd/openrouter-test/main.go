@@ -32,7 +32,7 @@ func main() {
   responses, responses-reasoning, responses-tools, responses-websearch, responses-stream,
   zdr-endpoints, models-user,
   anthropic, anthropic-tools, anthropic-thinking, anthropic-system, anthropic-stream,
-  guardrails, oauth`)
+  guardrails, oauth, organizationmembers`)
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -295,6 +295,12 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "organizationmembers":
+		if tests.RunOrganizationMembersTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	case "createkey":
 		if tests.RunCreateKeyTest(ctx, client, *verbose) {
 			success = 1
@@ -531,6 +537,7 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, e
 		{"Get Activity", func() bool { return tests.RunActivityTest(ctx, client, verbose) }},
 		{"Get API Key Info", func() bool { return tests.RunKeyTest(ctx, client, verbose) }},
 		{"List API Keys", func() bool { return tests.RunListKeysTest(ctx, client, verbose) }},
+		{"List Organization Members", func() bool { return tests.RunOrganizationMembersTest(ctx, client, verbose) }},
 		{"Create API Key", func() bool { return tests.RunCreateKeyTest(ctx, client, verbose) }},
 		{"Update API Key", func() bool { return tests.RunUpdateKeyTest(ctx, client, verbose) }},
 		{"Delete API Key", func() bool { return tests.RunDeleteKeyTest(ctx, client, verbose) }},
