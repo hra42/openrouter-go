@@ -2153,6 +2153,9 @@ go run examples/web_search/main.go
 
 # Run responses API examples [BETA]
 go run examples/responses/main.go
+
+# Run workspaces example (requires a Management key)
+go run examples/workspaces/main.go
 ```
 
 ## Documentation
