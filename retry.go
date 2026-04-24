@@ -216,22 +216,24 @@ func extractTransportConfig(body any) transportConfig {
 	return tc
 }
 
+// defaultRetryableError returns the default retry classifier used by both JSON and raw
+// request paths: retry server errors, rate limits, and network errors; don't retry other
+// 4xx errors.
+func defaultRetryableError(err error) bool {
+	if reqErr, ok := err.(*RequestError); ok {
+		if reqErr.StatusCode >= 400 && reqErr.StatusCode < 500 {
+			return reqErr.IsRateLimitError()
+		}
+		return true
+	}
+	return true
+}
+
 // doRequest performs an HTTP request to the OpenRouter API with retry logic.
 func (c *Client) doRequest(ctx context.Context, method, endpoint string, body any, v any) error {
 	tc := extractTransportConfig(body)
 
-	retryableError := func(err error) bool {
-		if reqErr, ok := err.(*RequestError); ok {
-			// Don't retry client errors except rate limit
-			if reqErr.StatusCode >= 400 && reqErr.StatusCode < 500 {
-				return reqErr.IsRateLimitError()
-			}
-			// Retry server errors
-			return true
-		}
-		// Retry network errors
-		return true
-	}
+	retryableError := defaultRetryableError
 
 	var config *RetryConfig
 	if tc.retry != nil {
@@ -261,4 +263,49 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body an
 	return RetryWithBackoff(reqCtx, config, func() error {
 		return c.doRequestOnce(reqCtx, method, endpoint, body, v)
 	})
+}
+
+// doRequestRaw performs an HTTP request that returns a raw byte payload (e.g. for
+// binary endpoints like /audio/speech), using the same retry and transport configuration
+// as doRequest.
+func (c *Client) doRequestRaw(ctx context.Context, method, endpoint string, body any) ([]byte, string, error) {
+	tc := extractTransportConfig(body)
+
+	var config *RetryConfig
+	if tc.retry != nil {
+		config = tc.retry
+		if config.RetryableError == nil {
+			config.RetryableError = defaultRetryableError
+		}
+	} else {
+		config = &RetryConfig{
+			MaxRetries:     c.maxRetries,
+			InitialDelay:   c.retryDelay,
+			MaxDelay:       defaultMaxDelay,
+			Multiplier:     defaultMultiplier,
+			Jitter:         true,
+			RetryableError: defaultRetryableError,
+		}
+	}
+
+	reqCtx := ctx
+	if tc.timeout != nil {
+		var cancel context.CancelFunc
+		reqCtx, cancel = context.WithTimeout(ctx, *tc.timeout)
+		defer cancel()
+	}
+
+	var (
+		audio       []byte
+		contentType string
+	)
+	err := RetryWithBackoff(reqCtx, config, func() error {
+		var innerErr error
+		audio, contentType, innerErr = c.doRequestOnceRaw(reqCtx, method, endpoint, body)
+		return innerErr
+	})
+	if err != nil {
+		return nil, "", err
+	}
+	return audio, contentType, nil
 }

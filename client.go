@@ -140,6 +140,83 @@ func (c *Client) doRequestOnce(ctx context.Context, method, endpoint string, bod
 	return nil
 }
 
+// doRequestOnceRaw performs a single HTTP request and returns the raw response body bytes
+// along with the response Content-Type. It is intended for endpoints that return binary
+// payloads (e.g. /audio/speech) rather than JSON. Error responses are still decoded as JSON
+// matching the OpenRouter API error schema.
+func (c *Client) doRequestOnceRaw(ctx context.Context, method, endpoint string, body any) ([]byte, string, error) {
+	url := c.baseURL + endpoint
+
+	var reqBody io.Reader
+	if body != nil {
+		jsonData, err := json.Marshal(body)
+		if err != nil {
+			return nil, "", fmt.Errorf("failed to marshal request body: %w", err)
+		}
+		reqBody = strings.NewReader(string(jsonData))
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, url, reqBody)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+c.apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	if c.referer != "" {
+		req.Header.Set("HTTP-Referer", c.referer)
+	}
+
+	if c.appName != "" {
+		req.Header.Set("X-Title", c.appName)
+	}
+
+	for key, value := range c.customHeaders {
+		req.Header.Set(key, value)
+	}
+
+	if reqStruct, ok := body.(interface{ GetMetadata() map[string]any }); ok {
+		if metadata := reqStruct.GetMetadata(); metadata != nil {
+			for key, value := range metadata {
+				headerKey := "X-" + key
+				if strValue, ok := value.(string); ok {
+					req.Header.Set(headerKey, strValue)
+				}
+			}
+		}
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, "", fmt.Errorf("request failed: %w", err)
+	}
+	defer resp.Body.Close() //nolint:errcheck
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	if resp.StatusCode >= 400 {
+		var errorResp ErrorResponse
+		if err := json.Unmarshal(respBody, &errorResp); err != nil {
+			return nil, "", &RequestError{
+				StatusCode: resp.StatusCode,
+				Message:    string(respBody),
+			}
+		}
+		return nil, "", &RequestError{
+			StatusCode: resp.StatusCode,
+			Message:    errorResp.Error.Message,
+			Type:       errorResp.Error.Type,
+			Code:       errorResp.Error.Code,
+		}
+	}
+
+	return respBody, resp.Header.Get("Content-Type"), nil
+}
+
 // GetMetadata helper methods for request types
 func (r *ChatCompletionRequest) GetMetadata() map[string]any {
 	return r.Metadata
