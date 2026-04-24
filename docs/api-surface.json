@@ -604,6 +604,12 @@
           "doc": "CreateSpeech synthesizes audio from the given input text using the specified model and voice."
         },
         {
+          "name": "CreateVideo",
+          "receiver": "*Client",
+          "signature": "func (*Client) CreateVideo(ctx context.Context, model, prompt string, opts ...VideoGenerationOption) (*VideoGenerationResponse, error)",
+          "doc": "CreateVideo submits a video generation job and returns the initial response (including the job ID and polling URL)."
+        },
+        {
           "name": "DeleteGuardrail",
           "receiver": "*Client",
           "signature": "func (*Client) DeleteGuardrail(ctx context.Context, id string) (*DeleteGuardrailResponse, error)",
@@ -650,6 +656,18 @@
           "receiver": "*Client",
           "signature": "func (*Client) GetKeyByHash(ctx context.Context, hash string) (*GetKeyByHashResponse, error)",
           "doc": "GetKeyByHash retrieves details about a specific API key by its hash."
+        },
+        {
+          "name": "GetVideo",
+          "receiver": "*Client",
+          "signature": "func (*Client) GetVideo(ctx context.Context, jobID string) (*VideoGenerationResponse, error)",
+          "doc": "GetVideo returns the current status of a video generation job."
+        },
+        {
+          "name": "GetVideoContent",
+          "receiver": "*Client",
+          "signature": "func (*Client) GetVideoContent(ctx context.Context, jobID string, index int) (*VideoContentResponse, error)",
+          "doc": "GetVideoContent downloads the generated video bytes for a completed job."
         },
         {
           "name": "ListAllKeyAssignments",
@@ -722,6 +740,12 @@
           "receiver": "*Client",
           "signature": "func (*Client) ListProviders(ctx context.Context) (*ProvidersResponse, error)",
           "doc": "ListProviders retrieves a list of all providers available through the OpenRouter API."
+        },
+        {
+          "name": "ListVideoModels",
+          "receiver": "*Client",
+          "signature": "func (*Client) ListVideoModels(ctx context.Context) (*VideoModelsResponse, error)",
+          "doc": "ListVideoModels returns the list of available video generation models and their capabilities."
         },
         {
           "name": "ListZDREndpoints",
@@ -1792,6 +1816,81 @@
           "doc": "Error implements the error interface."
         }
       ]
+    },
+    {
+      "name": "VideoAspectRatio",
+      "doc": "VideoAspectRatio represents a supported aspect ratio for video generation.",
+      "kind": "alias"
+    },
+    {
+      "name": "VideoContentPartImage",
+      "doc": "VideoContentPartImage is an image reference used to guide video generation.",
+      "kind": "struct"
+    },
+    {
+      "name": "VideoContentResponse",
+      "doc": "VideoContentResponse is returned by GET /videos/{jobId}/content.",
+      "kind": "struct"
+    },
+    {
+      "name": "VideoFrameImage",
+      "doc": "VideoFrameImage is an image supplied as either the first or last frame of the generated video.",
+      "kind": "struct"
+    },
+    {
+      "name": "VideoFrameType",
+      "doc": "VideoFrameType identifies whether a supplied image is the first or last frame of the generated video.",
+      "kind": "alias"
+    },
+    {
+      "name": "VideoGenerationOption",
+      "doc": "VideoGenerationOption is a functional option for video generation requests.",
+      "kind": "func"
+    },
+    {
+      "name": "VideoGenerationRequest",
+      "doc": "VideoGenerationRequest represents a request to the POST /videos endpoint.",
+      "kind": "struct"
+    },
+    {
+      "name": "VideoGenerationResponse",
+      "doc": "VideoGenerationResponse is returned by POST /videos and GET /videos/{jobId}.",
+      "kind": "struct"
+    },
+    {
+      "name": "VideoGenerationUsage",
+      "doc": "VideoGenerationUsage reports cost and BYOK information for a completed video generation job.",
+      "kind": "struct"
+    },
+    {
+      "name": "VideoImageURL",
+      "doc": "VideoImageURL wraps a URL pointing to an image used for video generation inputs.",
+      "kind": "struct"
+    },
+    {
+      "name": "VideoModel",
+      "doc": "VideoModel describes a single video generation model returned by GET /videos/models.",
+      "kind": "struct"
+    },
+    {
+      "name": "VideoModelsResponse",
+      "doc": "VideoModelsResponse is returned by GET /videos/models.",
+      "kind": "struct"
+    },
+    {
+      "name": "VideoProvider",
+      "doc": "VideoProvider holds provider-specific passthrough configuration for video generation requests.",
+      "kind": "struct"
+    },
+    {
+      "name": "VideoResolution",
+      "doc": "VideoResolution represents a supported output resolution for video generation.",
+      "kind": "alias"
+    },
+    {
+      "name": "VideoStatus",
+      "doc": "VideoStatus represents the status of a video generation job.",
+      "kind": "alias"
     },
     {
       "name": "WebSearchContextSize",
@@ -3109,6 +3208,56 @@
       "name": "WithUser",
       "signature": "func WithUser(user string) (ChatCompletionOption)",
       "doc": "WithUser sets a unique identifier for the end-user."
+    },
+    {
+      "name": "WithVideoAspectRatio",
+      "signature": "func WithVideoAspectRatio(ratio VideoAspectRatio) (VideoGenerationOption)",
+      "doc": "WithVideoAspectRatio sets the output aspect ratio."
+    },
+    {
+      "name": "WithVideoCallbackURL",
+      "signature": "func WithVideoCallbackURL(url string) (VideoGenerationOption)",
+      "doc": "WithVideoCallbackURL sets the HTTPS webhook URL to receive a completion notification."
+    },
+    {
+      "name": "WithVideoDuration",
+      "signature": "func WithVideoDuration(seconds int) (VideoGenerationOption)",
+      "doc": "WithVideoDuration sets the requested video duration in seconds."
+    },
+    {
+      "name": "WithVideoFrameImages",
+      "signature": "func WithVideoFrameImages(frames ...VideoFrameImage) (VideoGenerationOption)",
+      "doc": "WithVideoFrameImages sets the first- and/or last-frame reference images."
+    },
+    {
+      "name": "WithVideoGenerateAudio",
+      "signature": "func WithVideoGenerateAudio(enabled bool) (VideoGenerationOption)",
+      "doc": "WithVideoGenerateAudio enables or disables audio generation alongside the video."
+    },
+    {
+      "name": "WithVideoInputReferences",
+      "signature": "func WithVideoInputReferences(refs ...VideoContentPartImage) (VideoGenerationOption)",
+      "doc": "WithVideoInputReferences sets the reference images used to guide generation."
+    },
+    {
+      "name": "WithVideoProviderOptions",
+      "signature": "func WithVideoProviderOptions(provider string, options map[string]any) (VideoGenerationOption)",
+      "doc": "WithVideoProviderOptions sets provider-specific passthrough options keyed by provider slug."
+    },
+    {
+      "name": "WithVideoResolution",
+      "signature": "func WithVideoResolution(resolution VideoResolution) (VideoGenerationOption)",
+      "doc": "WithVideoResolution sets the output resolution."
+    },
+    {
+      "name": "WithVideoSeed",
+      "signature": "func WithVideoSeed(seed int) (VideoGenerationOption)",
+      "doc": "WithVideoSeed sets a deterministic sampling seed."
+    },
+    {
+      "name": "WithVideoSize",
+      "signature": "func WithVideoSize(size string) (VideoGenerationOption)",
+      "doc": "WithVideoSize sets the exact pixel dimensions (e.g."
     },
     {
       "name": "WithWebSearchOptions",

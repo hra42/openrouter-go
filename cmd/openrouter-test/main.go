@@ -21,6 +21,7 @@ func main() {
 		rerankModel    = flag.String("rerank-model", "cohere/rerank-v3.5", "Rerank model to use")
 		ttsModel       = flag.String("tts-model", "hexgrad/kokoro-82m", "TTS model to use")
 		ttsVoice       = flag.String("tts-voice", "af_bella", "TTS voice (provider-specific)")
+		videoModel     = flag.String("video-model", "google/veo-3.1-lite", "Video generation model to use")
 		test           = flag.String("test", "all", `Test to run:
   all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools,
   transforms, websearch, mcp, image, multiimage, imagedetail, contentbuilder, base64image,
@@ -32,7 +33,8 @@ func main() {
   responses, responses-reasoning, responses-tools, responses-websearch, responses-stream,
   zdr-endpoints, models-user,
   anthropic, anthropic-tools, anthropic-thinking, anthropic-system, anthropic-stream,
-  guardrails, oauth, organizationmembers`)
+  guardrails, oauth, organizationmembers,
+  videomodels, videos`)
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
 		maxTokens = flag.Int("max-tokens", 100, "Maximum tokens for response")
@@ -74,6 +76,7 @@ func main() {
 	fmt.Printf("Rerank Model: %s\n", *rerankModel)
 	fmt.Printf("TTS Model: %s\n", *ttsModel)
 	fmt.Printf("TTS Voice: %s\n", *ttsVoice)
+	fmt.Printf("Video Model: %s\n", *videoModel)
 	fmt.Printf("Test: %s\n", *test)
 	fmt.Printf("Max Tokens: %d\n", *maxTokens)
 	fmt.Printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n")
@@ -475,6 +478,18 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "videomodels":
+		if tests.RunVideoModelsTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "videos":
+		if tests.RunVideoGenerationTest(ctx, client, *videoModel, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown test: %s\n", *test)
 		flag.Usage()
@@ -563,6 +578,9 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, e
 		{"Anthropic Messages Streaming", func() bool { return tests.RunAnthropicStreamTest(ctx, client, model, maxTokens, verbose) }},
 		{"Guardrails API", func() bool { return tests.RunGuardrailsTest(ctx, client, verbose) }},
 		{"OAuth PKCE", func() bool { return tests.RunOAuthPKCETest(ctx, client, verbose) }},
+		{"List Video Models", func() bool { return tests.RunVideoModelsTest(ctx, client, verbose) }},
+		// Video generation is excluded from "all" because it can take several minutes per run.
+		// Run explicitly with -test videos -video-model <model>.
 	}
 
 	for _, tc := range testCases {
