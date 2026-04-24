@@ -53,7 +53,8 @@ func RunVideoGenerationTest(ctx context.Context, client *openrouter.Client, mode
 	job, err := client.CreateVideo(ctx, model, prompt,
 		openrouter.WithVideoAspectRatio(openrouter.VideoAspectRatio16x9),
 		openrouter.WithVideoResolution(openrouter.VideoResolution720p),
-		openrouter.WithVideoDuration(5),
+		openrouter.WithVideoDuration(4),
+		openrouter.WithVideoGenerateAudio(false),
 	)
 	if err != nil {
 		printError("Failed to submit video generation", err)

@@ -21,7 +21,7 @@ func main() {
 		rerankModel    = flag.String("rerank-model", "cohere/rerank-v3.5", "Rerank model to use")
 		ttsModel       = flag.String("tts-model", "hexgrad/kokoro-82m", "TTS model to use")
 		ttsVoice       = flag.String("tts-voice", "af_bella", "TTS voice (provider-specific)")
-		videoModel     = flag.String("video-model", "alibaba/wan-2.6", "Video generation model to use")
+		videoModel     = flag.String("video-model", "google/veo-3.1-lite", "Video generation model to use")
 		test           = flag.String("test", "all", `Test to run:
   all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools,
   transforms, websearch, mcp, image, multiimage, imagedetail, contentbuilder, base64image,

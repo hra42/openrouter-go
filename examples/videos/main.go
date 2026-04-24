@@ -24,7 +24,7 @@ import (
 )
 
 func main() {
-	model := flag.String("model", "alibaba/wan-2.6", "Video generation model to use")
+	model := flag.String("model", "google/veo-3.1-lite", "Video generation model to use")
 	prompt := flag.String("prompt", "A serene mountain landscape at sunset, cinematic", "Text prompt")
 	output := flag.String("o", "video.mp4", "Output file path")
 	pollInterval := flag.Duration("interval", 5*time.Second, "Polling interval")
@@ -49,7 +49,8 @@ func main() {
 	job, err := client.CreateVideo(ctx, *model, *prompt,
 		openrouter.WithVideoAspectRatio(openrouter.VideoAspectRatio16x9),
 		openrouter.WithVideoResolution(openrouter.VideoResolution720p),
-		openrouter.WithVideoDuration(5),
+		openrouter.WithVideoDuration(4),
+		openrouter.WithVideoGenerateAudio(false),
 	)
 	if err != nil {
 		log.Fatalf("Failed to submit video: %v", err)
