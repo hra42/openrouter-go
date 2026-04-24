@@ -35,6 +35,14 @@ A zero-dependency Go package providing complete bindings for the OpenRouter API,
 - ✅ Activity analytics for usage monitoring and cost tracking
 - ✅ API key information retrieval with usage and rate limit details
 - ✅ API key management with listing, filtering, and creation capabilities
+- ✅ Workspaces management (create/list/update/delete, bulk member add/remove)
+- ✅ Organization member listing
+- ✅ Guardrails for spend caps, allowed model/provider lists, and ZDR enforcement
+- ✅ Video generation with async job submission, polling, and content download
+- ✅ Text-to-speech (`/audio/speech`) with mp3/pcm output
+- ✅ Rerank endpoint for relevance scoring (e.g. Cohere rerank-v3.5)
+- ✅ Broadcast webhook parsing (OTLP JSON traces)
+- ✅ OAuth PKCE authorization-code exchange helper
 - ⚠️ **[BETA]** Responses API with reasoning, tool calling, web search, and streaming
 
 ## Installation
@@ -2111,6 +2119,13 @@ The `examples/` directory contains comprehensive examples:
 - **web_search/** - Web search plugin examples with various configurations
 - **responses/** - **[BETA]** Responses API examples with reasoning, tools, and streaming
 - **advanced/** - Advanced features like rate limiting and custom configuration
+- **videos/** - Submit, poll, and download a video generation job
+- **tts/** - Create speech audio from text via `/audio/speech`
+- **rerank/** - Rerank documents by relevance to a query
+- **workspaces/** - Manage workspaces (Management API key required)
+- **list-organization-members/** - List members of your organization
+- **broadcast-webhook/** - Parse OTLP JSON payloads from the Broadcast webhook
+- **oauth-pkce/** - Exchange an OAuth PKCE auth code for an API key
 
 To run an example:
 
@@ -2160,7 +2175,15 @@ go run examples/workspaces/main.go
 
 ## Documentation
 
-For detailed API documentation and usage examples, see [DOCUMENTATION.md](DOCUMENTATION.md).
+Task-indexed recipes live under [`docs/recipes/`](docs/recipes/README.md). A few pointers to the newer endpoints:
+
+- [Workspaces](docs/recipes/workspaces.md) — Management API for workspace lifecycle and membership
+- [Video generation](docs/recipes/videos.md) — async submit/poll/download flow
+- [Guardrails](docs/recipes/guardrails.md) — spend caps, allowed models, ZDR enforcement, key/member assignment
+- [Organization members](docs/recipes/organization-members.md) — list org members for admin dashboards
+- [Text-to-speech](docs/recipes/tts.md), [Rerank](docs/recipes/rerank.md), [Broadcast webhook](docs/recipes/broadcast-webhook.md), [OAuth PKCE](docs/recipes/oauth-pkce.md)
+
+For detailed API documentation and usage examples, see [DOCUMENTATION.md](DOCUMENTATION.md). Building agent code against the SDK? Start with [AGENTS.md](AGENTS.md).
 
 ## Contributing
 

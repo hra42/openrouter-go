@@ -102,8 +102,15 @@ The client already retries transient failures with exponential backoff (configur
 | Get vector embeddings | `CreateEmbedding` / `CreateEmbeddings` | Pair with `Chunk*` helpers in `chunking.go` for long docs |
 | Discover models / pricing | `ListModels`, `ListModelEndpoints`, `ListProviders` | Metadata, no inference calls |
 | Manage account / keys | `GetCredits`, `GetActivity`, `ListKeys`, `CreateKey`, … | Admin surface |
+| Manage workspaces | `ListWorkspaces`, `CreateWorkspace`, `UpdateWorkspace`, `DeleteWorkspace`, `AddWorkspaceMembers`, `RemoveWorkspaceMembers` | Management (Provisioning) key required |
+| List organization members | `ListOrganizationMembers` | Management key required |
+| Configure spend/model guardrails | `CreateGuardrail`, `ListGuardrails`, `AssignKeysToGuardrail`, `AssignMembersToGuardrail`, … | Management key required. Caps USD spend, restricts models/providers, enforces ZDR |
+| Generate a video | `CreateVideo` → `GetVideo` (poll) → `GetVideoContent` | Async: submit, poll until terminal status, then download bytes |
+| Synthesize speech | `CreateSpeech` | Returns raw `mp3` or `pcm` bytes |
+| Rerank documents | `Rerank` | Second-stage scoring after vector retrieval |
 | Parse an OpenRouter Broadcast webhook | `broadcast.ParseTrace*` functions | No `Client` needed — standalone utilities |
 | Convert an MCP tool to OpenAI shape | `ConvertMCPTool` | No `Client` needed — standalone utility |
+| Complete an OAuth PKCE flow | `ExchangeAuthCode` | Converts a PKCE auth code into an API key |
 
 ---
 
