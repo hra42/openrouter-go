@@ -132,7 +132,7 @@ type PublicEndpointPricing struct {
 	InternalReasoning string `json:"internal_reasoning,omitempty"`
 	InputCacheRead    string `json:"input_cache_read,omitempty"`
 	InputCacheWrite   string `json:"input_cache_write,omitempty"`
-	Discount          string `json:"discount,omitempty"`
+	Discount          float64 `json:"discount,omitempty"`
 }
 
 // PublicEndpoint represents a single endpoint from the ZDR endpoints listing.

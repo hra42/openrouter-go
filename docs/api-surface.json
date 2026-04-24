@@ -560,12 +560,6 @@
           "doc": "CreateAnthropicMessageStream sends a streaming request to the Anthropic Messages API via OpenRouter."
         },
         {
-          "name": "CreateAuthCode",
-          "receiver": "*Client",
-          "signature": "func (*Client) CreateAuthCode(ctx context.Context, request *CreateAuthCodeRequest) (*CreateAuthCodeResponse, error)",
-          "doc": "CreateAuthCode creates an authorization code to begin the OAuth PKCE flow."
-        },
-        {
           "name": "CreateChunkedEmbedding",
           "receiver": "*Client",
           "signature": "func (*Client) CreateChunkedEmbedding(ctx context.Context, text string, model string, config ChunkConfig, opts ...EmbeddingOption) (*ChunkedEmbeddingResult, error)",
@@ -972,21 +966,6 @@
     {
       "name": "CostResult",
       "doc": "CostResult holds a cost breakdown for a request.",
-      "kind": "struct"
-    },
-    {
-      "name": "CreateAuthCodeData",
-      "doc": "CreateAuthCodeData contains the data from a created authorization code.",
-      "kind": "struct"
-    },
-    {
-      "name": "CreateAuthCodeRequest",
-      "doc": "CreateAuthCodeRequest represents a request to create an authorization code for the PKCE flow.",
-      "kind": "struct"
-    },
-    {
-      "name": "CreateAuthCodeResponse",
-      "doc": "CreateAuthCodeResponse represents the response from creating an authorization code.",
       "kind": "struct"
     },
     {
@@ -1890,11 +1869,6 @@
       "name": "Usage",
       "doc": "Usage represents token usage information.",
       "kind": "struct"
-    },
-    {
-      "name": "UsageLimitType",
-      "doc": "UsageLimitType represents the usage limit interval for an API key.",
-      "kind": "alias"
     },
     {
       "name": "ValidationError",

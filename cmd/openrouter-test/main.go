@@ -33,7 +33,7 @@ func main() {
   responses, responses-reasoning, responses-tools, responses-websearch, responses-stream,
   zdr-endpoints, models-user,
   anthropic, anthropic-tools, anthropic-thinking, anthropic-system, anthropic-stream,
-  guardrails, oauth, organizationmembers, workspaces,
+  guardrails, organizationmembers, workspaces,
   videomodels, videos`)
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
@@ -478,12 +478,6 @@ func main() {
 		} else {
 			failed = 1
 		}
-	case "oauth":
-		if tests.RunOAuthPKCETest(ctx, client, *verbose) {
-			success = 1
-		} else {
-			failed = 1
-		}
 	case "videomodels":
 		if tests.RunVideoModelsTest(ctx, client, *verbose) {
 			success = 1
@@ -584,7 +578,6 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, e
 		{"Anthropic Messages System", func() bool { return tests.RunAnthropicWithSystemTest(ctx, client, model, maxTokens, verbose) }},
 		{"Anthropic Messages Streaming", func() bool { return tests.RunAnthropicStreamTest(ctx, client, model, maxTokens, verbose) }},
 		{"Guardrails API", func() bool { return tests.RunGuardrailsTest(ctx, client, verbose) }},
-		{"OAuth PKCE", func() bool { return tests.RunOAuthPKCETest(ctx, client, verbose) }},
 		{"List Video Models", func() bool { return tests.RunVideoModelsTest(ctx, client, verbose) }},
 		// Video generation is excluded from "all" because it can take several minutes per run.
 		// Run explicitly with -test videos -video-model <model>.
