@@ -48,7 +48,8 @@ func main() {
 	fmt.Println("=== Submitting video generation job ===")
 	job, err := client.CreateVideo(ctx, *model, *prompt,
 		openrouter.WithVideoAspectRatio(openrouter.VideoAspectRatio16x9),
-		openrouter.WithVideoResolution(openrouter.VideoResolution480p),
+		openrouter.WithVideoResolution(openrouter.VideoResolution720p),
+		openrouter.WithVideoDuration(5),
 	)
 	if err != nil {
 		log.Fatalf("Failed to submit video: %v", err)
