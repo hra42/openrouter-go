@@ -102,6 +102,14 @@
     {
       "name": "ReasoningEffortMinimal",
       "doc": "Reasoning effort level constants for the Responses API."
+    },
+    {
+      "name": "SpeechFormatMP3",
+      "doc": "Audio response formats for the Create Speech endpoint."
+    },
+    {
+      "name": "SpeechFormatPCM",
+      "doc": "Audio response formats for the Create Speech endpoint."
     }
   ],
   "vars": [
@@ -588,6 +596,12 @@
           "receiver": "*Client",
           "signature": "func (*Client) CreateResponseStream(ctx context.Context, input any, opts ...ResponsesOption) (*ResponsesStream, error)",
           "doc": "CreateResponseStream sends a streaming request to the OpenRouter Responses API (beta)."
+        },
+        {
+          "name": "CreateSpeech",
+          "receiver": "*Client",
+          "signature": "func (*Client) CreateSpeech(ctx context.Context, input, model, voice string, opts ...SpeechOption) (*SpeechResponse, error)",
+          "doc": "CreateSpeech synthesizes audio from the given input text using the specified model and voice."
         },
         {
           "name": "DeleteGuardrail",
@@ -1614,6 +1628,26 @@
     {
       "name": "RetryConfig",
       "doc": "RetryConfig configures retry behavior for API requests.",
+      "kind": "struct"
+    },
+    {
+      "name": "SpeechOption",
+      "doc": "SpeechOption is a functional option for speech synthesis requests.",
+      "kind": "func"
+    },
+    {
+      "name": "SpeechProvider",
+      "doc": "SpeechProvider contains provider-specific passthrough configuration for speech requests.",
+      "kind": "struct"
+    },
+    {
+      "name": "SpeechRequest",
+      "doc": "SpeechRequest represents a text-to-speech synthesis request.",
+      "kind": "struct"
+    },
+    {
+      "name": "SpeechResponse",
+      "doc": "SpeechResponse represents the result of a text-to-speech request.",
       "kind": "struct"
     },
     {
@@ -2964,6 +2998,21 @@
       "name": "WithSeed",
       "signature": "func WithSeed(seed int) (ChatCompletionOption)",
       "doc": "WithSeed sets the random seed."
+    },
+    {
+      "name": "WithSpeechProviderOptions",
+      "signature": "func WithSpeechProviderOptions(provider string, options map[string]any) (SpeechOption)",
+      "doc": "WithSpeechProviderOptions sets provider-specific passthrough options keyed by provider slug."
+    },
+    {
+      "name": "WithSpeechResponseFormat",
+      "signature": "func WithSpeechResponseFormat(format string) (SpeechOption)",
+      "doc": "WithSpeechResponseFormat sets the audio output format (\"mp3\" or \"pcm\")."
+    },
+    {
+      "name": "WithSpeechSpeed",
+      "signature": "func WithSpeechSpeed(speed float64) (SpeechOption)",
+      "doc": "WithSpeechSpeed sets the playback speed multiplier."
     },
     {
       "name": "WithStop",
