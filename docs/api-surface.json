@@ -358,6 +358,16 @@
       "kind": "struct"
     },
     {
+      "name": "BulkAddWorkspaceMembersResponse",
+      "doc": "BulkAddWorkspaceMembersResponse is the response from bulk-adding workspace members.",
+      "kind": "struct"
+    },
+    {
+      "name": "BulkRemoveWorkspaceMembersResponse",
+      "doc": "BulkRemoveWorkspaceMembersResponse is the response from bulk-removing workspace members.",
+      "kind": "struct"
+    },
+    {
       "name": "ChatCompletionOption",
       "doc": "ChatCompletionOption is a functional option for chat completion requests.",
       "kind": "func"
@@ -483,6 +493,12 @@
       "doc": "Client is the main client for interacting with the OpenRouter API.",
       "kind": "struct",
       "methods": [
+        {
+          "name": "AddWorkspaceMembers",
+          "receiver": "*Client",
+          "signature": "func (*Client) AddWorkspaceMembers(ctx context.Context, idOrSlug string, userIDs []string) (*BulkAddWorkspaceMembersResponse, error)",
+          "doc": "AddWorkspaceMembers adds multiple organization members to a workspace."
+        },
         {
           "name": "AssignKeysToGuardrail",
           "receiver": "*Client",
@@ -610,6 +626,12 @@
           "doc": "CreateVideo submits a video generation job and returns the initial response (including the job ID and polling URL)."
         },
         {
+          "name": "CreateWorkspace",
+          "receiver": "*Client",
+          "signature": "func (*Client) CreateWorkspace(ctx context.Context, req *CreateWorkspaceRequest) (*CreateWorkspaceResponse, error)",
+          "doc": "CreateWorkspace creates a new workspace."
+        },
+        {
           "name": "DeleteGuardrail",
           "receiver": "*Client",
           "signature": "func (*Client) DeleteGuardrail(ctx context.Context, id string) (*DeleteGuardrailResponse, error)",
@@ -620,6 +642,12 @@
           "receiver": "*Client",
           "signature": "func (*Client) DeleteKey(ctx context.Context, hash string) (*DeleteKeyResponse, error)",
           "doc": "DeleteKey deletes an API key by its hash."
+        },
+        {
+          "name": "DeleteWorkspace",
+          "receiver": "*Client",
+          "signature": "func (*Client) DeleteWorkspace(ctx context.Context, idOrSlug string) (*DeleteWorkspaceResponse, error)",
+          "doc": "DeleteWorkspace deletes a workspace by ID (UUID) or slug."
         },
         {
           "name": "ExchangeAuthCode",
@@ -668,6 +696,12 @@
           "receiver": "*Client",
           "signature": "func (*Client) GetVideoContent(ctx context.Context, jobID string, index int) (*VideoContentResponse, error)",
           "doc": "GetVideoContent downloads the generated video bytes for a completed job."
+        },
+        {
+          "name": "GetWorkspace",
+          "receiver": "*Client",
+          "signature": "func (*Client) GetWorkspace(ctx context.Context, idOrSlug string) (*GetWorkspaceResponse, error)",
+          "doc": "GetWorkspace retrieves a single workspace by ID (UUID) or slug."
         },
         {
           "name": "ListAllKeyAssignments",
@@ -748,10 +782,22 @@
           "doc": "ListVideoModels returns the list of available video generation models and their capabilities."
         },
         {
+          "name": "ListWorkspaces",
+          "receiver": "*Client",
+          "signature": "func (*Client) ListWorkspaces(ctx context.Context, options *ListWorkspacesOptions) (*ListWorkspacesResponse, error)",
+          "doc": "ListWorkspaces returns a paginated list of workspaces for the authenticated user."
+        },
+        {
           "name": "ListZDREndpoints",
           "receiver": "*Client",
           "signature": "func (*Client) ListZDREndpoints(ctx context.Context) (*ZDREndpointsResponse, error)",
           "doc": "ListZDREndpoints retrieves the list of endpoints compatible with Zero Data Retention."
+        },
+        {
+          "name": "RemoveWorkspaceMembers",
+          "receiver": "*Client",
+          "signature": "func (*Client) RemoveWorkspaceMembers(ctx context.Context, idOrSlug string, userIDs []string) (*BulkRemoveWorkspaceMembersResponse, error)",
+          "doc": "RemoveWorkspaceMembers removes multiple members from a workspace."
         },
         {
           "name": "Rerank",
@@ -782,6 +828,12 @@
           "receiver": "*Client",
           "signature": "func (*Client) UpdateKey(ctx context.Context, hash string, request *UpdateKeyRequest) (*UpdateKeyResponse, error)",
           "doc": "UpdateKey updates an existing API key by its hash."
+        },
+        {
+          "name": "UpdateWorkspace",
+          "receiver": "*Client",
+          "signature": "func (*Client) UpdateWorkspace(ctx context.Context, idOrSlug string, req *UpdateWorkspaceRequest) (*UpdateWorkspaceResponse, error)",
+          "doc": "UpdateWorkspace updates an existing workspace by ID (UUID) or slug."
         }
       ]
     },
@@ -953,6 +1005,16 @@
       "kind": "struct"
     },
     {
+      "name": "CreateWorkspaceRequest",
+      "doc": "CreateWorkspaceRequest is the payload for creating a workspace.",
+      "kind": "struct"
+    },
+    {
+      "name": "CreateWorkspaceResponse",
+      "doc": "CreateWorkspaceResponse is the response from creating a workspace.",
+      "kind": "struct"
+    },
+    {
       "name": "CreditsData",
       "doc": "CreditsData contains credit balance information for the authenticated user.",
       "kind": "struct"
@@ -975,6 +1037,11 @@
     {
       "name": "DeleteKeyResponse",
       "doc": "DeleteKeyResponse represents the response from deleting an API key.",
+      "kind": "struct"
+    },
+    {
+      "name": "DeleteWorkspaceResponse",
+      "doc": "DeleteWorkspaceResponse is the response from deleting a workspace.",
       "kind": "struct"
     },
     {
@@ -1107,6 +1174,11 @@
       "kind": "struct"
     },
     {
+      "name": "GetWorkspaceResponse",
+      "doc": "GetWorkspaceResponse is the response from getting a single workspace.",
+      "kind": "struct"
+    },
+    {
       "name": "Guardrail",
       "doc": "Guardrail represents a guardrail configuration for controlling spending, model access, and data policies.",
       "kind": "struct"
@@ -1194,6 +1266,16 @@
     {
       "name": "ListOrganizationMembersResponse",
       "doc": "ListOrganizationMembersResponse is the response from listing organization members.",
+      "kind": "struct"
+    },
+    {
+      "name": "ListWorkspacesOptions",
+      "doc": "ListWorkspacesOptions represents options for listing workspaces.",
+      "kind": "struct"
+    },
+    {
+      "name": "ListWorkspacesResponse",
+      "doc": "ListWorkspacesResponse is the response from listing workspaces.",
       "kind": "struct"
     },
     {
@@ -1795,6 +1877,16 @@
       "kind": "struct"
     },
     {
+      "name": "UpdateWorkspaceRequest",
+      "doc": "UpdateWorkspaceRequest is the payload for updating a workspace.",
+      "kind": "struct"
+    },
+    {
+      "name": "UpdateWorkspaceResponse",
+      "doc": "UpdateWorkspaceResponse is the response from updating a workspace.",
+      "kind": "struct"
+    },
+    {
       "name": "Usage",
       "doc": "Usage represents token usage information.",
       "kind": "struct"
@@ -1906,6 +1998,21 @@
       "name": "WebSearchOptions",
       "doc": "WebSearchOptions configures native web search behavior for supported models.",
       "kind": "struct"
+    },
+    {
+      "name": "Workspace",
+      "doc": "Workspace represents an OpenRouter workspace.",
+      "kind": "struct"
+    },
+    {
+      "name": "WorkspaceMember",
+      "doc": "WorkspaceMember represents a single workspace membership.",
+      "kind": "struct"
+    },
+    {
+      "name": "WorkspaceMemberRole",
+      "doc": "WorkspaceMemberRole is the role of a member within a workspace.",
+      "kind": "alias"
     },
     {
       "name": "ZDREndpointsResponse",

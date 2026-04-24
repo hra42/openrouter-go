@@ -33,7 +33,7 @@ func main() {
   responses, responses-reasoning, responses-tools, responses-websearch, responses-stream,
   zdr-endpoints, models-user,
   anthropic, anthropic-tools, anthropic-thinking, anthropic-system, anthropic-stream,
-  guardrails, oauth, organizationmembers,
+  guardrails, oauth, organizationmembers, workspaces,
   videomodels, videos`)
 		verbose   = flag.Bool("v", false, "Verbose output")
 		timeout   = flag.Duration("timeout", 30*time.Second, "Request timeout")
@@ -304,6 +304,12 @@ func main() {
 		} else {
 			failed = 1
 		}
+	case "workspaces":
+		if tests.RunWorkspacesTest(ctx, client, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
 	case "createkey":
 		if tests.RunCreateKeyTest(ctx, client, *verbose) {
 			success = 1
@@ -553,6 +559,7 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, e
 		{"Get API Key Info", func() bool { return tests.RunKeyTest(ctx, client, verbose) }},
 		{"List API Keys", func() bool { return tests.RunListKeysTest(ctx, client, verbose) }},
 		{"List Organization Members", func() bool { return tests.RunOrganizationMembersTest(ctx, client, verbose) }},
+		{"Workspaces", func() bool { return tests.RunWorkspacesTest(ctx, client, verbose) }},
 		{"Create API Key", func() bool { return tests.RunCreateKeyTest(ctx, client, verbose) }},
 		{"Update API Key", func() bool { return tests.RunUpdateKeyTest(ctx, client, verbose) }},
 		{"Delete API Key", func() bool { return tests.RunDeleteKeyTest(ctx, client, verbose) }},
