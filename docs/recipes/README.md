@@ -25,5 +25,10 @@ Task-indexed recipes for `github.com/hra42/openrouter-go`. Each recipe is a mini
 | [Account & keys](./account.md) | `examples/get-credits/`, `examples/activity/`, `examples/list-keys/`, `examples/key/`, `examples/create-key/` |
 | [Discovering models](./models.md) | `examples/list-models/`, `examples/list-providers/`, `examples/model-endpoints/` |
 | [OAuth PKCE](./oauth-pkce.md) | `examples/oauth-pkce/` |
+| [Workspaces (Management API)](./workspaces.md) | `examples/workspaces/` |
+| [Organization members](./organization-members.md) | `examples/list-organization-members/` |
+| [Guardrails](./guardrails.md) | — |
+| [Video generation](./videos.md) | `examples/videos/` |
+| [Text-to-speech](./tts.md) | `examples/tts/` |
 
 New to the SDK? Start with [getting-started.md](./getting-started.md). Building agent code? Read [../../AGENTS.md](../../AGENTS.md) first.
