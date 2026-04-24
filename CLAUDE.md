@@ -63,6 +63,7 @@ go run examples/responses/main.go
 go run examples/embedding-chunking/main.go
 go run examples/rerank/main.go
 go run examples/broadcast-webhook/main.go
+go run examples/list-organization-members/main.go
 ```
 
 ### Running E2E Tests
@@ -102,6 +103,7 @@ go run cmd/openrouter-test/main.go -test chunking
 go run cmd/openrouter-test/main.go -test chunkedembedding
 go run cmd/openrouter-test/main.go -test rerank
 go run cmd/openrouter-test/main.go -test guardrails
+go run cmd/openrouter-test/main.go -test organizationmembers
 
 # Run with verbose output
 go run cmd/openrouter-test/main.go -test models -v
