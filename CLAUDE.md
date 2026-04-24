@@ -109,6 +109,16 @@ go run cmd/openrouter-test/main.go -test organizationmembers
 go run cmd/openrouter-test/main.go -test models -v
 ```
 
+### Regenerating the API surface snapshot
+
+**ALWAYS** run the following after adding, removing, or changing any exported type, function, method, or constant — CI fails on a stale `docs/api-surface.json`:
+
+```bash
+go run ./cmd/gen-api-surface
+```
+
+Commit the updated `docs/api-surface.json` alongside the code change in the same PR.
+
 ## Architecture Overview
 
 This is a zero-dependency Go client library for the OpenRouter API that follows idiomatic Go patterns.
