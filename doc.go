@@ -30,24 +30,28 @@
 //     variadic list of options (for example [WithAPIKey], [WithModel],
 //     [WithTools], [WithResponseFormat]). New behavior is added via new
 //     option functions rather than by growing config structs.
+//
 //   - context.Context on every call, for cancellation and deadlines.
+//
 //   - Streaming via typed iterators ([ChatStream], [CompletionStream],
 //     [ResponsesStream]) that must be closed by the caller. The canonical
 //     loop is:
 //
-//	stream, err := client.ChatCompleteStream(ctx, msgs, openrouter.WithModel(m))
-//	if err != nil { return err }
-//	defer stream.Close()
-//	for event := range stream.Events() {
-//	    // accumulate event.Choices[0].Delta.Content, etc.
-//	}
-//	if err := stream.Err(); err != nil { return err }
+//     stream, err := client.ChatCompleteStream(ctx, msgs, openrouter.WithModel(m))
+//     if err != nil { return err }
+//     defer stream.Close()
+//     for event := range stream.Events() {
+//     // accumulate event.Choices[0].Delta.Content, etc.
+//     }
+//     if err := stream.Err(); err != nil { return err }
 //
 //   - Errors unwrap to [*RequestError], which exposes helpers such as
 //     IsRateLimitError, IsAuthenticationError, IsContextLengthError, and
 //     IsModerationError for structured handling.
+//
 //   - Automatic retry with exponential backoff on transient failures,
 //     configurable via [WithMaxRetries] and [WithRetryDelay].
+//
 //   - Thread-safe: a single [Client] is safe for concurrent use by multiple
 //     goroutines.
 //
