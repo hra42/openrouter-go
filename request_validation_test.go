@@ -4,9 +4,6 @@ import (
 	"testing"
 )
 
-//go:fix inline
-func floatPtr(f float64) *float64 { return new(f) }
-
 func TestValidateChatCompletionParams(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -55,7 +52,7 @@ func TestValidateChatCompletionParams(t *testing.T) {
 		},
 		{
 			name: "zero temperature is valid",
-			req:  &ChatCompletionRequest{Temperature: floatPtr(0)},
+			req:  &ChatCompletionRequest{Temperature: new(float64)},
 		},
 		{
 			name:      "top_p above 1",
@@ -197,7 +194,7 @@ func TestValidateCompletionParams(t *testing.T) {
 		},
 		{
 			name:      "negative temperature",
-			req:       &CompletionRequest{Temperature: floatPtr(-1)},
+			req:       &CompletionRequest{Temperature: new(float64(-1))},
 			wantErr:   true,
 			wantField: "temperature",
 		},
