@@ -61,7 +61,7 @@ data: reconnect test
 
 `,
 			expected: []Event{
-				{Data: []byte("reconnect test"), Retry: durationPtr(5 * time.Second)},
+				{Data: []byte("reconnect test"), Retry: new(5 * time.Second)},
 			},
 		},
 		{
@@ -386,9 +386,4 @@ func BenchmarkIsEndOfStream(b *testing.B) {
 	for b.Loop() {
 		IsEndOfStream(data)
 	}
-}
-
-//go:fix inline
-func durationPtr(d time.Duration) *time.Duration {
-	return new(d)
 }
