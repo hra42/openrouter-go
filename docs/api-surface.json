@@ -874,6 +874,11 @@
       "kind": "other"
     },
     {
+      "name": "CompletionTokensDetails",
+      "doc": "CompletionTokensDetails breaks down completion token usage when usage accounting is enabled.",
+      "kind": "struct"
+    },
+    {
       "name": "ContentBuilder",
       "doc": "CreateContentParts is a helper to build custom content part arrays.",
       "kind": "struct",
@@ -961,6 +966,11 @@
     {
       "name": "ContentPart",
       "doc": "ContentPart represents a part of message content (text, image, file, or audio).",
+      "kind": "struct"
+    },
+    {
+      "name": "CostDetails",
+      "doc": "CostDetails breaks down the cost of a request when usage accounting is enabled.",
       "kind": "struct"
     },
     {
@@ -1501,6 +1511,11 @@
       "kind": "struct"
     },
     {
+      "name": "PromptTokensDetails",
+      "doc": "PromptTokensDetails breaks down prompt token usage when usage accounting is enabled.",
+      "kind": "struct"
+    },
+    {
       "name": "Provider",
       "doc": "Provider represents provider-specific parameters for routing requests.",
       "kind": "struct"
@@ -1868,6 +1883,11 @@
     {
       "name": "Usage",
       "doc": "Usage represents token usage information.",
+      "kind": "struct"
+    },
+    {
+      "name": "UsageRequest",
+      "doc": "UsageRequest enables OpenRouter usage accounting on a request.",
       "kind": "struct"
     },
     {
@@ -2856,6 +2876,11 @@
       "doc": "WithCompletionTransforms sets the transforms to apply to completion requests."
     },
     {
+      "name": "WithCompletionUsage",
+      "signature": "func WithCompletionUsage(include bool) (CompletionOption)",
+      "doc": "WithCompletionUsage enables (or disables) OpenRouter usage accounting for a legacy completion request."
+    },
+    {
       "name": "WithCompletionUser",
       "signature": "func WithCompletionUser(user string) (CompletionOption)",
       "doc": "WithCompletionUser sets a unique identifier for the end-user in completion requests."
@@ -3284,6 +3309,11 @@
       "name": "WithTransforms",
       "signature": "func WithTransforms(transforms ...string) (ChatCompletionOption)",
       "doc": "WithTransforms sets the transforms to apply."
+    },
+    {
+      "name": "WithUsage",
+      "signature": "func WithUsage(include bool) (ChatCompletionOption)",
+      "doc": "WithUsage enables (or disables) OpenRouter usage accounting for the request."
     },
     {
       "name": "WithUser",

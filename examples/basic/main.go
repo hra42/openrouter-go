@@ -115,6 +115,8 @@ func chatWithOptions(client *openrouter.Client) {
 		openrouter.WithTopP(0.95),
 		openrouter.WithFrequencyPenalty(0.2),
 		openrouter.WithPresencePenalty(0.1),
+		// Enable usage accounting to get the actual cost of the request back.
+		openrouter.WithUsage(true),
 	)
 	if err != nil {
 		log.Printf("Error: %v", err)
@@ -122,6 +124,12 @@ func chatWithOptions(client *openrouter.Client) {
 	}
 
 	fmt.Printf("Haiku:\n%s\n", resp.Choices[0].Message.Content)
+	fmt.Printf("Tokens used: %d\n", resp.Usage.TotalTokens)
+	// Usage.Cost is populated because we passed WithUsage(true). It is the
+	// actual cost in credits charged by OpenRouter for this request.
+	if resp.Usage.Cost != nil {
+		fmt.Printf("Actual cost: %.8f credits\n", *resp.Usage.Cost)
+	}
 }
 
 func multiTurnConversation(client *openrouter.Client) {

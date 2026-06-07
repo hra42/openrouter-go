@@ -80,6 +80,7 @@ go run cmd/openrouter-test/main.go -test all
 go run cmd/openrouter-test/main.go -test models
 go run cmd/openrouter-test/main.go -test chat
 go run cmd/openrouter-test/main.go -test streaming
+go run cmd/openrouter-test/main.go -test chatcost
 go run cmd/openrouter-test/main.go -test image
 go run cmd/openrouter-test/main.go -test audio
 go run cmd/openrouter-test/main.go -test audiobuilder

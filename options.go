@@ -264,6 +264,17 @@ func WithMetadata(metadata map[string]any) ChatCompletionOption {
 	}
 }
 
+// WithUsage enables (or disables) OpenRouter usage accounting for the request.
+// When enabled, the response Usage object includes the actual cost of the
+// request in credits (see Usage.Cost) along with cost and token detail
+// breakdowns. The cost is reported for both streaming and non-streaming
+// requests; for streaming it arrives in the final response chunk.
+func WithUsage(include bool) ChatCompletionOption {
+	return func(r *ChatCompletionRequest) {
+		r.Usage = &UsageRequest{Include: include}
+	}
+}
+
 // CompletionOption is a functional option for completion requests.
 type CompletionOption func(*CompletionRequest)
 
@@ -893,6 +904,16 @@ func WithUser(user string) ChatCompletionOption {
 func WithCompletionUser(user string) CompletionOption {
 	return func(r *CompletionRequest) {
 		setUser(r, user)
+	}
+}
+
+// WithCompletionUsage enables (or disables) OpenRouter usage accounting for a
+// legacy completion request. When enabled, the response Usage object includes
+// the actual cost of the request in credits (see Usage.Cost) along with cost
+// and token detail breakdowns.
+func WithCompletionUsage(include bool) CompletionOption {
+	return func(r *CompletionRequest) {
+		r.Usage = &UsageRequest{Include: include}
 	}
 }
 
