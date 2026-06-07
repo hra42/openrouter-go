@@ -32,7 +32,7 @@ fmt.Println(resp.Choices[0].Message.Content)
 Every configurable call uses functional options. **Do not invent config structs.** If you need to set something, look for a `With*` function.
 
 - Client-level: `ClientOption` — applied once at `NewClient(...)`. Examples: `WithAPIKey`, `WithBaseURL`, `WithHTTPClient`, `WithTimeout`, `WithReferer`, `WithAppName`, `WithMaxRetries`, `WithRetryDelay`, `WithCustomHeader`.
-- Request-level: distinct option types per endpoint (`ChatCompletionOption`, `CompletionOption`, `ResponsesOption`, …) but same shape. Examples: `WithModel`, `WithMessages`, `WithTemperature`, `WithMaxTokens`, `WithTopP`, `WithStop`, `WithTools`, `WithToolChoice`, `WithResponseFormat`, `WithTransforms`, `WithReasoning`, `WithProvider`.
+- Request-level: distinct option types per endpoint (`ChatCompletionOption`, `CompletionOption`, `ResponsesOption`, …) but same shape. Examples: `WithModel`, `WithMessages`, `WithTemperature`, `WithMaxTokens`, `WithTopP`, `WithStop`, `WithTools`, `WithToolChoice`, `WithResponseFormat`, `WithTransforms`, `WithReasoning`, `WithProvider`, `WithUsage`.
 
 When adding a feature, search `options.go` (and `*_options.go`) first — the option almost certainly already exists.
 
@@ -137,6 +137,7 @@ Model must support the modality — check `ListModelEndpoints` or OpenRouter doc
 - **Context cancellation interrupts streams cleanly.** Prefer `ctx` cancellation over closing the stream prematurely from a different goroutine.
 - **`WithTransforms("middle-out")` silently drops content** when the prompt exceeds the context window. Useful, but don't enable it by default in code that needs determinism.
 - **App attribution headers (`WithReferer`, `WithAppName`)** affect OpenRouter's app leaderboard and some provider analytics. Set them in production apps.
+- **Two kinds of cost — estimated vs. actual.** `cost.go` (`EstimateCost`, `EstimateCostFromTokens`) computes a *client-side estimate* from model pricing × tokens, useful *before* a call. To get the *actual* cost OpenRouter charged, pass `WithUsage(true)` (chat) or `WithCompletionUsage(true)` (legacy) and read `resp.Usage.Cost` (a `*float64` in credits, nil unless usage accounting was enabled). For streaming, the cost arrives on the final chunk's `Usage`, so accumulate it while ranging over `stream.Events()`.
 
 ---
 

@@ -35,6 +35,7 @@ type ChatCompletionRequest struct {
 	Route             string            `json:"route,omitempty"`
 	Plugins           []Plugin          `json:"plugins,omitempty"`
 	WebSearchOptions  *WebSearchOptions `json:"web_search_options,omitempty"`
+	Usage             *UsageRequest     `json:"usage,omitempty"`
 	User              string            `json:"user,omitempty"`
 	Metadata          map[string]any    `json:"-"` // Used for headers
 
@@ -74,6 +75,7 @@ type CompletionRequest struct {
 	Route             string            `json:"route,omitempty"`
 	Plugins           []Plugin          `json:"plugins,omitempty"`
 	WebSearchOptions  *WebSearchOptions `json:"web_search_options,omitempty"`
+	Usage             *UsageRequest     `json:"usage,omitempty"`
 	User              string            `json:"user,omitempty"`
 	Metadata          map[string]any    `json:"-"` // Used for headers
 
@@ -238,6 +240,44 @@ type Usage struct {
 	PromptTokens     int `json:"prompt_tokens"`
 	CompletionTokens int `json:"completion_tokens"`
 	TotalTokens      int `json:"total_tokens"`
+
+	// Cost is the actual cost of the request in credits (USD). It is populated
+	// only when usage accounting is enabled via WithUsage(true); nil otherwise.
+	Cost *float64 `json:"cost,omitempty"`
+	// CostDetails breaks down the cost (e.g. upstream inference cost).
+	// Populated only when usage accounting is enabled.
+	CostDetails *CostDetails `json:"cost_details,omitempty"`
+	// PromptTokensDetails breaks down prompt tokens (e.g. cached tokens).
+	// Populated only when usage accounting is enabled.
+	PromptTokensDetails *PromptTokensDetails `json:"prompt_tokens_details,omitempty"`
+	// CompletionTokensDetails breaks down completion tokens (e.g. reasoning tokens).
+	// Populated only when usage accounting is enabled.
+	CompletionTokensDetails *CompletionTokensDetails `json:"completion_tokens_details,omitempty"`
+}
+
+// CostDetails breaks down the cost of a request when usage accounting is enabled.
+type CostDetails struct {
+	// UpstreamInferenceCost is the cost charged by the upstream provider, when available.
+	UpstreamInferenceCost *float64 `json:"upstream_inference_cost,omitempty"`
+}
+
+// PromptTokensDetails breaks down prompt token usage when usage accounting is enabled.
+type PromptTokensDetails struct {
+	// CachedTokens is the number of prompt tokens served from cache.
+	CachedTokens int `json:"cached_tokens,omitempty"`
+}
+
+// CompletionTokensDetails breaks down completion token usage when usage accounting is enabled.
+type CompletionTokensDetails struct {
+	// ReasoningTokens is the number of tokens spent on reasoning.
+	ReasoningTokens int `json:"reasoning_tokens,omitempty"`
+}
+
+// UsageRequest enables OpenRouter usage accounting on a request. When Include is
+// true, the response Usage object is enriched with the actual cost of the request.
+type UsageRequest struct {
+	// Include enables usage accounting (cost reporting) for the request.
+	Include bool `json:"include"`
 }
 
 // LogProbs represents log probability information.

@@ -139,6 +139,72 @@ func RunCompletionTest(ctx context.Context, client *openrouter.Client, model str
 	return true
 }
 
+// RunChatCostTest tests usage accounting (cost tracking) for chat completions,
+// for both non-streaming and streaming requests.
+func RunChatCostTest(ctx context.Context, client *openrouter.Client, model string, maxTokens int, verbose bool) bool {
+	fmt.Printf("🔄 Test: Chat Cost Tracking (usage accounting)\n")
+
+	messages := []openrouter.Message{
+		openrouter.CreateUserMessage("What is 2+2? Reply with just the number."),
+	}
+
+	// Non-streaming: cost arrives directly on the response Usage.
+	resp, err := client.ChatComplete(ctx, messages,
+		openrouter.WithModel(model),
+		openrouter.WithMaxTokens(maxTokens),
+		openrouter.WithUsage(true),
+	)
+	if err != nil {
+		printError("Failed", err)
+		return false
+	}
+
+	if resp.Usage.Cost == nil {
+		printError("Expected Usage.Cost to be populated with WithUsage(true), got nil", nil)
+		return false
+	}
+	printSuccess(fmt.Sprintf("Non-streaming cost: %.8f credits", *resp.Usage.Cost))
+	fmt.Printf("   Tokens: %d prompt, %d completion, %d total\n",
+		resp.Usage.PromptTokens, resp.Usage.CompletionTokens, resp.Usage.TotalTokens)
+	if resp.Usage.CostDetails != nil && resp.Usage.CostDetails.UpstreamInferenceCost != nil {
+		fmt.Printf("   Upstream inference cost: %.8f\n", *resp.Usage.CostDetails.UpstreamInferenceCost)
+	}
+	if resp.Usage.PromptTokensDetails != nil && resp.Usage.PromptTokensDetails.CachedTokens > 0 {
+		fmt.Printf("   Cached prompt tokens: %d\n", resp.Usage.PromptTokensDetails.CachedTokens)
+	}
+
+	// Streaming: cost arrives in the final chunk's Usage.
+	stream, err := client.ChatCompleteStream(ctx, messages,
+		openrouter.WithModel(model),
+		openrouter.WithMaxTokens(maxTokens),
+		openrouter.WithUsage(true),
+	)
+	if err != nil {
+		printError("Failed to create stream", err)
+		return false
+	}
+	defer func() { _ = stream.Close() }()
+
+	var streamCost *float64
+	for event := range stream.Events() {
+		if event.Usage.Cost != nil {
+			streamCost = event.Usage.Cost
+		}
+	}
+	if err := stream.Err(); err != nil {
+		printError("Stream error", err)
+		return false
+	}
+
+	if streamCost == nil {
+		printError("Expected streaming Usage.Cost to be populated, got nil", nil)
+		return false
+	}
+	printSuccess(fmt.Sprintf("Streaming cost: %.8f credits", *streamCost))
+
+	return true
+}
+
 // RunErrorTest tests error handling
 func RunErrorTest(ctx context.Context, client *openrouter.Client, verbose bool) bool {
 	fmt.Printf("🔄 Test: Error Handling\n")
