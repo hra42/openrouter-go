@@ -177,11 +177,17 @@ func collectingResponses(client *openrouter.Client) {
 	// Collect all responses
 	var responses []openrouter.ChatCompletionResponse
 	var fullContent strings.Builder
+	var cost *float64
 
 	fmt.Println("Collecting streamed responses...")
 
 	for event := range stream.Events() {
 		responses = append(responses, event)
+
+		// Usage (including cost) is sent in the final chunk of the stream.
+		if event.Usage.Cost != nil {
+			cost = event.Usage.Cost
+		}
 
 		// Also build the full content
 		for _, choice := range event.Choices {
@@ -207,6 +213,10 @@ func collectingResponses(client *openrouter.Client) {
 	// You can also use the helper function
 	concatenated := openrouter.ConcatenateChatStreamResponses(responses)
 	fmt.Printf("Helper function result matches: %v\n", concatenated == fullContent.String())
+
+	if cost != nil {
+		fmt.Printf("Actual cost: %.8f credits\n", *cost)
+	}
 }
 
 func streamingErrorHandling(client *openrouter.Client) {

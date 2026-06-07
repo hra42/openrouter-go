@@ -874,6 +874,11 @@
       "kind": "other"
     },
     {
+      "name": "CompletionTokensDetails",
+      "doc": "CompletionTokensDetails breaks down completion token usage.",
+      "kind": "struct"
+    },
+    {
       "name": "ContentBuilder",
       "doc": "CreateContentParts is a helper to build custom content part arrays.",
       "kind": "struct",
@@ -961,6 +966,11 @@
     {
       "name": "ContentPart",
       "doc": "ContentPart represents a part of message content (text, image, file, or audio).",
+      "kind": "struct"
+    },
+    {
+      "name": "CostDetails",
+      "doc": "CostDetails breaks down the cost of a request.",
       "kind": "struct"
     },
     {
@@ -1498,6 +1508,11 @@
     {
       "name": "Plugin",
       "doc": "Plugin represents a plugin configuration for enhancing model responses.",
+      "kind": "struct"
+    },
+    {
+      "name": "PromptTokensDetails",
+      "doc": "PromptTokensDetails breaks down prompt token usage.",
       "kind": "struct"
     },
     {

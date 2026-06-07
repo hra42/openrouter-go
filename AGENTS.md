@@ -137,6 +137,7 @@ Model must support the modality — check `ListModelEndpoints` or OpenRouter doc
 - **Context cancellation interrupts streams cleanly.** Prefer `ctx` cancellation over closing the stream prematurely from a different goroutine.
 - **`WithTransforms("middle-out")` silently drops content** when the prompt exceeds the context window. Useful, but don't enable it by default in code that needs determinism.
 - **App attribution headers (`WithReferer`, `WithAppName`)** affect OpenRouter's app leaderboard and some provider analytics. Set them in production apps.
+- **Two kinds of cost — estimated vs. actual.** `cost.go` (`EstimateCost`, `EstimateCostFromTokens`) computes a *client-side estimate* from model pricing × tokens, useful *before* a call. The *actual* cost OpenRouter charged is always returned in `resp.Usage.Cost` (a `*float64` in credits) — no request flag is needed (the old `usage:{include:true}` param is deprecated and ignored). For streaming, the cost arrives on the final chunk's `Usage`, so accumulate it while ranging over `stream.Events()`. For BYOK (Bring Your Own Key) requests, `Usage.Cost` is typically 0 (no OpenRouter charge) and the real spend is in `Usage.CostDetails.UpstreamInferenceCost`; `Usage.IsBYOK` (bool) tells you which case you're in.
 
 ---
 

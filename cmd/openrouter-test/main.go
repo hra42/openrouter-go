@@ -23,7 +23,7 @@ func main() {
 		ttsVoice       = flag.String("tts-voice", "af_bella", "TTS voice (provider-specific)")
 		videoModel     = flag.String("video-model", "google/veo-3.1-lite", "Video generation model to use")
 		test           = flag.String("test", "all", `Test to run:
-  all, chat, stream, completion, error, provider, zdr, suffix, price, structured, tools,
+  all, chat, stream, chatcost, completion, error, provider, zdr, suffix, price, structured, tools,
   transforms, websearch, mcp, image, multiimage, imagedetail, contentbuilder, base64image,
   audio, audiobuilder, audioformats, pdf, pdfengine, pdfannotations, multiplefiles,
   pdfbuilder, base64pdf, pdfcomparison, textfile, multipletextfiles, textbuilder, textformats,
@@ -96,6 +96,12 @@ func main() {
 		}
 	case "stream":
 		if tests.RunStreamTest(ctx, client, *model, *maxTokens, *verbose) {
+			success = 1
+		} else {
+			failed = 1
+		}
+	case "chatcost":
+		if tests.RunChatCostTest(ctx, client, *model, *maxTokens, *verbose) {
 			success = 1
 		} else {
 			failed = 1
@@ -516,6 +522,7 @@ func runAllTests(ctx context.Context, client *openrouter.Client, model string, e
 	}{
 		{"Chat Completion", func() bool { return tests.RunChatTest(ctx, client, model, maxTokens, verbose) }},
 		{"Streaming", func() bool { return tests.RunStreamTest(ctx, client, model, maxTokens, verbose) }},
+		{"Chat Cost Tracking", func() bool { return tests.RunChatCostTest(ctx, client, model, maxTokens, verbose) }},
 		{"Legacy Completion", func() bool { return tests.RunCompletionTest(ctx, client, model, verbose) }},
 		{"Error Handling", func() bool { return tests.RunErrorTest(ctx, client, verbose) }},
 		{"Provider Routing", func() bool { return tests.RunProviderRoutingTest(ctx, client, model, maxTokens, verbose) }},

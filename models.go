@@ -238,6 +238,57 @@ type Usage struct {
 	PromptTokens     int `json:"prompt_tokens"`
 	CompletionTokens int `json:"completion_tokens"`
 	TotalTokens      int `json:"total_tokens"`
+
+	// Cost is the total amount charged to your account for the request, in
+	// credits. OpenRouter always returns this; it is a pointer so callers can
+	// distinguish "not reported" (nil) from a genuine zero cost (e.g. a BYOK
+	// request, where the charge is on the upstream provider — see CostDetails).
+	Cost *float64 `json:"cost,omitempty"`
+	// IsBYOK reports whether the request was served via a BYOK (Bring Your Own
+	// Key) configuration. When true, Cost is typically 0 and the real spend is
+	// in CostDetails.UpstreamInferenceCost.
+	IsBYOK bool `json:"is_byok,omitempty"`
+	// CostDetails breaks down the cost (e.g. upstream/BYOK inference cost).
+	CostDetails *CostDetails `json:"cost_details,omitempty"`
+	// PromptTokensDetails breaks down prompt tokens (cached, cache-write, audio, video).
+	PromptTokensDetails *PromptTokensDetails `json:"prompt_tokens_details,omitempty"`
+	// CompletionTokensDetails breaks down completion tokens (reasoning, image, audio).
+	CompletionTokensDetails *CompletionTokensDetails `json:"completion_tokens_details,omitempty"`
+}
+
+// CostDetails breaks down the cost of a request. The upstream fields are the
+// charges from the upstream AI provider and are only meaningful for BYOK
+// (Bring Your Own Key) requests.
+type CostDetails struct {
+	// UpstreamInferenceCost is the total cost charged by the upstream provider.
+	UpstreamInferenceCost *float64 `json:"upstream_inference_cost,omitempty"`
+	// UpstreamInferencePromptCost is the upstream provider's charge for the prompt.
+	UpstreamInferencePromptCost *float64 `json:"upstream_inference_prompt_cost,omitempty"`
+	// UpstreamInferenceCompletionsCost is the upstream provider's charge for the completion.
+	UpstreamInferenceCompletionsCost *float64 `json:"upstream_inference_completions_cost,omitempty"`
+}
+
+// PromptTokensDetails breaks down prompt token usage.
+type PromptTokensDetails struct {
+	// CachedTokens is the number of prompt tokens read from cache.
+	CachedTokens int `json:"cached_tokens,omitempty"`
+	// CacheWriteTokens is the number of tokens written to the cache. Only
+	// returned for models with explicit caching and cache-write pricing.
+	CacheWriteTokens int `json:"cache_write_tokens,omitempty"`
+	// AudioTokens is the number of audio tokens in the prompt.
+	AudioTokens int `json:"audio_tokens,omitempty"`
+	// VideoTokens is the number of video tokens in the prompt.
+	VideoTokens int `json:"video_tokens,omitempty"`
+}
+
+// CompletionTokensDetails breaks down completion token usage.
+type CompletionTokensDetails struct {
+	// ReasoningTokens is the number of tokens spent on reasoning.
+	ReasoningTokens int `json:"reasoning_tokens,omitempty"`
+	// ImageTokens is the number of image tokens in the completion.
+	ImageTokens int `json:"image_tokens,omitempty"`
+	// AudioTokens is the number of audio tokens in the completion.
+	AudioTokens int `json:"audio_tokens,omitempty"`
 }
 
 // LogProbs represents log probability information.
